@@ -1,5 +1,11 @@
 # Contributing
 
+## Questions, features & bugs (no code yet)
+
+Open a GitHub Issue with the right template — see the **Questions, features & bugs** section in [`README.md`](README.md) (فارسی: [`README.fa.md`](README.fa.md)):
+
+- [New issue (choose template)](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning/issues/new/choose)
+
 ## Knowledge pack (`docs/`)
 
 1. Edit **English** first (`docs/en/`) — source of truth.  

@@ -1,0 +1,34 @@
+name: Question
+description: Ask how sizing, docs, or SCPcalc works
+title: "[Question]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for asking. Check [README](../blob/main/README.md), [scpcalc/README.md](../blob/main/scpcalc/README.md), and the [live calculator](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/) first.
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: What are you trying to do, and where are you stuck?
+      placeholder: e.g. How should I choose peak concurrent searches vs concurrent users?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - SCPcalc Web UI (Pages / serve)
+        - SCPcalc CLI
+        - Docker / GitHub Package
+        - Knowledge pack docs (docs/en or docs/fa)
+        - Other / not sure
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context (optional)
+      description: Links, screenshots, Export URL, or plan JSON (redact secrets).

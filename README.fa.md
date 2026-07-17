@@ -67,6 +67,22 @@ python3 tools/check_en_fa_sync.py
 2. پیش‌فرض سایت **English** است؛ برای فارسی روی **فارسی** کلیک کنید یا [`?lang=fa`](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=fa) را باز کنید.  
 3. مستندات با `view.html` و ماشین‌حساب در **`/calc/`** منتشر می‌شوند.
 
+## سوال، Feature و باگ
+
+از **[GitHub Issues](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning/issues/new/choose)** استفاده کنید و قالب مناسب را انتخاب کنید:
+
+| نیاز شما | این Issue را باز کنید | چه چیزی بنویسید |
+|---|---|---|
+| **سوال / راهنمایی** (سایزینگ، کار SCPcalc، ابهام در مستندات) | [Question](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning/issues/new?template=question.yml) | چه کردید، لینک docs/UI، نتیجهٔ مورد انتظار |
+| **درخواست قابلیت** (فلگ CLI، گام UI، فرمت خروجی، …) | [Feature request](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning/issues/new?template=feature_request.yml) | مشکل فعلی، ایده، فایده برای کاربر |
+| **گزارش باگ** (عدد اشتباه، کرش، مشکل Pages/CLI/Docker) | [Bug report](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning/issues/new?template=bug_report.yml) | نسخه (`scpcalc version`)، سیستم‌عامل، مراحل بازتولید، انتظار در برابر واقعیت؛ در صورت امکان **Export URL** یا JSON پلن |
+
+قبل از ثبت Issue، [`CHANGELOG.md`](CHANGELOG.md) و [آخرین Release](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning/releases/latest) را چک کنید — شاید همان مورد قبلاً رفع شده باشد. برای اسکرین‌شات UI: [SCPcalc روی Pages](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/?lang=fa).
+
+**امنیت / دادهٔ حساس:** رمز، لایسنس، یا لاگ شناسایی‌کنندهٔ مشتری را در Issue عمومی نگذارید؛ در صورت نیاز JSON پلن را redact کنید.
+
+مشارکت کدی → [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
 ## مشارکت
 
 [`CONTRIBUTING.md`](CONTRIBUTING.md) را ببینید. PRهای مستند باید `check_en_fa_sync.py` را پاس کنند.

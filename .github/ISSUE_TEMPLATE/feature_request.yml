@@ -1,0 +1,42 @@
+name: Feature request
+description: Suggest a new capability for SCPcalc or the docs
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the problem first, then the idea. Features that help capacity planning for real Splunk deployments are preferred.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / motivation
+      description: What is hard or missing today?
+      placeholder: e.g. I cannot export only the hardware table for a ticket.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How should it work? CLI flag, UI step, docs section, …
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where should this live?
+      options:
+        - SCPcalc Web UI
+        - SCPcalc CLI / API
+        - Docker / packaging
+        - Knowledge pack docs
+        - GitHub Pages / tooling
+        - Unsure
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered (optional)
+      description: Workarounds or other approaches you already tried.

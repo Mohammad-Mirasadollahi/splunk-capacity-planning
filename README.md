@@ -103,6 +103,22 @@ Persian guide list → [`README.fa.md`](README.fa.md).
    Live: [docs hub](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/) · [calculator](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/).  
    Use **Export URL** / **Import** to share a plan via the URL hash — see [`scpcalc/README.md`](scpcalc/README.md#save--export--import).
 
+## Questions, features & bugs
+
+Use **[GitHub Issues](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning/issues/new/choose)** — pick the template that matches what you need:
+
+| You want… | Open this | Include |
+|---|---|---|
+| **Help / a question** (how to size, how SCPcalc works, docs unclear) | [Question](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning/issues/new?template=question.yml) | What you tried, links to docs/UI, expected outcome |
+| **A new feature** (CLI flag, UI step, export format, …) | [Feature request](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning/issues/new?template=feature_request.yml) | Problem, proposed idea, why it helps |
+| **A bug** (wrong numbers, crash, broken Pages/CLI/Docker) | [Bug report](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning/issues/new?template=bug_report.yml) | SCPcalc version (`scpcalc version`), OS, steps to reproduce, expected vs actual; attach **Export URL** or plan JSON if relevant |
+
+Before opening an issue, skim [`CHANGELOG.md`](CHANGELOG.md) and the [latest Release](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning/releases/latest) — the fix or feature may already ship. For calculator behavior, the live UI is useful for screenshots: [SCPcalc on Pages](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/).
+
+**Security / private data:** do not paste production credentials, license keys, or customer-identifying logs into public issues. Redact plan JSON if needed.
+
+Code contributions → [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
 ## Contributing
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md). PRs that touch docs must pass `check_en_fa_sync.py`; PRs that touch `scpcalc/` must pass `go test ./...`.

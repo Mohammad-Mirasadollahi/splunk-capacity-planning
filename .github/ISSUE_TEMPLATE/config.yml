@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Live SCPcalc (GitHub Pages)
+    url: https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/
+    about: Try the calculator in the browser before filing an issue.
+  - name: Documentation hub
+    url: https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/
+    about: Bilingual capacity-planning docs (EN / FA).
+  - name: Latest release & changelog
+    url: https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning/releases/latest
+    about: Check whether your issue is already fixed in a newer build.
