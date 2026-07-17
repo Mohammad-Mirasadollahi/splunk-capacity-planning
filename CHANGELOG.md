@@ -2,9 +2,10 @@
 
 All notable changes to this repository are documented here.
 
-## Unreleased
+## 0.1.3 — 2026-07-17
 
-- **GitHub Package (GHCR)** — container image `ghcr.io/mohammad-mirasadollahi/scpcalc` via `.github/workflows/scpcalc-package.yml` (`Dockerfile` + `make docker`)
+- Align CLI Release and GHCR with wizard UX (Daily/EPS volume mode, full Review preview) and hardened Pages/CI deploy
+- **GitHub Package (GHCR)** — container image `ghcr.io/mohammad-mirasadollahi/scpcalc`
 
 ## 0.1.2 — 2026-07-17
 
