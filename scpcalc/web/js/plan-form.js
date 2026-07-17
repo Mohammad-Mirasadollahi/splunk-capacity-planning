@@ -80,7 +80,28 @@ export function syncArchiveFields() {
     policyHint.setAttribute("data-i18n", policyKey);
     policyHint.textContent = t(policyKey);
   }
+  syncColdVolumePreview();
   refreshOpenTip();
+}
+
+/** Read-only cold days preview: coldPath.maxDataSizeMB = maxTotal − homePath (after calc). */
+export function syncColdVolumePreview() {
+  const out = document.getElementById("cold_vol_auto");
+  if (!out) return;
+  const ret = Number(document.querySelector('input[name="retention_days"]')?.value);
+  const hw = Number(document.querySelector('input[name="hot_warm_days"]')?.value);
+  const retN = Number.isFinite(ret) && ret > 0 ? Math.floor(ret) : 0;
+  const hwN = Number.isFinite(hw) && hw > 0 ? Math.floor(hw) : 0;
+  const coldDays = Math.max(0, retN - hwN);
+  if (!retN) {
+    out.textContent = "—";
+    return;
+  }
+  if (coldDays <= 0) {
+    out.textContent = t("cold_vol_auto_zero");
+    return;
+  }
+  out.textContent = t("cold_vol_auto").replace("{days}", String(coldDays));
 }
 
 export function syncVolumeInputMode(mode, { convert = false } = {}) {
@@ -207,7 +228,7 @@ export function applyGlobals(g) {
     if (el) el.checked = !!g[k];
   }
   syncClusterFields();
-  syncToggleUI();
+  syncArchiveFields();
 }
 
 /** Migrate wizard step from older 5-step (mode-first) snapshots. */
@@ -242,7 +263,7 @@ export function applySnapshot(data) {
     data.globals?.volume_input_mode ||
     (state.rows.some((r) => Number(r.eps) > 0 && !(Number(r.daily_gb) > 0)) ? "eps" : "daily_gb");
   syncVolumeInputMode(mode);
-  syncToggleUI();
+  syncArchiveFields();
 }
 
 export function buildPlanBody() {
@@ -346,6 +367,11 @@ export function bindPlanFormChrome() {
   document.querySelector('input[name="n_sh"]')?.addEventListener("input", syncSHCMemberHint);
   syncClusterFields();
   syncArchiveFields();
+  document.querySelectorAll('input[name="retention_days"], input[name="hot_warm_days"]').forEach((el) => {
+    el.addEventListener("input", syncColdVolumePreview);
+    el.addEventListener("change", syncColdVolumePreview);
+  });
+  syncColdVolumePreview();
 
   document.querySelectorAll('input[name="volume_input_mode"]').forEach((el) => {
     el.addEventListener("change", () => syncVolumeInputMode(readVolumeInputMode(), { convert: true }));

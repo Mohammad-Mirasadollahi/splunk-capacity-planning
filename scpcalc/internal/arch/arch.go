@@ -444,6 +444,7 @@ func renderSettings(p model.PlanInput, d model.Design, out model.PlanResult) str
 		fmt.Fprintf(&b, "  [%s]\n", ix.IndexName)
 		fmt.Fprintf(&b, "    maxTotalDataSizeMB=%d\n", ix.MaxTotalDataSizeMB)
 		fmt.Fprintf(&b, "    homePath.maxDataSizeMB=%d\n", ix.HomePathMaxDataSizeMB)
+		fmt.Fprintf(&b, "    coldPath.maxDataSizeMB=%d  (auto: maxTotal − homePath)\n", ix.ColdPathMaxDataSizeMB)
 		fmt.Fprintf(&b, "    frozenTimePeriodInSecs=%d  (%d days)\n", ix.FrozenTimePeriodInSecs, ix.FrozenTimePeriodInSecs/86400)
 		fmt.Fprintf(&b, "    maxDataSize=%s\n", ix.MaxDataSize)
 		if p.ArchiveFrozen {

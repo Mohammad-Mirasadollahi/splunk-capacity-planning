@@ -137,9 +137,9 @@ func printPlanHuman(res model.PlanResult) {
 	if len(res.Indexes) > 0 {
 		fmt.Println("\n----- indexes -----")
 		for _, ix := range res.Indexes {
-			fmt.Printf("  [%s] daily_raw=%.3f GB  on_disk=%.3f GB  searchable=%.3f TB  maxTotal=%d MB  homeMax=%d MB\n",
+			fmt.Printf("  [%s] daily_raw=%.3f GB  on_disk=%.3f GB  searchable=%.3f TB  maxTotal=%d MB  homeMax=%d MB  coldMax=%d MB\n",
 				ix.IndexName, ix.DailyRawGB, ix.DailyOnDiskGB, ix.SearchableTB,
-				ix.MaxTotalDataSizeMB, ix.HomePathMaxDataSizeMB)
+				ix.MaxTotalDataSizeMB, ix.HomePathMaxDataSizeMB, ix.ColdPathMaxDataSizeMB)
 			if ix.SummaryIndexName != "" {
 				fmt.Printf("      summary %s: %.3f GB/day → maxTotal=%d MB\n",
 					ix.SummaryIndexName, ix.SummaryDailyRawGB, ix.SummaryMaxTotalMB)

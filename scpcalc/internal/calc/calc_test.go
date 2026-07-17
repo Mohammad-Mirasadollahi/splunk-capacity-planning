@@ -81,6 +81,9 @@ func TestDoc05ReverseExample(t *testing.T) {
 	if math.Abs(float64(res.HomePathMaxDataSizeMB)-1721600) > 2 {
 		t.Fatalf("homeMax=%d want ~1721600", res.HomePathMaxDataSizeMB)
 	}
+	if math.Abs(float64(res.ColdPathMaxDataSizeMB)-1721600) > 2 {
+		t.Fatalf("coldMax=%d want ~1721600 (maxTotal − homePath)", res.ColdPathMaxDataSizeMB)
+	}
 }
 
 func TestEPSPath(t *testing.T) {

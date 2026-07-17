@@ -81,7 +81,7 @@ export function fillReviewSummary() {
     <section class="review-block">
       <h4 data-i18n="ctx_from_retention">${t("ctx_from_retention")}</h4>
       <ul class="review-kv">
-        <li><span>${t("lbl_retention")}</span><strong>${g.retention_days}d searchable · ${g.hot_warm_days}d hot/warm · headroom ${g.headroom} · summary ${g.summary_retention_days}d</strong></li>
+        <li><span>${t("lbl_retention")}</span><strong>${g.retention_days}d searchable · ${g.hot_warm_days}d hot/warm · ${Math.max(0, Number(g.retention_days) - Number(g.hot_warm_days))}d cold (auto) · headroom ${g.headroom} · summary ${g.summary_retention_days}d</strong></li>
         <li><span>${t("lbl_archive")}</span><strong>${yn(g.archive_frozen)}${g.archive_frozen ? ` ${localizeFlow("→")} ${escapeAttr(g.frozen_path)}` : ""}</strong></li>
         <li><span>Paths</span><strong>${escapeAttr(g.hot_path)} · ${escapeAttr(g.cold_path)} · ${escapeAttr(g.frozen_path)} · ${escapeAttr(g.summaries_path)}</strong></li>
         <li><span>Total / disk</span><strong>total=${g.total_daily_gb || "—"} GB/d · hot=${g.available_hot_gb || 0} · cold=${g.available_cold_gb || 0} · sum=${g.available_summaries_gb || 0}</strong></li>

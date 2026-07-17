@@ -20,6 +20,10 @@
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="hot_warm_days" data-i18n="lbl_hot_warm">Days on fast (hot/warm) disk</span><span class="field-hint" data-i18n="hint_hot_warm">Rest of retention moves to cold</span></span>
                 <input name="hot_warm_days" type="number" value="30" min="1">
               </label>
+              <div class="field field-readonly" aria-live="polite">
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="cold_path_max" data-i18n="lbl_cold_vol">Cold volume (auto)</span><span class="field-hint" data-i18n="hint_cold_vol">Derived: maxTotal − homePath — not entered by you</span></span>
+                <output id="cold_vol_auto" class="readonly-value" for="retention_days hot_warm_days">—</output>
+              </div>
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="headroom" data-i18n="lbl_headroom">Safety margin</span><span class="field-hint" data-i18n="hint_headroom">e.g. 1.2 = keep 20% spare capacity</span></span>
                 <input name="headroom" type="number" step="0.05" value="1.2" min="1">

@@ -93,6 +93,7 @@ type IndexResult struct {
 	SearchableTB           float64 `json:"searchable_tb"`
 	MaxTotalDataSizeMB     int64   `json:"max_total_data_size_mb"`
 	HomePathMaxDataSizeMB  int64   `json:"home_path_max_data_size_mb"`
+	ColdPathMaxDataSizeMB  int64   `json:"cold_path_max_data_size_mb"` // auto: maxTotal − homePath (indexes.conf coldPath.maxDataSizeMB)
 	FrozenTimePeriodInSecs int64   `json:"frozen_time_period_in_secs"`
 	MaxDataSize            string  `json:"max_data_size"`
 	SummaryIndexName       string  `json:"summary_index_name,omitempty"`
@@ -100,6 +101,7 @@ type IndexResult struct {
 	SummaryOnDiskGB        float64 `json:"summary_on_disk_gb,omitempty"`
 	SummaryMaxTotalMB      int64   `json:"summary_max_total_data_size_mb,omitempty"`
 	SummaryHomeMaxMB       int64   `json:"summary_home_path_max_data_size_mb,omitempty"`
+	SummaryColdMaxMB       int64   `json:"summary_cold_path_max_data_size_mb,omitempty"`
 	SummaryFrozenSecs      int64   `json:"summary_frozen_time_period_in_secs,omitempty"`
 }
 
@@ -233,6 +235,7 @@ type Result struct {
 	SearchableTB           float64  `json:"searchable_tb"`
 	MaxTotalDataSizeMB     int64    `json:"max_total_data_size_mb"`
 	HomePathMaxDataSizeMB  int64    `json:"home_path_max_data_size_mb"`
+	ColdPathMaxDataSizeMB  int64    `json:"cold_path_max_data_size_mb"`
 	FrozenTimePeriodInSecs int64    `json:"frozen_time_period_in_secs"`
 	MaxDataSize            string   `json:"max_data_size"`
 	IndexesConf            string   `json:"indexes_conf"`

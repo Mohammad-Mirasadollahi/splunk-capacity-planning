@@ -49,6 +49,8 @@ func TestRenderContainsVolumesAndIndex(t *testing.T) {
 		"[windows]",
 		"homePath = volume:hotwarm/windows/db",
 		"coldPath = volume:cold/windows/colddb",
+		"homePath.maxDataSizeMB =",
+		"coldPath.maxDataSizeMB =",
 		"thawedPath = /cold/windows/thaweddb",
 		"coldToFrozenDir = /frozen/windows/frozendb",
 		"tstatsHomePath = volume:summaries/windows/datamodel_summary",

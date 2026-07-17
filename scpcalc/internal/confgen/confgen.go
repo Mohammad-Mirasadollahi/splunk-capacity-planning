@@ -61,9 +61,9 @@ func RenderPlan(p model.PlanInput, res model.PlanResult) string {
 
 	emitTstats := p.WantDMA()
 	for _, ix := range res.Indexes {
-		writeIndex(&b, p, ix.IndexName, ix.HomePathMaxDataSizeMB, ix.MaxTotalDataSizeMB, ix.FrozenTimePeriodInSecs, ix.MaxDataSize, "primary", emitTstats)
+		writeIndex(&b, p, ix.IndexName, ix.HomePathMaxDataSizeMB, ix.ColdPathMaxDataSizeMB, ix.MaxTotalDataSizeMB, ix.FrozenTimePeriodInSecs, ix.MaxDataSize, "primary", emitTstats)
 		if ix.SummaryIndexName != "" && ix.SummaryMaxTotalMB > 0 {
-			writeIndex(&b, p, ix.SummaryIndexName, ix.SummaryHomeMaxMB, ix.SummaryMaxTotalMB, ix.SummaryFrozenSecs, "auto", "summary", false)
+			writeIndex(&b, p, ix.SummaryIndexName, ix.SummaryHomeMaxMB, ix.SummaryColdMaxMB, ix.SummaryMaxTotalMB, ix.SummaryFrozenSecs, "auto", "summary", false)
 		}
 	}
 	return b.String()
@@ -78,7 +78,7 @@ func hasSummary(res model.PlanResult) bool {
 	return false
 }
 
-func writeIndex(b *strings.Builder, p model.PlanInput, name string, homeMB, totalMB, frozenSecs int64, maxData, kind string, emitTstats bool) {
+func writeIndex(b *strings.Builder, p model.PlanInput, name string, homeMB, coldMB, totalMB, frozenSecs int64, maxData, kind string, emitTstats bool) {
 	idx := SanitizeIndex(name)
 	fmt.Fprintf(b, "[%s]\n", idx)
 	if kind == "summary" {
@@ -95,7 +95,15 @@ func writeIndex(b *strings.Builder, p model.PlanInput, name string, homeMB, tota
 		fmt.Fprintf(b, "coldPath = volume:cold/%s/colddb\n", idx)
 		fmt.Fprintf(b, "thawedPath = %s/%s/thaweddb\n", strings.TrimRight(p.ColdPath, "/"), idx)
 	}
+	if coldMB < 0 {
+		coldMB = 0
+	}
+	if coldMB == 0 && totalMB > homeMB {
+		coldMB = totalMB - homeMB
+	}
 	fmt.Fprintf(b, "homePath.maxDataSizeMB = %d\n", homeMB)
+	fmt.Fprintf(b, "coldPath.maxDataSizeMB = %d\n", coldMB)
+	fmt.Fprintf(b, "# coldPath.maxDataSizeMB is derived: maxTotalDataSizeMB − homePath.maxDataSizeMB\n")
 	fmt.Fprintf(b, "maxTotalDataSizeMB = %d\n", totalMB)
 	fmt.Fprintf(b, "frozenTimePeriodInSecs = %d\n", frozenSecs)
 	fmt.Fprintf(b, "maxDataSize = %s\n", maxData)

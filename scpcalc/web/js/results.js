@@ -198,6 +198,10 @@ function renderPlanResult(data) {
           ? `${ix.summary_index_name} · ${ix.summary_daily_raw_gb} GB/d · ${ix.summary_max_total_data_size_mb} MB`
           : "—";
         const label = ix.label || ix.key || "—";
+        const coldMB =
+          ix.cold_path_max_data_size_mb != null
+            ? ix.cold_path_max_data_size_mb
+            : Math.max(0, Number(ix.max_total_data_size_mb || 0) - Number(ix.home_path_max_data_size_mb || 0));
         const find = [
           ix.index_name,
           label,
@@ -207,6 +211,7 @@ function renderPlanResult(data) {
           ix.searchable_tb,
           ix.max_total_data_size_mb,
           ix.home_path_max_data_size_mb,
+          coldMB,
           ix.max_data_size,
           frozenDays,
           sum,
@@ -222,6 +227,7 @@ function renderPlanResult(data) {
             <td>${ix.searchable_tb}</td>
             <td>${ix.max_total_data_size_mb}</td>
             <td>${ix.home_path_max_data_size_mb}</td>
+            <td>${coldMB}</td>
             <td>${escapeAttr(ix.max_data_size || "—")}</td>
             <td>${frozenDays}</td>
             <td>${escapeAttr(sum)}</td>

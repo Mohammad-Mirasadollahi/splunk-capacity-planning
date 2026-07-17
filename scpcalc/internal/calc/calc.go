@@ -30,6 +30,7 @@ func Calculate(in model.Input) (model.Result, error) {
 		SearchableTB:           ix.SearchableTB,
 		MaxTotalDataSizeMB:     ix.MaxTotalDataSizeMB,
 		HomePathMaxDataSizeMB:  ix.HomePathMaxDataSizeMB,
+		ColdPathMaxDataSizeMB:  ix.ColdPathMaxDataSizeMB,
 		FrozenTimePeriodInSecs: ix.FrozenTimePeriodInSecs,
 		MaxDataSize:            ix.MaxDataSize,
 		IndexesConf:            plan.IndexesConf,
@@ -129,6 +130,10 @@ func CalculatePlan(p model.PlanInput) (model.PlanResult, error) {
 			maxData = "auto_high_volume"
 		}
 
+		coldPart := maxTotal - homeMax
+		if coldPart < 0 {
+			coldPart = 0
+		}
 		ix := model.IndexResult{
 			Key:                    s.Key,
 			Label:                  firstNonEmpty(s.Label, s.IndexName),
@@ -139,15 +144,12 @@ func CalculatePlan(p model.PlanInput) (model.PlanResult, error) {
 			SearchableTB:           round3(dailyOnDisk * float64(ret) / 1024),
 			MaxTotalDataSizeMB:     maxTotal,
 			HomePathMaxDataSizeMB:  homeMax,
+			ColdPathMaxDataSizeMB:  coldPart,
 			FrozenTimePeriodInSecs: frozen,
 			MaxDataSize:            maxData,
 		}
 
 		hotBudget += homeMax
-		coldPart := maxTotal - homeMax
-		if coldPart < 0 {
-			coldPart = 0
-		}
 		coldBudget += coldPart
 
 		if s.EnableSummary {
@@ -170,6 +172,11 @@ func CalculatePlan(p model.PlanInput) (model.PlanResult, error) {
 			ix.SummaryOnDiskGB = round3(sumOnDisk)
 			ix.SummaryMaxTotalMB = int64(math.Round(sumOnDisk * 1024 * float64(sumRet) * p.Headroom))
 			ix.SummaryHomeMaxMB = int64(math.Round(sumOnDisk * 1024 * float64(sumHW) * p.Headroom))
+			sumCold := ix.SummaryMaxTotalMB - ix.SummaryHomeMaxMB
+			if sumCold < 0 {
+				sumCold = 0
+			}
+			ix.SummaryColdMaxMB = sumCold
 			ix.SummaryFrozenSecs = int64(sumRet) * 86400
 			out.TotalSummaryRawGB += sumRaw
 			out.TotalSummaryOnDiskGB += sumOnDisk
@@ -285,9 +292,19 @@ func applyPerPeer(out *model.PlanResult, d *model.Design) {
 		ix := &out.Indexes[i]
 		ix.MaxTotalDataSizeMB = ceilDiv(ix.MaxTotalDataSizeMB, nidx)
 		ix.HomePathMaxDataSizeMB = ceilDiv(ix.HomePathMaxDataSizeMB, nidx)
+		ix.ColdPathMaxDataSizeMB = ceilDiv(ix.ColdPathMaxDataSizeMB, nidx)
+		// Keep cold = maxTotal − home after peer split (ceilDiv can leave a 1-unit gap).
+		if rem := ix.MaxTotalDataSizeMB - ix.HomePathMaxDataSizeMB; rem >= 0 {
+			ix.ColdPathMaxDataSizeMB = rem
+		}
 		if ix.SummaryMaxTotalMB > 0 {
 			ix.SummaryMaxTotalMB = ceilDiv(ix.SummaryMaxTotalMB, nidx)
 			ix.SummaryHomeMaxMB = ceilDiv(ix.SummaryHomeMaxMB, nidx)
+			if rem := ix.SummaryMaxTotalMB - ix.SummaryHomeMaxMB; rem >= 0 {
+				ix.SummaryColdMaxMB = rem
+			} else {
+				ix.SummaryColdMaxMB = 0
+			}
 		}
 	}
 	out.HotVolumeMB = ceilDiv(out.HotVolumeMB, nidx)

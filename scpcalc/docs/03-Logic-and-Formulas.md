@@ -76,6 +76,7 @@ When `indexer_cluster=false`, engine forces RF=1, SF=1 (even if RF/SF were sent)
 Searchable_TB          = Daily_OnDisk_GB × RetentionDays / 1024
 maxTotalDataSizeMB     = round(Daily_OnDisk_MB × RetentionDays × Headroom)
 homePath.maxDataSizeMB = round(Daily_OnDisk_MB × HotWarmDays × Headroom)
+coldPath.maxDataSizeMB = maxTotalDataSizeMB − homePath.maxDataSizeMB   # auto — not a separate user input
 frozenTimePeriodInSecs = RetentionDays × 86400
 
 maxDataSize =

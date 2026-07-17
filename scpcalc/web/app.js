@@ -8,7 +8,7 @@ import { bindModalChrome, closeModal, openModal } from "./js/modal.js";
 import { initTabBars, setTabsHooks } from "./js/tabs.js";
 import { bindSourcesTable, rowFromPreset, renderRows } from "./js/sources.js";
 import { applyDemoSourceDefaults, demoGlobals } from "./js/defaults.js";
-import { bindPlanFormChrome, snapshot, applySnapshot, applyGlobals, fillReview, syncArchiveFields } from "./js/plan-form.js";
+import { bindPlanFormChrome, snapshot, applySnapshot, applyGlobals, fillReview, syncArchiveFields, syncColdVolumePreview } from "./js/plan-form.js";
 import { bindConfEditor, getConfText, copyConf } from "./js/conf-editor.js";
 import { renderAllCharts } from "./js/charts.js";
 import { bindWizard, openWizard, closeWizard, showStep } from "./js/wizard.js";
@@ -204,6 +204,7 @@ setI18nHooks({
   onAfterSetLang() {
     bindTips(document);
     syncArchiveFields();
+    syncColdVolumePreview();
     refreshOpenTip();
     renderRows();
     if (state.step === STEPS - 1) fillReview();
