@@ -7,9 +7,14 @@
           </div>
           <div class="tab-panel is-active" data-panel="ret-policy" role="tabpanel">
             <div class="grid">
-              <label class="field">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="retention_days" data-i18n="lbl_retention">How long data stays searchable</span><span class="field-hint" data-i18n="hint_retention">Days until buckets freeze</span></span>
+              <div class="field index-volume-field">
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="retention_days" data-i18n="lbl_retention">Total Index volume</span><span class="field-hint" id="hint_retention_dyn" data-i18n="hint_retention_delete">After this period, buckets are deleted</span></span>
                 <input name="retention_days" type="number" value="90" min="1">
+                <label class="field check glass-chip index-volume-freeze"><input name="archive_frozen" type="checkbox" id="archive_frozen"> <span class="tip-mark" data-tip="retention_days" data-i18n="lbl_archive">Archive on freeze</span></label>
+              </div>
+              <label class="field" data-depends-on="archive_frozen" hidden>
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="frozen_path" data-i18n="lbl_frozen_path">Frozen / archive path</span><span class="field-hint" data-i18n="hint_frozen_path">Used when archive on freeze is on</span></span>
+                <input name="frozen_path" id="frozen_path" type="text" value="/frozen">
               </label>
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="hot_warm_days" data-i18n="lbl_hot_warm">Days on fast (hot/warm) disk</span><span class="field-hint" data-i18n="hint_hot_warm">Rest of retention moves to cold</span></span>
@@ -18,11 +23,6 @@
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="headroom" data-i18n="lbl_headroom">Safety margin</span><span class="field-hint" data-i18n="hint_headroom">e.g. 1.2 = keep 20% spare capacity</span></span>
                 <input name="headroom" type="number" step="0.05" value="1.2" min="1">
-              </label>
-              <label class="field check glass-chip"><input name="archive_frozen" type="checkbox" id="archive_frozen"> <span class="tip-mark" data-tip="archive_frozen" data-i18n="lbl_archive">Archive frozen buckets</span></label>
-              <label class="field" data-depends-on="archive_frozen" hidden>
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="frozen_path" data-i18n="lbl_frozen_path">Frozen / archive path</span><span class="field-hint" data-i18n="hint_frozen_path">Used when archive frozen is on</span></span>
-                <input name="frozen_path" id="frozen_path" type="text" value="/frozen">
               </label>
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="summary_pct" data-i18n="lbl_summary_pct">Summary index share</span><span class="field-hint" data-i18n="hint_summary_pct">Share of source volume written to summaries</span></span>
@@ -33,7 +33,7 @@
                 <input name="summary_retention_days" type="number" value="90" min="1">
               </label>
             </div>
-            <p class="hint" data-i18n="hint_archive_policy">Archive is a core retention choice: off = Splunk deletes at freeze; on = set the frozen/archive path that appears below.</p>
+            <p class="hint" id="hint_archive_policy" data-i18n="hint_archive_policy_delete">Freeze off: Splunk deletes buckets at freeze — no archive path.</p>
           </div>
           <div class="tab-panel" data-panel="ret-paths" role="tabpanel" hidden>
             <div class="grid">

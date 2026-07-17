@@ -1,6 +1,7 @@
 import { state } from "./state.js";
 import { num } from "./util.js";
 import { t, localizeFlow } from "./i18n.js";
+import { refreshOpenTip } from "./tips-ui.js";
 import { normalizeSnapshotRows, refreshTotalCounterpart, renderRows } from "./sources.js";
 import { convertRowsForMode, resolveEPS, resolveEventBytes, dailyGBFromEPS, formatDailyGB, numOr0 } from "./volume-convert.js";
 
@@ -66,6 +67,20 @@ export function syncSHCMemberHint() {
 
 export function syncArchiveFields() {
   syncToggleUI();
+  const on = !!document.getElementById("archive_frozen")?.checked;
+  const hintKey = on ? "hint_retention_archive" : "hint_retention_delete";
+  const policyKey = on ? "hint_archive_policy_archive" : "hint_archive_policy_delete";
+  const retentionHint = document.getElementById("hint_retention_dyn");
+  if (retentionHint) {
+    retentionHint.setAttribute("data-i18n", hintKey);
+    retentionHint.textContent = t(hintKey);
+  }
+  const policyHint = document.getElementById("hint_archive_policy");
+  if (policyHint) {
+    policyHint.setAttribute("data-i18n", policyKey);
+    policyHint.textContent = t(policyKey);
+  }
+  refreshOpenTip();
 }
 
 export function syncVolumeInputMode(mode, { convert = false } = {}) {
@@ -319,7 +334,8 @@ export function bindPlanFormChrome() {
       else if (input.id === "search_head_cluster") {
         syncSHCMemberHint();
         syncToggleUI();
-      } else if (input.id === "has_es" && input.checked) {
+      } else if (input.id === "archive_frozen") syncArchiveFields();
+      else if (input.id === "has_es" && input.checked) {
         const dma = document.getElementById("enable_dma");
         if (dma) dma.checked = true;
         syncToggleUI();
@@ -329,7 +345,7 @@ export function bindPlanFormChrome() {
   document.querySelector('input[name="n_sh"]')?.addEventListener("change", syncSHCMemberHint);
   document.querySelector('input[name="n_sh"]')?.addEventListener("input", syncSHCMemberHint);
   syncClusterFields();
-  syncToggleUI();
+  syncArchiveFields();
 
   document.querySelectorAll('input[name="volume_input_mode"]').forEach((el) => {
     el.addEventListener("change", () => syncVolumeInputMode(readVolumeInputMode(), { convert: true }));

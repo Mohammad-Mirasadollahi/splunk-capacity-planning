@@ -14,6 +14,43 @@ function tipText(s) {
   return escapeAttr(localizeFlow(s || ""));
 }
 
+function archiveFrozenOn() {
+  return !!document.getElementById("archive_frozen")?.checked;
+}
+
+/** Clone tip and inject Archive-on-freeze state into Index volume tip. */
+function enrichTip(key, tip) {
+  if (!tip) return tip;
+  if (key !== "retention_days" && key !== "archive_frozen") return tip;
+  const isFa = lang() === "fa";
+  const on = archiveFrozenOn();
+  const base = key === "archive_frozen" ? tipCatalog().retention_days || tip : tip;
+  const out = { ...base, links: base.links };
+  out.title = isFa ? "حجم کلی Index" : "Index volume (maxTotalDataSizeMB)";
+  if (on) {
+    out.body = isFa
+      ? "سقف حجم searchable یک Index در Splunk (hot+warm+cold) تا زمان freeze. فرمول: ingest روزانه روی دیسک × روز × headroom. Freeze روی عمر یا حجم — هرکدام زودتر. آرشیو هنگام Freeze روشن است → بعد از freeze داده به مسیر آرشیو می‌رود (coldToFrozenDir)."
+      : "Total searchable size budget for one Splunk Index (hot+warm+cold) until freeze. Sized as daily on-disk × retention_days × headroom. Freeze triggers on age OR size — whichever comes first. Archive on freeze is ON → after freeze, buckets move to the archive path (coldToFrozenDir).";
+    out.example = isFa
+      ? "۹۰ روز → frozenTimePeriodInSecs = ۷٬۷۷۶٬۰۰۰. حجم Index ≈ روزانه روی دیسک × ۹۰ × headroom؛ سپس آرشیو."
+      : "90 days → frozenTimePeriodInSecs = 7,776,000. Index volume ≈ daily on-disk × 90 × headroom; then archive.";
+    out.impact = isFa
+      ? "نگهداری طولانی‌تر → حجم Index بزرگ‌تر قبل از آرشیو. کوتاه‌تر → زودتر به آرشیو می‌رود. خاموش کردن آرشیو → به‌جای آرشیو، حذف."
+      : "Longer retention → larger Index volume before archive. Shorter → freezes to archive sooner. Turn Archive off → delete instead of archive.";
+  } else {
+    out.body = isFa
+      ? "سقف حجم searchable یک Index در Splunk (hot+warm+cold) تا زمان freeze. فرمول: ingest روزانه روی دیسک × روز × headroom. Freeze روی عمر یا حجم — هرکدام زودتر. آرشیو هنگام Freeze خاموش است → بعد از freeze داده حذف می‌شود (بدون coldToFrozenDir)."
+      : "Total searchable size budget for one Splunk Index (hot+warm+cold) until freeze. Sized as daily on-disk × retention_days × headroom. Freeze triggers on age OR size — whichever comes first. Archive on freeze is OFF → after freeze, buckets are deleted (no coldToFrozenDir).";
+    out.example = isFa
+      ? "۹۰ روز → frozenTimePeriodInSecs = ۷٬۷۷۶٬۰۰۰. حجم Index ≈ روزانه روی دیسک × ۹۰ × headroom؛ سپس حذف."
+      : "90 days → frozenTimePeriodInSecs = 7,776,000. Index volume ≈ daily on-disk × 90 × headroom; then delete.";
+    out.impact = isFa
+      ? "نگهداری طولانی‌تر → حجم Index بزرگ‌تر قبل از حذف. کوتاه‌تر → زودتر حذف می‌شود. روشن کردن آرشیو → به‌جای حذف، به مسیر آرشیو می‌رود."
+      : "Longer retention → larger Index volume before delete. Shorter → deletes sooner. Turn Archive on → move to archive path instead of delete.";
+  }
+  return out;
+}
+
 function renderTipHTML(tip) {
   if (!tip) return "";
   const links = (tip.links || [])
@@ -57,7 +94,7 @@ function positionTip(anchor) {
 
 function showTip(anchor) {
   const key = anchor.getAttribute("data-tip");
-  const tip = tipCatalog()[key];
+  const tip = enrichTip(key, tipCatalog()[key]);
   if (!tip || !tipPop) return;
   clearTimeout(tipHideTimer);
   tipAnchor = anchor;

@@ -176,6 +176,16 @@ h1 {
   gap: 0.18rem;
 }
 
+.index-volume-field {
+  align-content: start;
+}
+
+.index-volume-freeze {
+  margin-top: 0.15rem;
+  width: fit-content;
+  max-width: 100%;
+}
+
 .field-label {
   color: var(--ink);
   font-size: 0.9rem;
