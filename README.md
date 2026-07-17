@@ -95,7 +95,9 @@ splunk-capacity-planning/
 
 1. Settings → Pages → source: **GitHub Actions** (workflow [`scpcalc-pages.yml`](.github/workflows/scpcalc-pages.yml)), or deploy from branch `/` if you publish a built site locally.  
 2. Language defaults to **English**; use **فارسی** to switch.  
-3. Docs render via `view.html`. The calculator is also on Pages at **`/calc/`** (browser WASM; large `.wasm` built in CI, not committed). For LAN demos use `scpcalc serve` (SCPcalc binary) from a Release.
+3. Docs render via `view.html`. The calculator is also on Pages at **`/calc/`** (browser WASM; large `.wasm` built in CI, not committed). For LAN demos use `scpcalc serve` (SCPcalc binary) from a Release.  
+   Live: [docs hub](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/) · [calculator](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/).  
+   Use **Export URL** / **Import** (paste link) to share a full plan via the URL hash — see [`scpcalc/README.md`](scpcalc/README.md#save--export--import).
 
 ## Contributing
 

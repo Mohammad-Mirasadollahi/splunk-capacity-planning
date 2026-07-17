@@ -21,6 +21,7 @@ make build
 
 - Keep CLI and Web on the **same** `internal/calc` engine.  
 - Update `scpcalc/docs/` if formulas or API change.  
+- Plan **Export URL / Import** (`web/js/share-url.js`) must stay in sync with `snapshot()` / `applySnapshot()` in `plan-form.js`.  
 - Do not commit binaries (`bin/`, `dist/`).
 
 ## Pull requests

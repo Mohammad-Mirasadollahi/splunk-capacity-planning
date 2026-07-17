@@ -45,6 +45,39 @@ body.modal-open {
 
 .wizard-modal { width: min(980px, 100%); }
 
+.import-modal {
+  width: min(560px, 100%);
+  max-height: min(92vh, 640px);
+}
+
+.import-modal-body {
+  padding: 1rem 1.25rem 1.25rem;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.import-paste-field textarea {
+  width: 100%;
+  min-height: 6.5rem;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 0.7rem;
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--ink);
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  outline: none;
+  color-scheme: dark;
+  transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.import-paste-field textarea:focus {
+  border-color: rgba(63, 224, 197, 0.65);
+  box-shadow: 0 0 0 3px rgba(63, 224, 197, 0.18);
+}
+
 .detail-modal {
   width: min(900px, 100%);
   padding: 0 0 1rem;

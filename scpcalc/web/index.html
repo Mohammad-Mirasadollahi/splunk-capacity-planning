@@ -40,10 +40,8 @@
           <span class="cta-glow" aria-hidden="true"></span>
         </button>
         <button type="button" class="btn-ghost" id="btn-load-home" data-i18n="load">Load</button>
-        <label class="btn-ghost file-btn">
-          <span data-i18n="import">Import .json</span>
-          <input type="file" id="file-import" accept="application/json,.json" hidden>
-        </label>
+        <button type="button" class="btn-ghost" id="btn-export-url-home" data-i18n="export_url">Export URL</button>
+        <button type="button" class="btn-ghost" id="btn-import-home" data-i18n="import">Import</button>
       </div>
       <p id="save-msg" class="save-msg" hidden></p>
     </section>
@@ -54,7 +52,7 @@
         <h2 data-i18n="results">Results</h2>
         <div class="row-actions" style="margin:0">
           <button type="button" class="btn-ghost" id="btn-reopen-wizard" data-i18n="edit_wizard">Edit in wizard</button>
-          <button type="button" class="btn-ghost" id="btn-share-url-out" data-i18n="share_url">Copy share URL</button>
+          <button type="button" class="btn-ghost" id="btn-export-url-out" data-i18n="export_url">Export URL</button>
           <button type="button" class="btn-ghost" id="btn-dl-conf" data-i18n="download_conf">Download indexes.conf</button>
           <button type="button" class="btn-ghost" id="btn-copy-conf-home" data-i18n="copy">Copy indexes.conf</button>
           <button type="button" class="btn-ghost" id="btn-dl-design" data-i18n="download_design">Download design.txt</button>
@@ -360,7 +358,7 @@
             <button type="button" class="btn-ghost" id="btn-add" data-i18n="add_row">+ Add custom source</button>
             <button type="button" class="btn-ghost" id="btn-save" data-i18n="save">Save</button>
             <button type="button" class="btn-ghost" id="btn-export" data-i18n="export">Export .json</button>
-            <button type="button" class="btn-ghost" id="btn-share-url" data-i18n="share_url">Copy share URL</button>
+            <button type="button" class="btn-ghost" id="btn-export-url" data-i18n="export_url">Export URL</button>
           </div>
         </section>
 
@@ -386,6 +384,36 @@
           </button>
         </div>
       </footer>
+    </div>
+  </div>
+
+  <div class="modal-root" id="import-modal" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal glass import-modal" role="dialog" aria-modal="true" aria-labelledby="import-modal-title">
+      <header class="wizard-head">
+        <div>
+          <p class="eyebrow" data-i18n="import_modal_eyebrow">Restore a plan</p>
+          <h2 id="import-modal-title" data-i18n="import_modal_title">Import</h2>
+        </div>
+        <button type="button" class="btn-x modal-close" data-close-modal aria-label="Close">×</button>
+      </header>
+      <div class="import-modal-body">
+        <p class="hint" data-i18n="import_paste_hint">Paste an Export URL (or #scp1… hash) from docs / a colleague, or choose a .json file.</p>
+        <label class="field import-paste-field">
+          <span data-i18n="import_paste_label">Paste share URL</span>
+          <textarea id="import-url-input" rows="4" data-i18n-placeholder="import_paste_ph" placeholder="https://…/calc/#scp1z.…"></textarea>
+        </label>
+        <div class="row-actions">
+          <button type="button" class="cta" id="btn-import-url-apply" data-i18n="import_apply_url">
+            <span class="cta-label">Load from URL</span>
+            <span class="cta-glow" aria-hidden="true"></span>
+          </button>
+          <label class="btn-ghost file-btn">
+            <span data-i18n="import_json_file">Choose .json file</span>
+            <input type="file" id="file-import" accept="application/json,.json" hidden>
+          </label>
+        </div>
+      </div>
     </div>
   </div>
 

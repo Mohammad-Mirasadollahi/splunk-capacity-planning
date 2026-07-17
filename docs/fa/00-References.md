@@ -72,6 +72,8 @@
 00-References  →  01-Infrastructure  →  02-Storage (TB)  →  03-Disk/Media  →  04-IOPS  →  05-Index/Buckets/indexes.conf
 ```
 
+**ماشین‌حساب همراه (SCPcalc):** UI زنده در [`/calc/`](../../calc/) (GitHub Pages). با **خروجی لینک (Export URL)** لینک قابل اشتراک بسازید و آن را در این مستندات یا در **ورود (Import)** مرورگر دیگر Paste کنید. جزئیات: [`scpcalc/README.md`](../../scpcalc/README.md#save--export--import).
+
 ---
 
 ## 1) نگاشت اسناد محلی ↔ منابع رسمی

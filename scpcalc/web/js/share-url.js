@@ -62,13 +62,39 @@ export async function encodeSnapshotHash(snapshot) {
   return plain;
 }
 
-/** @returns {object|null} parsed snapshot */
-export async function decodeSnapshotHash(hash) {
-  let h = String(hash || "").replace(/^#/, "");
-  if (!h) return null;
-  // Allow accidental query leftovers after hash in some browsers
+/** Extract `#scp1…` / `#scp1z…` fragment from a full URL, hash, or pasted text. */
+export function extractShareFragment(raw) {
+  const text = String(raw || "").trim();
+  if (!text) return null;
+
+  // Full URL with hash
+  try {
+    if (/^https?:\/\//i.test(text) || text.startsWith("//")) {
+      const u = new URL(text.startsWith("//") ? `https:${text}` : text);
+      if (u.hash) {
+        const frag = u.hash.replace(/^#/, "");
+        if (frag.startsWith(HASH_PLAIN) || frag.startsWith(HASH_ZIP)) return frag;
+      }
+    }
+  } catch {
+    /* fall through */
+  }
+
+  // Hash-only or fragment pasted alone
+  let h = text.replace(/^#/, "");
+  const hashIdx = h.indexOf("#scp1");
+  if (hashIdx >= 0) h = h.slice(hashIdx + 1);
+  // Accidental query leftovers after hash in some browsers
   const amp = h.indexOf("&");
   if (amp >= 0) h = h.slice(0, amp);
+  if (h.startsWith(HASH_PLAIN) || h.startsWith(HASH_ZIP)) return h;
+  return null;
+}
+
+/** @returns {object|null} parsed snapshot */
+export async function decodeSnapshotHash(hash) {
+  const h = extractShareFragment(hash);
+  if (!h) return null;
 
   let compressed = false;
   let payload = "";
@@ -90,8 +116,7 @@ export async function decodeSnapshotHash(hash) {
 }
 
 export function hasShareHash(hash = location.hash) {
-  const h = String(hash || "").replace(/^#/, "");
-  return h.startsWith(HASH_PLAIN) || h.startsWith(HASH_ZIP);
+  return !!extractShareFragment(hash);
 }
 
 /** Build absolute share URL and write hash onto current location. */

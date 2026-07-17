@@ -140,7 +140,8 @@ See [`.env.example`](../.env.example).
 `web` package embeds `index.html`, `app.css` (imports `css/*.css`), `app.js`, `tips.js`, `js/*.js` (ES modules), `wasm/scpcalc.wasm` + `wasm_exec.js`, `vendor/chart.umd.min.js`.  
 UI prefers **in-browser Go WASM** (`js/engine.js`); falls back to `POST /api/v1/plan` when `serve` API is available.  
 Static Pages copy: `make pages-calc` → repo-root [`calc/`](../../calc/).
-UI entry is `app.js` (`type="module"`) which imports packages under `web/js/` (`i18n`, `sources`, `plan-form`, `conf-editor`, `charts`, `wizard`, `results`, …).  
+UI entry is `app.js` (`type="module"`) which imports packages under `web/js/` (`i18n`, `sources`, `plan-form`, `share-url`, `conf-editor`, `charts`, `wizard`, `results`, …).  
+Plan sharing: `js/share-url.js` encodes the UI snapshot (`version` + `globals` + `rows` + `step`) into `#scp1.` / `#scp1z.` (optional deflate-raw + base64url). **Export URL** copies the link; **Import** accepts paste of a full URL/hash or a `.json` snapshot. Boot + `hashchange` call the same decode path.  
 `server.NewMux` serves them with `http.FileServer(http.FS(...))`.
 
 ## 8. Testing

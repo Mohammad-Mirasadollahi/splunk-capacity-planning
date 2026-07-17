@@ -4,6 +4,7 @@
 
 - Provide a **portable**, **cross-platform**, **open-source** calculator for Splunk capacity / retention planning.
 - Expose the same engine via a **simple CLI** and a **local web GUI** (wizard + charts + conf editor).
+- Allow **shareable plan URLs** (Export URL / Import paste) for docs and hand-off without a server.
 - Align math with the monorepo knowledge pack (`docs/en/01`–`05`) and official Splunk planning ratios.
 - Support **multi-index** plans, **topology** (indexer cluster / SHC / SmartStore), **ES / ITSI** awareness, and draft **`indexes.conf`**.
 - Be **GitHub-ready**: clear module layout, MIT license, CI, and binary Releases.

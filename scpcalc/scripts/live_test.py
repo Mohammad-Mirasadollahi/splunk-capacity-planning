@@ -880,12 +880,13 @@ def main() -> int:
 
         _, share_js = http_bytes("/js/share-url.js")
         sj = share_js.decode("utf-8", errors="replace")
-        ok("ui.share.url_hash", "scp1." in sj and "encodeSnapshotHash" in sj and "decodeSnapshotHash" in sj)
+        ok("ui.share.url_hash", "scp1." in sj and "encodeSnapshotHash" in sj and "extractShareFragment" in sj)
 
         _, app_js = http_bytes("/app.js")
         aj = app_js.decode("utf-8", errors="replace")
-        ok("ui.share.wired", "share-url.js" in aj and "tryLoadFromShareURL" in aj and "btn-share-url" in aj)
-        ok("ui.share.button", 'id="btn-share-url"' in html and 'id="btn-share-url-out"' in html)
+        ok("ui.share.wired", "share-url.js" in aj and "tryLoadFromShareURL" in aj and "btn-export-url" in aj)
+        ok("ui.share.button", 'id="btn-export-url-home"' in html and 'id="btn-import-home"' in html and 'id="import-modal"' in html)
+        ok("ui.share.import_paste", 'id="import-url-input"' in html and "applyPlanFromShareText" in aj)
         # results.js should surface node plan
         _, results_js = http_bytes("/js/results.js")
         rj = results_js.decode("utf-8", errors="replace")

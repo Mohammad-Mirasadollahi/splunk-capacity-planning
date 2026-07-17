@@ -68,6 +68,8 @@
 00-References  →  01-Infrastructure  →  02-Storage (TB)  →  03-Disk/Media  →  04-IOPS  →  05-Index/Buckets/indexes.conf
 ```
 
+**Companion calculator (SCPcalc):** open the live UI at [`/calc/`](../../calc/) (GitHub Pages). Use **Export URL** to copy a shareable link with your plan in the hash, then paste that link into these docs or into **Import** on another browser. Details: [`scpcalc/README.md`](../../scpcalc/README.md#save--export--import).
+
 ---
 
 ## 1) Local Docs ↔ Official Sources Map

@@ -247,11 +247,23 @@ cat plan.json | ./bin/scpcalc calc --plan - --json
 
 ## Web UI
 
-1. `./bin/scpcalc serve` → open `http://127.0.0.1:12345`
+1. `./bin/scpcalc serve` → open `http://127.0.0.1:12345`  
+   (or GitHub Pages: `https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/`)
 2. **Start wizard:** mode → topology (cluster / apps / advanced) → retention → sources → review → **Calculate**
 3. **Results tabs:** Overview (metrics + node-count rationale) · Charts · Design · Resources · Settings · Per index · indexes.conf (editor / rename)
 4. Language toggle **EN / FA**; hover dotted labels for formula + example + official links
 5. Download design text / `indexes.conf` from the results toolbar
+
+### Save / Export / Import
+
+| Action | Where | What it does |
+|---|---|---|
+| **Save** / **Load** | Wizard sources · hero | Browser `localStorage` on this device |
+| **Export .json** | Wizard sources | Download a full plan snapshot file |
+| **Export URL** | Hero · wizard · results | Copies a shareable link with the plan encoded in the URL hash (`#scp1…` / `#scp1z…`) — paste into docs or send to a colleague |
+| **Import** | Hero | Paste an Export URL / hash **or** choose a `.json` file |
+
+Opening an Export URL (or pasting it in **Import**) restores globals + sources and opens the wizard. Large plans that do not fit in a URL should use **Export .json**.
 
 Wizard fields match CLI / API (`concurrent_users`, clusters, ES/ITSI, DMA, SmartStore, compression, archive, disk budgets, …).
 

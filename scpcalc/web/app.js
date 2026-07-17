@@ -4,7 +4,7 @@
 import { state, SAVE_KEY, STEPS, reduceMotion } from "./js/state.js";
 import { I18N, lang, setI18nHooks, bindLangSwitcher, t } from "./js/i18n.js";
 import { initTips, bindTips, refreshOpenTip } from "./js/tips-ui.js";
-import { bindModalChrome, closeModal } from "./js/modal.js";
+import { bindModalChrome, closeModal, openModal } from "./js/modal.js";
 import { initTabBars, setTabsHooks } from "./js/tabs.js";
 import { bindSourcesTable, rowFromPreset, renderRows } from "./js/sources.js";
 import { bindPlanFormChrome, snapshot, applySnapshot, fillReview } from "./js/plan-form.js";
@@ -18,6 +18,7 @@ import {
   applyShareHashToLocation,
   copyText,
   decodeSnapshotHash,
+  extractShareFragment,
   hasShareHash,
 } from "./js/share-url.js";
 
@@ -28,7 +29,7 @@ function flashSave(msg) {
   saveMsg.textContent = msg;
   setTimeout(() => {
     saveMsg.hidden = true;
-  }, 2400);
+  }, 2800);
 }
 
 function bindAtmosphere() {
@@ -54,14 +55,25 @@ async function copyShareURL() {
   }
 }
 
+async function applyPlanFromShareText(raw, { openAtStep } = {}) {
+  const frag = extractShareFragment(raw);
+  if (!frag) throw new Error(t("share_invalid"));
+  const data = await decodeSnapshotHash(frag);
+  if (!data) throw new Error(t("share_invalid"));
+  applySnapshot(data);
+  if (location.hash.replace(/^#/, "") !== frag) {
+    history.replaceState(null, "", `${location.pathname}${location.search}#${frag}`);
+  }
+  flashSave(t("share_loaded"));
+  const step = typeof openAtStep === "number" ? openAtStep : typeof state.step === "number" ? state.step : 0;
+  openWizard(step);
+  return true;
+}
+
 async function tryLoadFromShareURL() {
   if (!hasShareHash()) return false;
   try {
-    const data = await decodeSnapshotHash(location.hash);
-    if (!data) return false;
-    applySnapshot(data);
-    flashSave(t("share_loaded"));
-    openWizard(typeof state.step === "number" ? state.step : 0);
+    await applyPlanFromShareText(location.hash);
     return true;
   } catch (ex) {
     flashSave(t("share_invalid") + " " + String(ex.message || ex));
@@ -104,11 +116,28 @@ function bindPersistence() {
     URL.revokeObjectURL(a.href);
   });
 
-  document.getElementById("btn-share-url")?.addEventListener("click", () => {
-    void copyShareURL();
+  ["btn-export-url-home", "btn-export-url", "btn-export-url-out"].forEach((id) => {
+    document.getElementById(id)?.addEventListener("click", () => {
+      void copyShareURL();
+    });
   });
-  document.getElementById("btn-share-url-out")?.addEventListener("click", () => {
-    void copyShareURL();
+
+  const importModal = document.getElementById("import-modal");
+  document.getElementById("btn-import-home")?.addEventListener("click", () => {
+    const ta = document.getElementById("import-url-input");
+    if (ta) ta.value = "";
+    openModal(importModal);
+    setTimeout(() => ta?.focus(), 50);
+  });
+
+  document.getElementById("btn-import-url-apply")?.addEventListener("click", async () => {
+    const raw = document.getElementById("import-url-input")?.value || "";
+    try {
+      await applyPlanFromShareText(raw);
+      closeModal(importModal);
+    } catch (ex) {
+      flashSave(String(ex.message || ex));
+    }
   });
 
   document.getElementById("file-import")?.addEventListener("change", async (e) => {
@@ -117,6 +146,7 @@ function bindPersistence() {
     try {
       applySnapshot(JSON.parse(await f.text()));
       flashSave(I18N[lang()].loaded);
+      closeModal(importModal);
       openWizard(0);
     } catch (ex) {
       flashSave(String(ex.message || ex));
