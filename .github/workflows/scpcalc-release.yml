@@ -40,6 +40,13 @@ jobs:
 
             - **Binaries** — CLI + embedded Web UI (`serve`)
             - **WASM** — `scpcalc-*-wasm.gz` / `.wasm` for static browser hosting (not stored in git)
+            - **GitHub Package (container)** — `ghcr.io/mohammad-mirasadollahi/scpcalc:${{ steps.ver.outputs.version }}`
+              (published by workflow `scpcalc-package.yml` on the same tag)
+
+            ```bash
+            docker pull ghcr.io/mohammad-mirasadollahi/scpcalc:${{ steps.ver.outputs.version }}
+            docker run --rm -p 12345:12345 ghcr.io/mohammad-mirasadollahi/scpcalc:${{ steps.ver.outputs.version }}
+            ```
 
             Docs: `scpcalc/docs/` · Knowledge pack: `docs/en/` · Static UI deploy: Pages `/calc/`
         env:

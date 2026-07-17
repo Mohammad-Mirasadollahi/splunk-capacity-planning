@@ -7,7 +7,7 @@ RELEASES_DIR := releases
 LDFLAGS := -X main.version=$(VERSION)
 GO ?= go
 
-.PHONY: test build dist clean live-test wasm html pages-calc release
+.PHONY: test build dist clean live-test wasm html pages-calc release docker
 
 test:
 	$(GO) test ./...
@@ -34,6 +34,10 @@ pages-calc: html wasm
 release:
 	chmod +x scripts/make_release.sh
 	GO=$(GO) bash scripts/make_release.sh $(VERSION)
+
+# Local container image (CI publishes to ghcr.io/mohammad-mirasadollahi/scpcalc).
+docker: html
+	docker build -t scpcalc:$(VERSION) -t scpcalc:latest --build-arg VERSION=$(VERSION) .
 
 dist: release
 	mkdir -p $(DIST_DIR)

@@ -36,6 +36,24 @@ Same engine for CLI, `serve`, and in-browser WASM: multi-index storage sizing, *
 2. Download `scpcalc-<os>-<arch>` and verify `SHA256SUMS`.
 3. `chmod +x scpcalc-*` (Unix) and run.
 
+### GitHub Package (container)
+
+Published to **GitHub Container Registry** on each `scpcalc-v*` tag (and via Actions → **scpcalc Package (GHCR)** → Run workflow):
+
+[`ghcr.io/mohammad-mirasadollahi/scpcalc`](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning/pkgs/container/scpcalc)
+
+```bash
+docker pull ghcr.io/mohammad-mirasadollahi/scpcalc:latest
+docker run --rm -p 12345:12345 ghcr.io/mohammad-mirasadollahi/scpcalc:latest
+# CLI without UI:
+docker run --rm ghcr.io/mohammad-mirasadollahi/scpcalc:0.1.2 calc --plan - --json < examples/plan.sample.json
+
+# Local image (optional):
+make docker
+```
+
+If the package is private the first time, make it public: GitHub → **Packages** → `scpcalc` → Package settings → Change visibility.
+
 ### Build from source
 
 ```bash
@@ -346,11 +364,13 @@ make html          # assemble web/html/ partials → web/index.html
 make build         # html + wasm → bin/scpcalc
 make live-test     # full CLI + HTTP API + UI asset feature matrix → live-test.json
 make dist          # cross-compile → dist/
+make docker        # local container image tagged scpcalc:$(VERSION)
 ```
 
 `make live-test` runs [`scripts/live_test.py`](scripts/live_test.py): builds assertions for node counts (SHC/RF/ES/ITSI), SmartStore, DMA, archive, capacity/total modes, `--plan`/`--conf-out`, `/api/v1/plan`, static modules, and plan-form fields.
 
 Edit the UI markup under `web/html/` (partials + `index.html.tmpl`); `make html` / `make build` regenerates `web/index.html` for embed and Pages.
+
 | Package | Focus |
 |---|---|
 | `cmd` | CLI `calc` / `serve` (full plan parity with UI) |

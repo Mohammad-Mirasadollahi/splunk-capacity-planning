@@ -23,6 +23,7 @@ Estimates searchable storage / retention MB fields, recommends **N_SH / N_IDX** 
 | **Static Web UI (WASM)** | [`calc/`](calc/) — built in CI for Pages at `/calc/` (WASM **not** committed) |
 | Design | [`scpcalc/docs/`](scpcalc/docs/) (HLD · LLD · Logic · Language) |
 | Download | GitHub **Releases** (tag `scpcalc-v*`) — create with [`./tools/release.sh`](tools/release.sh) |
+| **GitHub Package** | Container: [`ghcr.io/mohammad-mirasadollahi/scpcalc`](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning/pkgs/container/scpcalc) |
 | Local build | `cd scpcalc && make test && make wasm && make build` |
 
 ```bash
@@ -35,10 +36,16 @@ cd scpcalc && make build
 
 ./bin/scpcalc calc --plan plan.json --json --conf-out indexes.conf
 
+# GitHub Package (container) — CLI + Web UI on port 12345:
+docker pull ghcr.io/mohammad-mirasadollahi/scpcalc:latest
+docker run --rm -p 12345:12345 ghcr.io/mohammad-mirasadollahi/scpcalc:latest
+# or: docker run --rm ghcr.io/mohammad-mirasadollahi/scpcalc:latest calc --daily-gb 100 --json
+
 # Static site for Pages (no backend; WASM built in CI, not committed):
 make pages-calc                     # → ../calc/ (gitignored except README)
 make release                        # → scpcalc/releases/scpcalc-v* (gitignored)
 # Tag scpcalc-v0.1.0 → GitHub Actions attaches binaries + WASM to the Release
+# and publishes the container package to GHCR
 ```
 
 Config: [`scpcalc/.env.example`](scpcalc/.env.example) → `.env` (`SCPCALC_HOST` / `SCPCALC_PORT`, default port **12345**).
@@ -73,7 +80,8 @@ splunk-capacity-planning/
     ├── bilingual-sync.yml
     ├── scpcalc-ci.yml
     ├── scpcalc-pages.yml              ← docs + /calc/ deploy
-    └── scpcalc-release.yml
+    ├── scpcalc-release.yml            ← binaries on tag scpcalc-v*
+    └── scpcalc-package.yml            ← GitHub Package (GHCR container)
 ```
 
 ## Quick start

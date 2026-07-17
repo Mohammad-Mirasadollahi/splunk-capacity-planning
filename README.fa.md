@@ -27,7 +27,14 @@
 | **UI استاتیک (WASM)** | [`calc/`](calc/) — در CI برای Pages در `/calc/` |
 | طراحی | [`scpcalc/docs/`](scpcalc/docs/) |
 | دانلود | GitHub **Releases** (تگ `scpcalc-v*`) — ساخت با [`./tools/release.sh`](tools/release.sh) |
+| **GitHub Package** | کانتینر: [`ghcr.io/mohammad-mirasadollahi/scpcalc`](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning/pkgs/container/scpcalc) |
 | ساخت محلی | `cd scpcalc && make test && make wasm && make build` |
+
+```bash
+# پکیج کانتینر (GitHub Packages / GHCR)
+docker pull ghcr.io/mohammad-mirasadollahi/scpcalc:latest
+docker run --rm -p 12345:12345 ghcr.io/mohammad-mirasadollahi/scpcalc:latest
+```
 
 ## زبان
 

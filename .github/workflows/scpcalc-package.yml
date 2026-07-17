@@ -1,0 +1,105 @@
+name: scpcalc Package (GHCR)
+
+# Publish SCPcalc container image to GitHub Packages (Container registry).
+# Image: ghcr.io/mohammad-mirasadollahi/scpcalc
+#
+# Triggers:
+#   - Tag push scpcalc-v*
+#   - Manual workflow_dispatch (version defaults to scpcalc/VERSION)
+
+on:
+  push:
+    tags:
+      - "scpcalc-v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Package version (empty = scpcalc/VERSION)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: scpcalc-package-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  IMAGE_NAME: scpcalc
+  REGISTRY: ghcr.io
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: ver
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ inputs.version }}" ]]; then
+            VERSION="${{ inputs.version }}"
+          elif [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME#scpcalc-v}"
+            VERSION="${VERSION#scpcalc-}"
+          else
+            VERSION="$(tr -d '[:space:]' < scpcalc/VERSION)"
+          fi
+          VERSION="${VERSION#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "VERSION=$VERSION"
+
+      - name: Image name (lowercase)
+        id: img
+        run: |
+          OWNER="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
+          echo "owner=$OWNER" >> "$GITHUB_OUTPUT"
+          echo "image=${{ env.REGISTRY }}/$OWNER/${{ env.IMAGE_NAME }}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.img.outputs.image }}
+          tags: |
+            type=raw,value=${{ steps.ver.outputs.version }}
+            type=raw,value=latest,enable=${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' }}
+            type=sha,prefix=sha-,format=short
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: scpcalc
+          file: scpcalc/Dockerfile
+          push: true
+          build-args: |
+            VERSION=${{ steps.ver.outputs.version }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: false
+
+      - name: Summary
+        run: |
+          {
+            echo "## SCPcalc GitHub Package"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| **Image** | \`${{ steps.img.outputs.image }}\` |"
+            echo "| **Version** | \`${{ steps.ver.outputs.version }}\` |"
+            echo "| **Pull** | \`docker pull ${{ steps.img.outputs.image }}:${{ steps.ver.outputs.version }}\` |"
+            echo "| **Run UI** | \`docker run --rm -p 12345:12345 ${{ steps.img.outputs.image }}:${{ steps.ver.outputs.version }}\` |"
+            echo ""
+            echo "Packages: https://github.com/${{ github.repository }}/pkgs/container/${{ env.IMAGE_NAME }}"
+          } >> "$GITHUB_STEP_SUMMARY"

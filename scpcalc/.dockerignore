@@ -1,0 +1,11 @@
+bin/
+dist/
+releases/
+live-*.json
+cli-sample.json
+.env
+*.wasm
+web/wasm/scpcalc.wasm
+.git/
+.github/
+**/*_test.go
