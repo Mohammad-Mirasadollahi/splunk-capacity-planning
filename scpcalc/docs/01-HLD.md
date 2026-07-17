@@ -103,7 +103,7 @@ Legacy `mode` on the wire is optional and ignored for validation.
 
 - One **static** binary per OS/arch (`scpcalc-v*` Releases).
 - No Node/Python runtime required to run the calculator.
-- UI assets (HTML/CSS/JS + Chart.js + tips) are **`embed`ded** (no CDN fonts — system font stack).
+- UI assets (HTML/CSS/JS + Chart.js + tips) are **`embed`ded**. The hosted Pages UI loads display fonts from Google Fonts when online; local/offline embeds fall back to system fonts.
 - Default listen: **`0.0.0.0:12345`** (override with `.env` / flags).
 
 ## 8. License

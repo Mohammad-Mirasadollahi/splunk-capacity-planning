@@ -24,7 +24,7 @@ Same engine for CLI, `serve`, and in-browser WASM: multi-index storage sizing, *
 - **Topology:** indexer cluster (RF/SF), SHC (+ deployer), SmartStore (local cache + remote size), ES, ITSI
 - **Storage:** compression from RF/SF or measured `C`; DMA/tstats; optional frozen archive (`coldToFrozenDir`)
 - **Conf:** per-peer MB fields when `N_IDX > 1`; volume stanzas; downloadable draft
-- **UI:** wizard (EN/FA), charts, tips with official Splunk links, conf editor — fully offline (embedded Chart.js, system fonts)
+- **UI:** wizard (EN/FA) with plain-language labels, charts, tips with official Splunk links, conf editor; share via Export URL / Import
 
 ---
 
@@ -48,13 +48,13 @@ make build
 
 ### Releases (binaries + WASM — not in git)
 
-Version file: [`VERSION`](VERSION) (currently `0.1.0`).
+Version file: [`VERSION`](VERSION) (currently `0.1.1`).
 
 ```bash
 cd scpcalc
-make release              # → releases/scpcalc-v0.1.0/ (gitignored)
+make release              # → releases/scpcalc-v0.1.1/ (gitignored)
 # Publish on GitHub by tagging:
-git tag scpcalc-v0.1.0 && git push origin scpcalc-v0.1.0
+git tag scpcalc-v0.1.1 && git push origin scpcalc-v0.1.1
 # Actions builds binaries + WASM and attaches them to the Release.
 ```
 
@@ -268,7 +268,7 @@ cat plan.json | ./bin/scpcalc calc --plan - --json
 
 Opening an Export URL (or pasting it in **Import**) restores globals + sources and opens the wizard. Large plans that do not fit in a URL should use **Export .json**.
 
-Wizard fields match CLI / API (`concurrent_users`, clusters, ES/ITSI, DMA, SmartStore, compression, archive, disk budgets, …).
+Wizard fields use clear labels (for example “Number of indexers” with “Leave 0 to calculate automatically”). Technical tip popovers still expose formulas and official Splunk links. Field names in JSON/CLI remain the API identifiers (`n_idx`, `rf`, …).
 
 ---
 

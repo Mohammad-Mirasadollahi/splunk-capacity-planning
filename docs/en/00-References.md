@@ -68,7 +68,7 @@
 00-References  →  01-Infrastructure  →  02-Storage (TB)  →  03-Disk/Media  →  04-IOPS  →  05-Index/Buckets/indexes.conf
 ```
 
-**Companion calculator (SCPcalc):** open the live UI at [`/calc/`](../../calc/) (GitHub Pages). Fill topology, retention, optional totals/disk budgets, and sources in one wizard (no exclusive “mode”). Use **Export URL** to share a plan link, or **Import** to paste it back. Details: [`scpcalc/README.md`](../../scpcalc/README.md#save--export--import).
+**Companion calculator (SCPcalc):** open the live UI at [GitHub Pages `/calc/`](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/). Fill topology, retention, optional totals/disk budgets, and sources in one wizard (no exclusive “mode”). Use **Export URL** to share a plan link, or **Import** to paste it back. Details: [`scpcalc/README.md`](../../scpcalc/README.md#save--export--import) · [`CHANGELOG.md`](../../CHANGELOG.md).
 
 ---
 

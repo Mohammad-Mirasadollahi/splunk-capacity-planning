@@ -72,7 +72,7 @@
 00-References  →  01-Infrastructure  →  02-Storage (TB)  →  03-Disk/Media  →  04-IOPS  →  05-Index/Buckets/indexes.conf
 ```
 
-**ماشین‌حساب همراه (SCPcalc):** UI زنده در [`/calc/`](../../calc/) (GitHub Pages). توپولوژی، نگهداری، حجم کل/دیسک (اختیاری) و منابع را در یک ویزارد پر کنید (بدون Mode جدا). با **خروجی لینک** پلن را به اشتراک بگذارید یا در **ورود** Paste کنید. جزئیات: [`scpcalc/README.md`](../../scpcalc/README.md#save--export--import).
+**ماشین‌حساب همراه (SCPcalc):** UI زنده در [GitHub Pages `/calc/`](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/). توپولوژی، نگهداری، حجم کل/دیسک (اختیاری) و منابع را در یک ویزارد پر کنید (بدون Mode جدا). با **خروجی لینک** پلن را به اشتراک بگذارید یا در **ورود** Paste کنید. جزئیات: [`scpcalc/README.md`](../../scpcalc/README.md#save--export--import) · [`CHANGELOG.md`](../../CHANGELOG.md).
 
 ---
 

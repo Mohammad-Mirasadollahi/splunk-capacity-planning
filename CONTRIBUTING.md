@@ -26,4 +26,6 @@ make build
 
 ## Pull requests
 
-Use the PR template checklist. Tags like `scpcalc-v0.1.0` publish Release binaries via GitHub Actions.
+Use the PR template checklist. Tags like `scpcalc-v0.1.1` publish Release binaries via GitHub Actions.
+
+Record user-facing changes in [`CHANGELOG.md`](CHANGELOG.md).

@@ -124,7 +124,7 @@ Design “need” uses **pre-cap cluster-wide** budgets; conf `maxVolumeDataSize
 
 ## 8. Capacity reverse
 
-Requires `available_hot_gb` and/or `available_cold_gb` (summaries alone cannot reverse searchable ingest):
+Requires `available_hot_gb` and/or `available_cold_gb` (summaries alone cannot reverse searchable ingest). Computed whenever those budgets are set — no exclusive planning mode:
 
 ```text
 AvailableSearchable = available_hot_gb + available_cold_gb

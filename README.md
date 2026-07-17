@@ -4,9 +4,11 @@ Official Splunk **Capacity Planning** guidance (Infrastructure + Storage), extra
 
 **Designed by [Mohammad Mirasadollahi](https://github.com/Mohammad-Mirasadollahi)** · **GitHub:** [Mohammad-Mirasadollahi/splunk-capacity-planning](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning)
 
+**Live site (GitHub Pages):** [Documentation](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/) · [SCPcalc calculator](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/)
+
 Named after Splunk’s Capacity Planning Manual — see [Introduction to capacity planning](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/IntroductiontocapacityplanningforSplunkEnterprise).
 
-**License:** [MIT](LICENSE)
+**License:** [MIT](LICENSE) · **Changelog:** [CHANGELOG.md](CHANGELOG.md)
 
 ## Calculator (SCPcalc)
 
@@ -62,7 +64,7 @@ python3 tools/add_lang_switcher.py   # if you added a new paired file
 
 ```text
 splunk-capacity-planning/
-├── LICENSE / CONTRIBUTING.md / README.md
+├── LICENSE / CONTRIBUTING.md / README.md / CHANGELOG.md
 ├── index.html / view.html / assets/   ← docs language hub (Pages)
 ├── docs/en + docs/fa                  ← knowledge pack
 ├── tools/                             ← doc sync scripts
@@ -70,6 +72,7 @@ splunk-capacity-planning/
 └── .github/workflows/
     ├── bilingual-sync.yml
     ├── scpcalc-ci.yml
+    ├── scpcalc-pages.yml              ← docs + /calc/ deploy
     └── scpcalc-release.yml
 ```
 
