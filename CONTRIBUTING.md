@@ -36,6 +36,6 @@ Create a GitHub Release (binaries + WASM) with the one-click helper from the rep
 
 It asks **why** you are releasing (product help for patch/minor/major), then bumps `scpcalc/VERSION`, updates `CHANGELOG.md`, runs tests, commits, tags `scpcalc-vX.Y.Z`, and pushes. GitHub Actions builds and attaches the artifacts.
 
-Use the PR template checklist. Tags like `scpcalc-v0.1.1` publish Release binaries via GitHub Actions.
+Use the PR template checklist. Tags like `scpcalc-v0.1.2` publish Release binaries via GitHub Actions.
 
 Record user-facing changes in [`CHANGELOG.md`](CHANGELOG.md).

@@ -48,7 +48,7 @@ make build
 
 ### Releases (binaries + WASM — not in git)
 
-Version file: [`VERSION`](VERSION) (currently `0.1.1`).
+Version file: [`VERSION`](VERSION) (currently `0.1.2`).
 
 **One-click release** (from repo root) — product help asks *why*, then bumps version, CHANGELOG, commit, tag, and push:
 
@@ -64,9 +64,9 @@ Manual equivalent:
 
 ```bash
 cd scpcalc
-make release              # → releases/scpcalc-v0.1.1/ (gitignored)
+make release              # → releases/scpcalc-v0.1.2/ (gitignored)
 # Publish on GitHub by tagging:
-git tag scpcalc-v0.1.1 && git push origin scpcalc-v0.1.1
+git tag scpcalc-v0.1.2 && git push origin scpcalc-v0.1.2
 # Actions builds binaries + WASM and attaches them to the Release.
 ```
 
