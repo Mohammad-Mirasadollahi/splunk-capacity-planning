@@ -2,6 +2,10 @@
 
 All notable changes to this repository are documented here.
 
+## 0.1.2 — 2026-07-17
+
+- One-click release helper, bilingual README, Search Head concurrent-search sizing, and docs language mode
+
 ## 0.1.1 — 2026-07-17
 
 ### SCPcalc (calculator)
