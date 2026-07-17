@@ -48,7 +48,7 @@ Topology (users × searches × volume → N_SH / N_IDX):
   --indexer-cluster
   --search-head-cluster
   --rf INT --sf INT        used when indexer-cluster (defaults 3/2)
-  --n-idx INT --n-sh INT   0 = auto from table + search-core + floors
+  --n-idx INT --n-sh INT   0 = auto; with SHC: 1 OK (interim), 2 rejected→3, ≥3 OK
   --smartstore [--remote-path STRING]
   --has-es --has-itsi
   --es-smartstore          alias: has-es + smartstore
