@@ -50,9 +50,8 @@ func TestModeTotalScalesSources(t *testing.T) {
 	}
 }
 
-func TestCapacityModeDiskOnly(t *testing.T) {
+func TestCapacityDiskOnlyWithoutMode(t *testing.T) {
 	res, err := calc.CalculatePlan(model.PlanInput{
-		Mode:            model.ModeCapacity,
 		AvailableHotGB:  1000,
 		AvailableColdGB: 2000,
 		RetentionDays:   90,
@@ -62,10 +61,13 @@ func TestCapacityModeDiskOnly(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if res.Mode != model.ModeCapacity {
+		t.Fatalf("expected inferred capacity, got %q", res.Mode)
+	}
 	if res.Design == nil || res.Design.MaxDailyGBFromDisk <= 0 {
 		t.Fatalf("expected max daily from disk, design=%+v", res.Design)
 	}
-	if !strings.Contains(strings.Join(res.Warnings, " "), "capacity mode") {
+	if !strings.Contains(strings.Join(res.Warnings, " "), "disk budgets without ingest") {
 		t.Fatalf("warnings=%v", res.Warnings)
 	}
 }

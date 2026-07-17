@@ -2,27 +2,27 @@
 window.SCP_TIPS = {
   en: {
     mode_sources: {
-      title: "Mode: sources + volume each",
+      title: "Per-source volume",
       formula: "Daily_Raw_GB(source) = daily_gb  OR  EPS × 86400 × event_bytes / 1024³",
-      body: "Enable each log family you collect and enter its daily license volume (preferred) or EPS with average event size. Totals sum across enabled rows. daily_gb wins if both are set.",
+      body: "Enable each log family and enter daily license volume (preferred) or EPS with average event size. Totals sum across enabled rows. daily_gb wins if both are set. Combine freely with total_daily_gb and/or disk budgets on the Volumes tab.",
       example: "Windows 80 GB/day + Linux 20 GB/day → Total raw = 100 GB/day.",
       links: [
         { label: "Estimate your storage requirements", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Estimateyourstoragerequirements" },
       ],
     },
     mode_total: {
-      title: "Mode: if this much log arrives",
+      title: "Total daily ingest",
       formula: "Use total_daily_gb as D; optional source rows are scaled so Σ sources = total_daily_gb",
-      body: "Enter the expected overall daily ingest. If you also fill sources, the calculator scales them to match the total so index split stays proportional.",
+      body: "Optional overall daily ingest on the Volumes tab. If you also fill sources, they scale to match the total. If sources are empty, index main is synthesized.",
       example: "total_daily_gb=500 with windows:linux = 4:1 → ~400 + 100 GB/day after scale.",
       links: [
         { label: "Estimate your storage requirements", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Estimateyourstoragerequirements" },
       ],
     },
     mode_capacity: {
-      title: "Mode: available disk (buckets)",
+      title: "Available disk (buckets)",
       formula: "MaxDaily ≈ Available_(hot+cold) / (Comp × RetentionDays × Headroom)",
-      body: "Provide hot and/or cold disk budgets (summaries optional). Reverse max daily uses Available_(hot+cold) / (Comp × Retention × Headroom). Checks whether calculated need fits.",
+      body: "Optional hot/cold disk budgets (summaries optional). Used for fit checks whenever set; reverse max daily uses Available_(hot+cold) / (Comp × Retention × Headroom). Works with source rows or total_daily_gb.",
       example: "Available hot 10 TB, cold 20 TB, Comp=0.5, R=90, headroom=1.2 → rough max daily from total searchable disk.",
       links: [
         { label: "Configure index storage", url: "https://docs.splunk.com/Documentation/Splunk/latest/Indexer/Configureindexstorage" },
@@ -286,7 +286,7 @@ window.SCP_TIPS = {
       title: "available_cold_gb",
       formula: "Cold need ≈ Σ (maxTotal − homePath) MB",
       body: "Budget for cold buckets across indexes after hot/warm days.",
-      example: "Used in capacity mode reverse sizing and fit badges.",
+      example: "Used in disk-budget reverse sizing and fit badges.",
       links: [
         { label: "How the indexer stores indexes", url: "https://docs.splunk.com/Documentation/Splunk/latest/Indexer/HowSplunkstoresindexes" },
       ],
@@ -487,7 +487,7 @@ window.SCP_TIPS = {
     "Max daily from disk": {
       title: "Max daily from disk",
       formula: "≈ AvailableSearchable / (Comp × Retention × Headroom)",
-      body: "Capacity-mode reverse estimate: largest daily ingest that fits your disk budgets at the chosen retention.",
+      body: "Disk-budget reverse estimate: largest daily ingest that fits your disk budgets at the chosen retention.",
       example: "Useful when disk is fixed and ingest is the unknown.",
       links: [
         { label: "Estimate storage", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Estimateyourstoragerequirements" },
@@ -500,9 +500,9 @@ window.SCP_TIPS.fa = JSON.parse(JSON.stringify(window.SCP_TIPS.en));
 (function localizeFa() {
   const fa = window.SCP_TIPS.fa;
   const map = {
-    mode_sources: ["حالت: منابع + حجم هر کدام", "برای هر منبع daily_gb (ترجیح) یا EPS×اندازه رویداد را بدهید. مجموع ردیف‌های فعال = حجم کل. اگر هر دو پر باشد daily_gb غالب است."],
-    mode_total: ["حالت: اگر اینقدر لاگ برسد", "total_daily_gb حجم کل روزانه است. اگر منابع هم پر شوند، برای رسیدن به total اسکیل می‌شوند."],
-    mode_capacity: ["حالت: دیسک موجود باکت‌ها", "بودجه hot/cold/summaries را بدهید؛ تناسب دیسک و سقف حجم روزانه/retention محاسبه می‌شود."],
+    mode_sources: ["حجم هر منبع", "برای هر منبع daily_gb یا EPS بدهید. می‌توانید با total_daily_gb و بودجه دیسک در تب Volumes ترکیب کنید."],
+    mode_total: ["حجم کل روزانه", "اختیاری روی تب Volumes؛ با منابع اسکیل می‌شود یا ایندکس main ساخته می‌شود."],
+    mode_capacity: ["دیسک موجود باکت‌ها", "بودجه hot/cold اختیاری؛ تناسب دیسک و سقف روزانه/retention — قابل ترکیب با منابع/total."],
     indexer_cluster: ["کلاستر ایندکسر", "روشن = RF/SF فعال و ضریب 0.15×RF+0.35×SF. خاموش = برنامه‌ریزی standalone با Comp≈0.5."],
     rf: ["Replication Factor", "تعداد کپی rawdata در کلاستر. SF نباید از RF بیشتر باشد."],
     sf: ["Search Factor", "تعداد کپی searchable دارای TSIDX. هزینه دیسک بیشتر از کپی فقط-raw است."],

@@ -400,7 +400,7 @@ func BuildDesign(p model.PlanInput, out model.PlanResult) model.Design {
 		comp = 0.5
 	}
 	availSearchable := p.AvailableHotGB + p.AvailableColdGB
-	if availSearchable > 0 && p.Mode == model.ModeCapacity {
+	if availSearchable > 0 {
 		if out.TotalDailyRawGB > 0 {
 			dailyOnDisk := out.TotalDailyRawGB * comp
 			if dailyOnDisk > 0 {

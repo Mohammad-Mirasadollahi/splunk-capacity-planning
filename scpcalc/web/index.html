@@ -33,7 +33,7 @@
     <section class="hero-panel glass reveal delay-1">
       <div class="panel-shine" aria-hidden="true"></div>
       <h2 data-i18n="hero_title">Plan your Splunk capacity</h2>
-      <p class="hint" data-i18n="hero_hint">A short wizard asks for mode, topology, retention, and sources — then builds settings and hardware guidance.</p>
+      <p class="hint" data-i18n="hero_hint">Fill topology, retention, optional totals/disk budgets, and sources — then Calculate.</p>
       <div class="row-actions hero-actions">
         <button type="button" class="cta" id="btn-open-wizard" data-i18n="start_wizard">
           <span class="cta-label">Start wizard</span>
@@ -225,25 +225,14 @@
       </header>
 
       <ol class="wizard-steps" id="wizard-steps" aria-label="Steps">
-        <li data-step="0" class="is-active"><span>1</span><em data-i18n="step_mode">Mode</em></li>
-        <li data-step="1"><span>2</span><em data-i18n="step_topo">Topology</em></li>
-        <li data-step="2"><span>3</span><em data-i18n="step_ret">Retention</em></li>
-        <li data-step="3"><span>4</span><em data-i18n="step_src">Sources</em></li>
-        <li data-step="4"><span>5</span><em data-i18n="step_review">Review</em></li>
+        <li data-step="0" class="is-active"><span>1</span><em data-i18n="step_topo">Topology</em></li>
+        <li data-step="1"><span>2</span><em data-i18n="step_ret">Retention</em></li>
+        <li data-step="2"><span>3</span><em data-i18n="step_src">Sources</em></li>
+        <li data-step="3"><span>4</span><em data-i18n="step_review">Review</em></li>
       </ol>
 
       <form id="form" class="wizard-body">
         <section class="wiz-pane is-active" data-pane="0">
-          <h3 data-i18n="mode">How do you want to plan?</h3>
-          <div class="mode-row" role="radiogroup">
-            <label class="mode-chip"><input type="radio" name="mode" value="sources" checked> <span class="tip-mark" data-tip="mode_sources" data-i18n="mode_sources">My sources + volume each</span></label>
-            <label class="mode-chip"><input type="radio" name="mode" value="total"> <span class="tip-mark" data-tip="mode_total" data-i18n="mode_total">If this much log arrives</span></label>
-            <label class="mode-chip"><input type="radio" name="mode" value="capacity"> <span class="tip-mark" data-tip="mode_capacity" data-i18n="mode_capacity">I have this much disk (buckets)</span></label>
-          </div>
-          <p class="hint" data-i18n="mode_help">You can still refine sources later. Mode mainly changes which volume fields matter.</p>
-        </section>
-
-        <section class="wiz-pane" data-pane="1" hidden>
           <h3 data-i18n="topology">Topology & apps</h3>
           <div class="tab-bar tab-bar-sm" role="tablist" data-tabs="topo">
             <button type="button" class="tab-btn is-active" role="tab" aria-selected="true" data-tab="topo-cluster" data-i18n="tab_cluster">Cluster</button>
@@ -282,7 +271,7 @@
           </div>
         </section>
 
-        <section class="wiz-pane" data-pane="2" hidden>
+        <section class="wiz-pane" data-pane="1" hidden>
           <h3 data-i18n="retention">Retention & paths</h3>
           <div class="tab-bar tab-bar-sm" role="tablist" data-tabs="reten">
             <button type="button" class="tab-btn is-active" role="tab" aria-selected="true" data-tab="ret-policy" data-i18n="tab_policy">Policy</button>
@@ -307,14 +296,15 @@
             </div>
           </div>
           <div class="tab-panel" data-panel="ret-vol" role="tabpanel" hidden>
-            <div id="total-box" class="subpanel" hidden>
+            <p class="hint" id="vol-mode-hint" data-i18n="tab_volumes_hint">Optional: set a total daily figure and/or available disk budgets. Combine with source rows as needed.</p>
+            <div id="total-box" class="subpanel">
               <h4 data-i18n="total_title">Total daily ingest</h4>
               <div class="grid">
                 <label class="field"><span class="tip-mark" data-tip="total_daily_gb">total_daily_gb</span><input name="total_daily_gb" type="number" step="any" min="0" placeholder="e.g. 500"></label>
               </div>
               <p class="hint" data-i18n="total_hint">Optional: fill source rows later to split indexes; they scale to this total.</p>
             </div>
-            <div id="capacity-box" class="subpanel" hidden>
+            <div id="capacity-box" class="subpanel">
               <h4 data-i18n="cap_title">Available disk per bucket layer (GB)</h4>
               <div class="grid">
                 <label class="field"><span class="tip-mark" data-tip="available_hot_gb">available_hot_gb</span><input name="available_hot_gb" type="number" step="any" min="0" placeholder="SSD hot/warm"></label>
@@ -323,11 +313,10 @@
               </div>
               <p class="hint" data-i18n="cap_hint">Checks fit and suggests max daily / max retention.</p>
             </div>
-            <p class="hint" id="vol-mode-hint" data-i18n="tab_volumes_hint">Shown fields depend on planning mode (total / capacity).</p>
           </div>
         </section>
 
-        <section class="wiz-pane" data-pane="3" hidden>
+        <section class="wiz-pane" data-pane="2" hidden>
           <h3 data-i18n="sources">Log sources / indexes</h3>
           <p class="hint" data-i18n="sources_hint">Pick sources, set daily_gb or EPS. Edit event_bytes. Add custom rows if needed.</p>
           <div class="tab-bar tab-bar-sm" role="tablist" data-tabs="sources-cols">
@@ -362,7 +351,7 @@
           </div>
         </section>
 
-        <section class="wiz-pane" data-pane="4" hidden>
+        <section class="wiz-pane" data-pane="3" hidden>
           <h3 data-i18n="step_review">Review & calculate</h3>
           <pre id="review-box" class="conf-block review-box"></pre>
           <p class="hint" data-i18n="review_hint">Back to edit any step, then calculate. Results open in tabs on the page.</p>

@@ -43,12 +43,13 @@ func CalculatePlan(p model.PlanInput) (model.PlanResult, error) {
 		return model.PlanResult{}, err
 	}
 	normalizeSources(&p)
+	p.Mode = p.InferResultMode()
 
 	comp := compressionFactor(p)
 	warnings := topologyWarnings(p)
 
-	// Capacity reverse-only: no ingest rows — still emit volume caps + design max daily.
-	if len(p.Sources) == 0 && p.Mode == model.ModeCapacity {
+	// Disk budgets without ingest rows — emit volume caps + design max daily.
+	if len(p.Sources) == 0 && p.HasDiskBudget() {
 		out := model.PlanResult{
 			Mode:              p.Mode,
 			CompressionFactor: round3(comp),
@@ -82,7 +83,7 @@ func CalculatePlan(p model.PlanInput) (model.PlanResult, error) {
 		arch.RefreshTexts(p, &design, out)
 		out.Design = &design
 		out.Warnings = append(out.Warnings, design.Warnings...)
-		out.Warnings = append(out.Warnings, "capacity mode without ingest: showing max daily from disk budgets only")
+		out.Warnings = append(out.Warnings, "disk budgets without ingest: showing max daily from disk only")
 		return out, nil
 	}
 
@@ -355,24 +356,22 @@ func normalizeSources(p *model.PlanInput) {
 		active = append(active, s)
 	}
 
-	if p.Mode == model.ModeTotal || p.Mode == model.ModeCapacity {
-		if p.TotalDailyGB > 0 && len(active) == 0 {
-			active = []model.SourceRow{{
-				Key:        "total",
-				Label:      "Total ingest",
-				IndexName:  "main",
-				DailyGB:    p.TotalDailyGB,
-				EventBytes: 500,
-			}}
-			sum = p.TotalDailyGB
-		} else if p.TotalDailyGB > 0 && len(active) > 0 && math.Abs(sum-p.TotalDailyGB) > 0.01 {
-			factor := p.TotalDailyGB / sum
-			for i := range active {
-				if active[i].DailyGB > 0 {
-					active[i].DailyGB = active[i].DailyGB * factor
-				} else {
-					active[i].EPS = active[i].EPS * factor
-				}
+	if p.TotalDailyGB > 0 && len(active) == 0 {
+		active = []model.SourceRow{{
+			Key:        "total",
+			Label:      "Total ingest",
+			IndexName:  "main",
+			DailyGB:    p.TotalDailyGB,
+			EventBytes: 500,
+		}}
+		sum = p.TotalDailyGB
+	} else if p.TotalDailyGB > 0 && len(active) > 0 && math.Abs(sum-p.TotalDailyGB) > 0.01 {
+		factor := p.TotalDailyGB / sum
+		for i := range active {
+			if active[i].DailyGB > 0 {
+				active[i].DailyGB = active[i].DailyGB * factor
+			} else {
+				active[i].EPS = active[i].EPS * factor
 			}
 		}
 	}

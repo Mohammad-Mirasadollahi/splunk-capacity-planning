@@ -24,7 +24,7 @@ sequenceDiagram
   participant A as Arch
   participant G as ConfGen
 
-  U->>W: PlanInput mode+sources+topology
+  U->>W: PlanInput sources+volumes+topology
   W->>E: Validate + normalize sources
   E->>E: Per-index Daily_Raw / OnDisk / MB caps (cluster-wide)
   E->>E: Summary indexes + optional DMA estimate
@@ -51,7 +51,7 @@ Daily_Raw_GB = EPS × 86400 × event_bytes / (1024³)
 
 If both are set and `daily_gb > 0`, **daily_gb wins**.
 
-**Mode `total`:** if only `total_daily_gb` is set, synthesize index `main`. If sources exist and total is set, scale source volumes so they sum to total.
+**`total_daily_gb`:** if only this is set, synthesize index `main`. If sources exist and total is set, scale source volumes so they sum to total.
 
 ## 3. Compression / on-disk factor
 

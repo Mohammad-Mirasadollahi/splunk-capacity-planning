@@ -910,8 +910,15 @@ def main() -> int:
             "compression",
             "n_idx",
             "n_sh",
+            "total_daily_gb",
+            "available_hot_gb",
+            "migrateWizardStep",
         ]:
             ok(f"ui.plan_form.{field}", field in pf)
+        ok("ui.wizard.no_mode_step", 'data-i18n="step_mode"' not in html and 'name="mode"' not in html)
+        ok("ui.wizard.four_steps", 'data-step="3"' in html and 'data-pane="3"' in html)
+        _, state_js = http_bytes("/js/state.js")
+        ok("ui.wizard.steps_const", "STEPS = 4" in state_js.decode("utf-8", errors="replace"))
 
     except Exception as e:  # noqa: BLE001
         ok("http.exception", False, str(e))

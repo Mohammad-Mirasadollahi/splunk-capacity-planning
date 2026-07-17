@@ -24,12 +24,12 @@ Input:
   --plan FILE              full PlanInput JSON (use - for stdin)
   --sources FILE           JSON array of source rows (merged into plan)
 
-Mode & volume:
-  --mode sources|total|capacity   (default sources)
-  --total-daily-gb FLOAT          mode=total (or capacity with known ingest)
-  --available-hot-gb FLOAT        mode=capacity
+Volume inputs (combinable — no exclusive mode):
+  --total-daily-gb FLOAT          optional total ingest; synthesizes/scales indexes
+  --available-hot-gb FLOAT        optional disk budget (fit + max daily)
   --available-cold-gb FLOAT
   --available-summaries-gb FLOAT
+  --mode sources|total|capacity   deprecated; ignored (behavior inferred from fields)
 
 Retention & paths:
   --retention-days INT     (default 90)

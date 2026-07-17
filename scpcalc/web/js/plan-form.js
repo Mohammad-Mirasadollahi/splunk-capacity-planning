@@ -1,13 +1,6 @@
 import { state } from "./state.js";
 import { num } from "./util.js";
-import { activateTab } from "./tabs.js";
 import { normalizeSnapshotRows, renderRows } from "./sources.js";
-
-export function currentMode() {
-  const form = document.getElementById("form");
-  const m = form?.querySelector('input[name="mode"]:checked');
-  return m ? m.value : "sources";
-}
 
 export function syncClusterFields() {
   const idxCluster = document.getElementById("indexer_cluster");
@@ -26,23 +19,10 @@ export function syncClusterFields() {
   }
 }
 
-export function syncModeUI() {
-  const m = currentMode();
-  const totalBox = document.getElementById("total-box");
-  const capBox = document.getElementById("capacity-box");
-  if (totalBox) totalBox.hidden = m === "sources";
-  if (capBox) capBox.hidden = m !== "capacity";
-  if ((m === "total" || m === "capacity") && state.step === 2) {
-    if (totalBox) totalBox.hidden = false;
-    activateTab("reten", "ret-vol");
-  }
-}
-
 export function collectGlobals() {
   const form = document.getElementById("form");
   const fd = new FormData(form);
   return {
-    mode: currentMode(),
     retention_days: num(fd, "retention_days", 90),
     hot_warm_days: num(fd, "hot_warm_days", 30),
     headroom: num(fd, "headroom", 1.2),
@@ -77,11 +57,6 @@ export function collectGlobals() {
 export function applyGlobals(g) {
   if (!g) return;
   const form = document.getElementById("form");
-  if (g.mode) {
-    const r = form.querySelector(`input[name="mode"][value="${g.mode}"]`);
-    if (r) r.checked = true;
-    syncModeUI();
-  }
   for (const k of [
     "retention_days",
     "hot_warm_days",
@@ -115,8 +90,19 @@ export function applyGlobals(g) {
   syncClusterFields();
 }
 
+/** Migrate wizard step from older 5-step (mode-first) snapshots. */
+export function migrateWizardStep(data) {
+  let step = typeof data?.step === "number" ? data.step : 0;
+  const ver = Number(data?.version) || 0;
+  // v3 and earlier: step 0 was Mode; drop it.
+  if (ver < 4 && (data?.globals?.mode != null || ver === 3)) {
+    step = Math.max(0, step - 1);
+  }
+  return Math.max(0, Math.min(3, step));
+}
+
 export function snapshot() {
-  return { version: 3, globals: collectGlobals(), rows: state.rows, step: state.step };
+  return { version: 4, globals: collectGlobals(), rows: state.rows, step: state.step };
 }
 
 export function applySnapshot(data) {
@@ -124,7 +110,7 @@ export function applySnapshot(data) {
   applyGlobals(data.globals);
   state.rows = normalizeSnapshotRows(data.rows);
   renderRows();
-  if (typeof data.step === "number") state.step = data.step;
+  state.step = migrateWizardStep(data);
 }
 
 export function buildPlanBody() {
@@ -159,7 +145,6 @@ export function fillReview() {
   const g = collectGlobals();
   const enabled = state.rows.filter((r) => r.enabled);
   const lines = [
-    `mode: ${g.mode}`,
     `indexer_cluster: ${g.indexer_cluster} (RF=${g.rf} SF=${g.sf})`,
     `search_head_cluster: ${g.search_head_cluster}`,
     `smartstore: ${g.smartstore} | ES: ${g.has_es} | ITSI: ${g.has_itsi}`,
@@ -184,7 +169,6 @@ export function fillReview() {
 }
 
 export function bindPlanFormChrome() {
-  const form = document.getElementById("form");
   document.getElementById("indexer_cluster")?.addEventListener("change", syncClusterFields);
   syncClusterFields();
 
@@ -195,7 +179,4 @@ export function bindPlanFormChrome() {
       if (hasEsEl.checked) enableDmaEl.checked = true;
     });
   }
-
-  form?.querySelectorAll('input[name="mode"]').forEach((r) => r.addEventListener("change", syncModeUI));
-  syncModeUI();
 }

@@ -1,6 +1,6 @@
 import { state, STEPS, reduceMotion } from "./state.js";
 import { openModal, closeModal } from "./modal.js";
-import { syncModeUI, fillReview } from "./plan-form.js";
+import { fillReview } from "./plan-form.js";
 
 const wizardModal = () => document.getElementById("wizard-modal");
 
@@ -25,7 +25,6 @@ export function showStep(n) {
   if (btnNext) btnNext.hidden = last;
   if (btnCalc) btnCalc.hidden = !last;
   if (last) fillReview();
-  syncModeUI();
 }
 
 export function openWizard(atStep) {

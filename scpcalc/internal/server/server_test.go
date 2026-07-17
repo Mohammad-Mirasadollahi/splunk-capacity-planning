@@ -189,12 +189,26 @@ func TestPlanCapacity(t *testing.T) {
 	}
 }
 
-func TestPlanBadMode(t *testing.T) {
+func TestPlanUnknownModeIgnored(t *testing.T) {
 	h, err := server.NewMux("dev")
 	if err != nil {
 		t.Fatal(err)
 	}
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/plan", bytes.NewBufferString(`{"mode":"nope","sources":[{"index_name":"x","daily_gb":1}]}`))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, req)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status=%d body=%s", rr.Code, rr.Body.String())
+	}
+}
+
+func TestPlanEmptyRejected(t *testing.T) {
+	h, err := server.NewMux("dev")
+	if err != nil {
+		t.Fatal(err)
+	}
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/plan", bytes.NewBufferString(`{"sources":[]}`))
 	req.Header.Set("Content-Type", "application/json")
 	rr := httptest.NewRecorder()
 	h.ServeHTTP(rr, req)

@@ -72,7 +72,6 @@ export async function runCalculate() {
         ? `${d.n_sh} (ES ${d.n_sh_es} + ITSI ${d.n_sh_itsi})`
         : d.n_sh;
     const rowsM = [
-      ["Mode", data.mode],
       ["Concurrent users", d.concurrent_users],
       ["Total daily raw GB/day", data.total_daily_raw_gb],
       ["Compression factor", data.compression_factor],
@@ -85,7 +84,7 @@ export async function runCalculate() {
       ["summaries need GB", d.summaries_need_gb],
     ];
     if (d.base_n_sh || d.base_n_idx) {
-      rowsM.splice(7, 0, [
+      rowsM.splice(6, 0, [
         "Table baseline (SH+IDX)",
         d.combined_instance && d.base_n_sh === 1 && d.base_n_idx === 1
           ? "combined"

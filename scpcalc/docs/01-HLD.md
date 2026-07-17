@@ -48,7 +48,7 @@ flowchart LR
 | CLI `calc` | Full multi-index plan (same `PlanInput` / `PlanResult` as the Web UI) |
 | CLI `serve` | Embedded UI + JSON API on configurable host/port |
 | Static Pages `/calc/` | Same UI + **Go WASM** engine in the browser (no server; CI builds `.wasm`) |
-| Web wizard | Modes: sources / total / capacity; topology; retention; sources |
+| Web wizard | Topology → retention (incl. optional totals/disk) → sources → review |
 | Web charts | Volume & retention views (Chart.js, offline embed) |
 | Web conf editor | Find/replace, rename volumes/paths, copy/download |
 | Hover tips | Formulas + examples + official doc links |
@@ -87,13 +87,17 @@ flowchart TB
   Core --> Arch
 ```
 
-## 6. Planning modes
+## 6. Volume inputs (no exclusive mode)
 
-| Mode | Intent |
+Fill any combination of:
+
+| Input | Intent |
 |---|---|
-| `sources` | User lists log sources with `daily_gb` or EPS×bytes |
-| `total` | “If D GB/day arrives” — optional source split scaled to total |
-| `capacity` | Disk budgets per hot/cold/summaries → fit + reverse max daily/retention |
+| Source rows (`daily_gb` / EPS) | Per-index ingest |
+| `total_daily_gb` | Overall daily figure (synthesizes or scales indexes) |
+| `available_*_gb` | Disk budgets → fit + reverse max daily/retention |
+
+Legacy `mode` on the wire is optional and ignored for validation.
 
 ## 7. Portability model
 

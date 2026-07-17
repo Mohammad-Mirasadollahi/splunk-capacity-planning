@@ -20,10 +20,9 @@ type SourceRow struct {
 	SummaryIndexName string  `json:"summary_index_name"`
 }
 
-// Plan modes:
-//   sources  — list sources with per-source daily_gb/EPS (default)
-//   total    — "if D GB/day arrives" (optional source split still allowed)
-//   capacity — given available hot/cold/summaries disk, derive fit / max daily / max retention
+// Planning input styles (legacy mode labels still appear on PlanResult for API/CLI compat).
+// The engine no longer requires the user to pick a mode — behavior is inferred from filled fields:
+//   sources volumes, total_daily_gb, and/or available_* disk budgets (combinable).
 const (
 	ModeSources  = "sources"
 	ModeTotal    = "total"
@@ -68,7 +67,7 @@ type PlanInput struct {
 
 	RemotePath string `json:"remote_path"` // SmartStore object-store path hint / volume path
 
-	// Mode total / capacity helpers
+	// Optional volume helpers (combinable — no exclusive mode required)
 	TotalDailyGB         float64 `json:"total_daily_gb"`
 	AvailableHotGB       float64 `json:"available_hot_gb"`
 	AvailableColdGB      float64 `json:"available_cold_gb"`
@@ -275,9 +274,7 @@ func (in *Input) Validate() error {
 }
 
 func (p *PlanInput) ApplyDefaults() {
-	if p.Mode == "" {
-		p.Mode = ModeSources
-	}
+	// Mode is optional/legacy; left empty until InferResultMode (or caller) sets it.
 	if p.ESSmartStore {
 		p.HasES = true
 		p.SmartStore = true
@@ -337,13 +334,37 @@ func (p PlanInput) WantDMA() bool {
 	return p.HasES
 }
 
+func (p PlanInput) HasSourceVolume() bool {
+	for _, s := range p.Sources {
+		if s.DailyGB > 0 || (s.EPS > 0 && s.EventBytes > 0) {
+			return true
+		}
+	}
+	return false
+}
+
+func (p PlanInput) HasDiskBudget() bool {
+	return p.AvailableHotGB > 0 || p.AvailableColdGB > 0
+}
+
+// InferResultMode labels the plan from filled fields (for API/CLI display only).
+func (p PlanInput) InferResultMode() string {
+	hasSrc := p.HasSourceVolume()
+	hasTotal := p.TotalDailyGB > 0
+	hasDisk := p.HasDiskBudget()
+	switch {
+	case !hasSrc && !hasTotal && hasDisk:
+		return ModeCapacity
+	case hasTotal:
+		return ModeTotal
+	default:
+		return ModeSources
+	}
+}
+
 func (p *PlanInput) Validate() error {
 	p.ApplyDefaults()
-	switch p.Mode {
-	case ModeSources, ModeTotal, ModeCapacity:
-	default:
-		return fmt.Errorf("mode must be sources, total, or capacity")
-	}
+	// Legacy mode strings are accepted but ignored for validation; unknown values are ignored too.
 	if p.RF < 1 {
 		return fmt.Errorf("rf must be >= 1")
 	}
@@ -352,9 +373,6 @@ func (p *PlanInput) Validate() error {
 	}
 	if p.Headroom < 1 {
 		return fmt.Errorf("headroom must be >= 1")
-	}
-	if p.HasES && p.HasITSI {
-		// Allowed on platform, but not on same SH — warning later
 	}
 
 	hasSourceVol := false
@@ -370,20 +388,13 @@ func (p *PlanInput) Validate() error {
 		}
 	}
 
-	switch p.Mode {
-	case ModeSources:
-		if !hasSourceVol {
-			return fmt.Errorf("enable sources and set daily_gb or eps+event_bytes for each")
-		}
-	case ModeTotal:
-		if p.TotalDailyGB <= 0 && !hasSourceVol {
-			return fmt.Errorf("set total_daily_gb, or source volumes that sum to ingest")
-		}
-	case ModeCapacity:
-		if p.AvailableHotGB <= 0 && p.AvailableColdGB <= 0 {
-			return fmt.Errorf("capacity mode: set available_hot_gb and/or available_cold_gb (summaries alone cannot reverse searchable ingest)")
-		}
-		// sources / total_daily_gb optional: without them we only reverse max daily from disk
+	hasTotal := p.TotalDailyGB > 0
+	hasDisk := p.HasDiskBudget()
+	if !hasSourceVol && !hasTotal && !hasDisk {
+		return fmt.Errorf("set source volumes (daily_gb or eps+event_bytes), total_daily_gb, and/or available_hot_gb/available_cold_gb")
+	}
+	if !hasSourceVol && !hasTotal && p.AvailableSummariesGB > 0 && !hasDisk {
+		return fmt.Errorf("set available_hot_gb and/or available_cold_gb (summaries alone cannot reverse searchable ingest)")
 	}
 	if p.Compression < 0 {
 		return fmt.Errorf("compression must be >= 0")

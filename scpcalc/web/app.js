@@ -204,7 +204,7 @@ setI18nHooks({
   onAfterSetLang() {
     bindTips(document);
     refreshOpenTip();
-    if (state.step === 4) fillReview();
+    if (state.step === STEPS - 1) fillReview();
   },
 });
 setTabsHooks({ onChartsTab: renderAllCharts });

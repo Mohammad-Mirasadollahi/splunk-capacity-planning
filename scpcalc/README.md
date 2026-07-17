@@ -18,7 +18,7 @@ Same engine for CLI, `serve`, and in-browser WASM: multi-index storage sizing, *
 
 ## Features
 
-- **Modes:** `sources` (per-index ingest) · `total` (one daily GB figure) · `capacity` (fit / reverse from available disk)
+- **Inputs:** per-source volumes, optional `total_daily_gb`, optional disk budgets — combinable (no exclusive planning mode)
 - **Multi-index:** `daily_gb` and/or EPS × event size; optional summary indexes
 - **Node counts:** `concurrent_users` × daily volume → platform table, then SHC / indexer-cluster / ES / ITSI floors
 - **Topology:** indexer cluster (RF/SF), SHC (+ deployer), SmartStore (local cache + remote size), ES, ITSI
@@ -94,13 +94,17 @@ CLI and Overview both print the step-by-step **NODE COUNTS** rationale.
 
 ---
 
-## Planning modes
+## Volume inputs (combinable)
 
-| Mode | When to use | Key inputs |
-|---|---|---|
-| `sources` (default) | You know per-source / per-index volume | `sources[]` with `daily_gb` or `eps`+`event_bytes` |
-| `total` | “If ~D GB/day arrives…” | `total_daily_gb` (optional source split) |
-| `capacity` | Disk budget is fixed | `available_hot_gb` / `available_cold_gb` (/ summaries); optional known ingest |
+There is **no exclusive planning mode**. Fill any combination:
+
+| Input | Effect |
+|---|---|
+| `sources[]` with `daily_gb` or `eps`+`event_bytes` | Size those indexes |
+| `total_daily_gb` | Synthesize `main` if no sources, or scale source rows to the total |
+| `available_hot_gb` / `available_cold_gb` (/ summaries) | Fit badges + max daily / max retention from disk |
+
+`--mode` on the CLI is **deprecated** and ignored; the result label (`sources`/`total`/`capacity`) is inferred for display only.
 
 ---
 
@@ -132,15 +136,15 @@ Resolution: **CLI → process env → `.env` → defaults**.
 | `--plan FILE` | Full plan JSON (`-` = stdin). Flags overlay non-zero / explicitly set fields. |
 | `--sources FILE` | JSON array of source rows (merged into the plan) |
 
-#### Mode & volume
+#### Volume (combinable)
 
 | Flag | Meaning |
 |---|---|
-| `--mode sources\|total\|capacity` | Planning mode (default `sources`) |
-| `--total-daily-gb FLOAT` | Aggregate daily ingest |
-| `--available-hot-gb FLOAT` | Capacity mode — hot/warm disk |
-| `--available-cold-gb FLOAT` | Capacity mode — cold disk |
-| `--available-summaries-gb FLOAT` | Capacity mode — summaries / DMA disk |
+| `--total-daily-gb FLOAT` | Optional aggregate daily ingest |
+| `--available-hot-gb FLOAT` | Optional hot/warm disk budget |
+| `--available-cold-gb FLOAT` | Optional cold disk budget |
+| `--available-summaries-gb FLOAT` | Optional summaries / DMA disk |
+| `--mode …` | Deprecated; ignored (inferred from fields) |
 
 #### Retention & paths
 
@@ -210,7 +214,6 @@ cat plan.json | ./bin/scpcalc calc --plan - --json
 
 ```json
 {
-  "mode": "sources",
   "concurrent_users": 12,
   "indexer_cluster": true,
   "rf": 3,
@@ -249,7 +252,7 @@ cat plan.json | ./bin/scpcalc calc --plan - --json
 
 1. `./bin/scpcalc serve` → open `http://127.0.0.1:12345`  
    (or GitHub Pages: `https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/`)
-2. **Start wizard:** mode → topology (cluster / apps / advanced) → retention → sources → review → **Calculate**
+2. **Start wizard:** topology → retention (Volumes: optional total/disk) → sources → review → **Calculate**
 3. **Results tabs:** Overview (metrics + node-count rationale) · Charts · Design · Resources · Settings · Per index · indexes.conf (editor / rename)
 4. Language toggle **EN / FA**; hover dotted labels for formula + example + official links
 5. Download design text / `indexes.conf` from the results toolbar

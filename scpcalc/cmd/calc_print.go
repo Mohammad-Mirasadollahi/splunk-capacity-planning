@@ -29,7 +29,7 @@ func designNarrative(res model.PlanResult) string {
 }
 
 func printPlanHuman(res model.PlanResult) {
-	fmt.Printf("Mode:                 %s\n", res.Mode)
+	fmt.Printf("SCPcalc plan\n")
 	fmt.Printf("Total daily raw:      %.3f GB/day\n", res.TotalDailyRawGB)
 	fmt.Printf("Compression factor:   %.3f\n", res.CompressionFactor)
 	fmt.Printf("Total on-disk:        %.3f GB/day\n", res.TotalDailyOnDiskGB)

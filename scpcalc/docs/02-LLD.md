@@ -68,7 +68,7 @@ flowchart TB
 
 | Field | Notes |
 |---|---|
-| `mode` | `sources` \| `total` \| `capacity` |
+| `mode` | Optional/legacy; ignored — behavior inferred from fields |
 | `sources[]` | `index_name`, `daily_gb` and/or `eps`+`event_bytes`, per-row retention/hot_warm, `enable_summary`, `summary_daily_gb`, … |
 | `total_daily_gb` | Used by `total` / `capacity` |
 | `available_hot_gb` / `available_cold_gb` | Required (either) for capacity reverse; summaries optional |
@@ -102,8 +102,8 @@ Resolution order: **CLI → process env → `.env` → defaults**.
 ```text
 --plan FILE | -              full PlanInput JSON (stdin with -)
 --sources FILE | -           JSON array of source rows
---mode sources|total|capacity
 --total-daily-gb --available-hot-gb --available-cold-gb --available-summaries-gb
+--mode …                     deprecated (ignored)
 --retention-days --hot-warm-days --headroom --summary-pct --summary-retention-days
 --hot-path --cold-path --frozen-path --summaries-path --archive-frozen
 --compression
@@ -148,7 +148,7 @@ Plan sharing: `js/share-url.js` encodes the UI snapshot (`version` + `globals` +
 
 | Area | Package tests |
 |---|---|
-| Formulas / plan modes | `internal/calc` |
+| Formulas / volume inference | `internal/calc` |
 | Conf stanzas | `internal/confgen` |
 | Architecture / resources | `internal/arch` |
 | Validation | `internal/model` |

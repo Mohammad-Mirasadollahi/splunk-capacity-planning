@@ -22,24 +22,29 @@ func TestPlanDefaultsClusterOn(t *testing.T) {
 	}
 }
 
-func TestPlanValidateModes(t *testing.T) {
-	err := (&model.PlanInput{Mode: model.ModeSources}).Validate()
+func TestPlanValidateInputs(t *testing.T) {
+	err := (&model.PlanInput{}).Validate()
 	if err == nil {
-		t.Fatal("sources mode without volumes should fail")
+		t.Fatal("empty plan should fail")
 	}
-	err = (&model.PlanInput{Mode: model.ModeTotal, TotalDailyGB: 10}).Validate()
+	err = (&model.PlanInput{TotalDailyGB: 10}).Validate()
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = (&model.PlanInput{Mode: model.ModeCapacity}).Validate()
+	err = (&model.PlanInput{AvailableSummariesGB: 100}).Validate()
 	if err == nil {
-		t.Fatal("capacity without disk should fail")
+		t.Fatal("summaries alone should fail")
 	}
-	err = (&model.PlanInput{Mode: model.ModeCapacity, AvailableSummariesGB: 100}).Validate()
-	if err == nil {
-		t.Fatal("capacity with only summaries should fail")
+	err = (&model.PlanInput{AvailableHotGB: 500}).Validate()
+	if err != nil {
+		t.Fatal(err)
 	}
-	err = (&model.PlanInput{Mode: model.ModeCapacity, AvailableHotGB: 100}).Validate()
+	err = (&model.PlanInput{Sources: []model.SourceRow{{IndexName: "x", DailyGB: 1}}}).Validate()
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Legacy/unknown mode ignored when fields are valid
+	err = (&model.PlanInput{Mode: "nope", Sources: []model.SourceRow{{IndexName: "x", DailyGB: 1}}}).Validate()
 	if err != nil {
 		t.Fatal(err)
 	}
