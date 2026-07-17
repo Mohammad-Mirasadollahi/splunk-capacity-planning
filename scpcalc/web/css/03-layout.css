@@ -36,6 +36,19 @@
   padding: 1.15rem 1.3rem;
 }
 
+.top-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  flex-shrink: 0;
+}
+
+a.nav-docs {
+  text-decoration: none;
+  white-space: nowrap;
+}
+
 .eyebrow {
   margin: 0 0 0.4rem;
   color: var(--accent);

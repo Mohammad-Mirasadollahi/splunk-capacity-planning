@@ -7,13 +7,23 @@
 **طراحی: [محمد میراسدالهی](https://github.com/Mohammad-Mirasadollahi)** · **GitHub:** [Mohammad-Mirasadollahi/splunk-capacity-planning](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning)
 
 **زبان:** [English](README.md) · **فارسی** (همین صفحه)  
-**سایت زنده:** [مستندات](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=fa) · [SCPcalc](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/?lang=fa)
+**سایت زنده:** [هاب مستندات](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=fa) · [ماشین‌حساب SCPcalc](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/?lang=fa)
 
 نام پروژه از Capacity Planning Manual اسپلانک گرفته شده — [Introduction to capacity planning](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/IntroductiontocapacityplanningforSplunkEnterprise).
 
 **مجوز:** [MIT](LICENSE) · **تغییرات:** [CHANGELOG.md](CHANGELOG.md)
 
 > **توجه:** زبان پیش‌فرض و منبع حقیقت **انگلیسی** است (`docs/en/` و [`README.md`](README.md)). این صفحه نمای فارسی همان مخزن است.
+
+## هاب مستندات
+
+بستهٔ دوزبانهٔ Capacity Planning را در سایت طراحی‌شدهٔ GitHub Pages ببینید (نه فقط Markdown خام):
+
+| | |
+|---|---|
+| **مستندات (فارسی)** | [mohammad-mirasadollahi.github.io/…/?lang=fa](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=fa) |
+| **Documentation (English)** | [mohammad-mirasadollahi.github.io/…/?lang=en](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=en) |
+| **منبع Markdown** | [`docs/fa/`](docs/fa/) · [`docs/en/`](docs/en/) |
 
 ## ماشین‌حساب (SCPcalc)
 

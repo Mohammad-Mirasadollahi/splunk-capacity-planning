@@ -40,6 +40,10 @@ export function setLang(next) {
   document.documentElement.lang = l;
   document.body.dataset.lang = l;
   document.body.dir = l === "fa" ? "rtl" : "ltr";
+  const docsURL = `https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=${l}`;
+  document.querySelectorAll("#link-docs-hub, #link-docs-hub-btn, #link-docs-hub-hero, a[data-docs-hub]").forEach((a) => {
+    a.setAttribute("href", docsURL);
+  });
   document.querySelectorAll(".lang button").forEach((b) => {
     b.setAttribute("aria-pressed", String(b.dataset.lang === l));
   });

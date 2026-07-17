@@ -5,11 +5,21 @@ Official Splunk **Capacity Planning** guidance (Infrastructure + Storage), extra
 **Designed by [Mohammad Mirasadollahi](https://github.com/Mohammad-Mirasadollahi)** · **GitHub:** [Mohammad-Mirasadollahi/splunk-capacity-planning](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning)
 
 **Language:** **English** (this page) · [فارسی](README.fa.md)  
-**Live site:** [Documentation](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=en) · [SCPcalc](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/?lang=en)
+**Live site:** [Documentation hub](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=en) · [SCPcalc calculator](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/?lang=en)
 
 Named after Splunk’s Capacity Planning Manual — see [Introduction to capacity planning](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/IntroductiontocapacityplanningforSplunkEnterprise).
 
 **License:** [MIT](LICENSE) · **Changelog:** [CHANGELOG.md](CHANGELOG.md)
+
+## Documentation hub
+
+Browse the bilingual capacity-planning pack in the designed GitHub Pages site (not only raw Markdown):
+
+| | |
+|---|---|
+| **Documentation (English)** | [mohammad-mirasadollahi.github.io/…/?lang=en](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=en) |
+| **مستندات (فارسی)** | [mohammad-mirasadollahi.github.io/…/?lang=fa](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=fa) |
+| **Source Markdown** | [`docs/en/`](docs/en/) · [`docs/fa/`](docs/fa/) |
 
 ## Calculator (SCPcalc)
 

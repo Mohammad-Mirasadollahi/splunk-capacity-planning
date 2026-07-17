@@ -1,6 +1,7 @@
 export const I18N = {
   en: {
     eyebrow: "Portable calculator",
+    nav_docs: "Documentation",
     lede: "Step-by-step wizard → storage, design, resources, indexes.conf.",
     hero_title: "Plan your Splunk capacity",
     hero_hint: "Fill topology, retention, optional totals/disk budgets, and sources — then Calculate.",
@@ -273,10 +274,11 @@ export const I18N = {
     replaced_n: "Replacements:",
     renamed_ok: "Volume/path names applied across conf.",
     find_none: "No match.",
-    credit_html: 'Designed by <strong>Mohammad Mirasadollahi</strong> · <a href="https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning" target="_blank" rel="noopener noreferrer">GitHub</a>',
+    credit_html: 'Designed by <strong>Mohammad Mirasadollahi</strong> · <a href="https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning" target="_blank" rel="noopener noreferrer">GitHub</a> · <a id="link-docs-hub" href="https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=en" target="_blank" rel="noopener noreferrer">Documentation</a>',
   },
   fa: {
     eyebrow: "ماشین‌حساب قابل‌حمل",
+    nav_docs: "مستندات",
     lede: "ویزارد مرحله‌ای ← فضای دیسک، طراحی، منابع، indexes.conf.",
     hero_title: "ظرفیت Splunk را برنامه‌ریزی کنید",
     hero_hint: "توپولوژی، نگهداری، حجم کل/دیسک (اختیاری) و منابع را پر کنید — سپس محاسبه.",
@@ -548,6 +550,6 @@ export const I18N = {
     replaced_n: "تعداد جایگزینی:",
     renamed_ok: "نام volume/path در کل conf اعمال شد.",
     find_none: "موردی پیدا نشد.",
-    credit_html: 'طراحی: <strong>محمد میراسدالهی (Mohammad Mirasadollahi)</strong> · <a href="https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning" target="_blank" rel="noopener noreferrer">GitHub</a>',
+    credit_html: 'طراحی: <strong>محمد میراسدالهی (Mohammad Mirasadollahi)</strong> · <a href="https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning" target="_blank" rel="noopener noreferrer">GitHub</a> · <a id="link-docs-hub" href="https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=fa" target="_blank" rel="noopener noreferrer">مستندات</a>',
   },
 };

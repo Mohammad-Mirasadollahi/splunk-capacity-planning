@@ -4,10 +4,14 @@ Portable **Splunk Capacity Planning** calculator — **CLI + local Web UI** in o
 
 **Designed by [Mohammad Mirasadollahi](https://github.com/Mohammad-Mirasadollahi)** · **Repository:** [splunk-capacity-planning](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning)
 
+**Live documentation hub (designed site):** [English](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=en) · [فارسی](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=fa)  
+**Live calculator:** [SCPcalc on Pages](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/)
+
 Same engine for CLI, `serve`, and in-browser WASM: multi-index storage sizing, **N_SH / N_IDX** from concurrent users × daily volume × **concurrent searches** × clustering, hardware layers, design narrative, and a draft **`indexes.conf`**.
 
 | | |
 |---|---|
+| **Documentation hub** | [GitHub Pages docs](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/) — bilingual guide with the site design |
 | Design docs | [`docs/01-HLD.md`](docs/01-HLD.md) · [`02-LLD.md`](docs/02-LLD.md) · [`03-Logic-and-Formulas.md`](docs/03-Logic-and-Formulas.md) · [`04-Language-and-Portability.md`](docs/04-Language-and-Portability.md) |
 | Knowledge pack (formulas & citations) | [`../docs/en/`](../docs/en/) — start at [`00-References.md`](../docs/en/00-References.md) |
 | Default listen | **`0.0.0.0:12345`** (override via `.env` / flags) |
