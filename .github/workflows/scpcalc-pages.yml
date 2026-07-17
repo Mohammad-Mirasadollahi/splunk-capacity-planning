@@ -11,6 +11,7 @@ on:
       - "view.html"
       - "assets/**"
       - "README.md"
+      - "README.fa.md"
       - "CHANGELOG.md"
       - "CONTRIBUTING.md"
       - "VERSION.md"
@@ -46,7 +47,7 @@ jobs:
       - name: Assemble Pages site (docs + /calc)
         run: |
           mkdir -p _site
-          cp -a index.html view.html VERSION.md LICENSE CONTRIBUTING.md README.md CHANGELOG.md _site/ 2>/dev/null || true
+          cp -a index.html view.html VERSION.md LICENSE CONTRIBUTING.md README.md README.fa.md CHANGELOG.md _site/ 2>/dev/null || true
           cp -a docs assets tools _site/ 2>/dev/null || true
           rm -rf _site/calc
           cp -a calc _site/calc

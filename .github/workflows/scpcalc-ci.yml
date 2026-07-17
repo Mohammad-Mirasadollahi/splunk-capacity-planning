@@ -23,7 +23,11 @@ jobs:
           go-version: "1.22.x"
       - name: WASM + test + build
         run: |
-          chmod +x scripts/build_wasm.sh
+          chmod +x scripts/build_wasm.sh scripts/assemble_html.py
+          make html
           make wasm
           go test ./...
           make build
+          ./bin/scpcalc version
+          ./bin/scpcalc calc --daily-gb 10 --json >/tmp/out.json
+          python3 -c "import json; d=json.load(open('/tmp/out.json')); assert d['design']['n_idx']>=1"

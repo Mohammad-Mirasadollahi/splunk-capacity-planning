@@ -7,6 +7,7 @@
 #   3) commits on the current branch
 #   4) creates annotated tag scpcalc-vX.Y.Z
 #   5) pushes branch + tag → GitHub Actions builds binaries/WASM and publishes the Release
+#      (scpcalc-release.yml) and publishes the GHCR container package (scpcalc-package.yml)
 #
 # Usage:
 #   ./tools/release.sh                         # interactive (recommended)
@@ -42,6 +43,7 @@ WHAT A RELEASE IS
     • builds CLI binaries (linux/windows/mac, amd64/arm64)
     • builds WASM for the browser calculator
     • publishes them on the GitHub Releases page
+    • publishes the container image to GHCR (ghcr.io/mohammad-mirasadollahi/scpcalc)
 
 WHEN TO BUMP (product help)
   patch  X.Y.(Z+1)   Bug fixes, UI polish, docs-only, small safe changes
@@ -361,9 +363,11 @@ echo
 echo "  Actions:  https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning/actions"
 echo "  Release:  https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning/releases/tag/$TAG"
 echo
-echo "  CI builds binaries + WASM and attaches them automatically."
+echo "  CI builds binaries + WASM (Release) and the GHCR container package automatically."
+echo "  Package: https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning/pkgs/container/scpcalc"
+echo "  Pages:   https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/"
 if command -v gh >/dev/null 2>&1; then
   echo
-  echo "  Tip: watch the workflow with:"
-  echo "    gh run watch --repo Mohammad-Mirasadollahi/splunk-capacity-planning"
+  echo "  Tip: watch the workflows with:"
+  echo "    gh run list --repo Mohammad-Mirasadollahi/splunk-capacity-planning --limit 5"
 fi
