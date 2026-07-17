@@ -31,10 +31,17 @@ func TestBuildDesignSHCAndCluster(t *testing.T) {
 	}
 	d := arch.BuildDesign(p, out)
 	if d.NSH < 3 {
-		t.Fatalf("SHC should force n_sh>=3, got %d", d.NSH)
+		t.Fatalf("SHC with users×volume baseline 2 should raise 2→3, got %d", d.NSH)
 	}
 	if !d.ClusterManager || !d.SHCDeployer {
 		t.Fatalf("expected CM+deployer: %+v", d)
+	}
+	roles := map[string]bool{}
+	for _, L := range d.Resources {
+		roles[L.Role] = true
+	}
+	if !roles["Cluster manager"] || !roles["SHC deployer"] {
+		t.Fatalf("resources missing CM/deployer roles: %v", roles)
 	}
 	if d.NIDX < 3 {
 		t.Fatalf("cluster peers should be >= RF, got %d", d.NIDX)

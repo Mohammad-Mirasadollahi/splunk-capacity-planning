@@ -91,6 +91,8 @@ function renderPlanResult(data) {
         : `${d.base_n_sh || "—"} + ${d.base_n_idx || "—"}`,
     ]);
   }
+  if (d.cluster_manager) rowsM.push(["Cluster manager", 1]);
+  if (d.shc_deployer) rowsM.push(["SHC deployer", 1]);
   if (d.max_daily_gb_from_disk) rowsM.push(["Max daily from disk", d.max_daily_gb_from_disk]);
   if (d.local_cache_total_gb) rowsM.push(["SmartStore cache GB", d.local_cache_total_gb]);
 

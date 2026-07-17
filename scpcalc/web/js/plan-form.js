@@ -39,7 +39,29 @@ export function syncClusterFields() {
     if (Number(sfEl.value) <= 1) sfEl.value = 2;
     if (Number(sfEl.value) > Number(rfEl.value)) sfEl.value = Number(rfEl.value);
   }
+  syncSHCMemberHint();
   syncToggleUI();
+}
+
+/** SHC members: 1 (single-member) or ≥3 — never 2 (Splunk SHC system requirements). */
+export function syncSHCMemberHint() {
+  const shc = document.getElementById("search_head_cluster");
+  const nSh = document.querySelector('input[name="n_sh"]');
+  const hint = document.getElementById("shc-n-sh-hint");
+  if (!shc || !nSh) return;
+  const n = Number(nSh.value);
+  if (shc.checked && n === 2) {
+    nSh.value = "3";
+    nSh.setCustomValidity(t("shc_n_sh_two_invalid"));
+    nSh.reportValidity();
+    // Clear after showing so the form can still submit; engine also enforces.
+    setTimeout(() => nSh.setCustomValidity(""), 2500);
+  } else {
+    nSh.setCustomValidity("");
+  }
+  if (hint) {
+    hint.hidden = !shc.checked;
+  }
 }
 
 export function syncArchiveFields() {
@@ -294,13 +316,18 @@ export function bindPlanFormChrome() {
   document.querySelectorAll('.field.check input[type="checkbox"]').forEach((input) => {
     input.addEventListener("change", () => {
       if (input.id === "indexer_cluster") syncClusterFields();
-      else if (input.id === "has_es" && input.checked) {
+      else if (input.id === "search_head_cluster") {
+        syncSHCMemberHint();
+        syncToggleUI();
+      } else if (input.id === "has_es" && input.checked) {
         const dma = document.getElementById("enable_dma");
         if (dma) dma.checked = true;
         syncToggleUI();
       } else syncToggleUI();
     });
   });
+  document.querySelector('input[name="n_sh"]')?.addEventListener("change", syncSHCMemberHint);
+  document.querySelector('input[name="n_sh"]')?.addEventListener("input", syncSHCMemberHint);
   syncClusterFields();
   syncToggleUI();
 

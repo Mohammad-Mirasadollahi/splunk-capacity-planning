@@ -128,6 +128,8 @@ function renderPreviewMetrics(data) {
     ["cold need GB", d.cold_need_gb],
     ["summaries need GB", d.summaries_need_gb],
   ];
+  if (d.cluster_manager) rows.push(["Cluster manager", 1]);
+  if (d.shc_deployer) rows.push(["SHC deployer", 1]);
   if (d.max_daily_gb_from_disk) rows.push(["Max daily from disk", d.max_daily_gb_from_disk]);
   host.innerHTML = rows
     .map(

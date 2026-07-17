@@ -73,8 +73,14 @@ func TestCalcSHCAndClusterJSON(t *testing.T) {
 	if res.Design == nil {
 		t.Fatal("expected design")
 	}
-	if res.Design.NSH < 3 {
-		t.Fatalf("SHC floor: n_sh=%d", res.Design.NSH)
+	if res.Design.NSH != 1 {
+		t.Fatalf("SHC single-member for this load: n_sh=%d", res.Design.NSH)
+	}
+	if !res.Design.SHCDeployer {
+		t.Fatal("expected deployer")
+	}
+	if !res.Design.ClusterManager {
+		t.Fatal("expected cluster manager with indexer cluster")
 	}
 	if res.Design.NIDX < 3 {
 		t.Fatalf("RF floor: n_idx=%d", res.Design.NIDX)

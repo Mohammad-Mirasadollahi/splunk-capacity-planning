@@ -15,15 +15,40 @@ func TestResolveNodeCounts_SHCFloor(t *testing.T) {
 		RF:                3,
 		SF:                2,
 	}
-	plan := arch.ResolveNodeCounts(p, 100) // table: 1 SH + 1 IDX
-	if plan.NSH < 3 {
-		t.Fatalf("SHC should raise N_SH to ≥3, got %d", plan.NSH)
+	plan := arch.ResolveNodeCounts(p, 100) // table: 1 SH + 1 IDX → single-member SHC
+	if plan.NSH != 1 {
+		t.Fatalf("SHC with table baseline 1 SH should stay single-member, got %d", plan.NSH)
 	}
 	if !plan.SHCDeployer {
 		t.Fatal("expected SHC deployer")
 	}
 	if plan.CombinedInstance {
 		t.Fatal("SHC cannot stay combined")
+	}
+	joined := strings.Join(plan.Warnings, "\n")
+	if !strings.Contains(joined, "single-member") {
+		t.Fatalf("expected single-member warning, got %v", plan.Warnings)
+	}
+}
+
+func TestResolveNodeCounts_SHCRejectsTwo(t *testing.T) {
+	p := model.PlanInput{
+		ConcurrentUsers:   12,
+		SearchHeadCluster: true,
+		NSh:               2,
+		RF:                1,
+		SF:                1,
+	}
+	plan := arch.ResolveNodeCounts(p, 800) // table wants 2 SH; override also 2
+	if plan.NSH != 3 {
+		t.Fatalf("SHC must reject 2 members → raise to 3, got %d", plan.NSH)
+	}
+	joined := strings.Join(plan.Warnings, "\n")
+	if !strings.Contains(joined, "N_SH=2") && !strings.Contains(joined, "2 is not a valid") {
+		t.Fatalf("expected doc warning for N_SH=2, got %v", plan.Warnings)
+	}
+	if !plan.SHCDeployer {
+		t.Fatal("expected deployer")
 	}
 }
 

@@ -141,7 +141,7 @@ MaxRetentionDays ≈ AvailableSearchable / (Daily_OnDisk)     # if ingest known
 - ES floors from doc 01 §6.4 (300→3, 1TB→10, &lt;15TB→24, 15TB→150, &gt;15TB→300 single-SH or 240 SHC).
 - ITSI: `N_IDX ≥ ceil(D/100)` (KPI tables not automated — HLD non-goal).
 - Indexer cluster: peers ≥ RF; add cluster manager.
-- SHC: deployer + N_SH ≥ 3.
+- SHC: deployer + members = 1 (single-member interim) or ≥3 (never 2).
 - `n_idx` / `n_sh` &gt; 0: use override; warn if below recommended floor; RF / SHC minima still hard-raise.
 - ES+ITSI: separate SH tiers (`n_sh_es` + `n_sh_itsi`); resources list both.
 - SmartStore: local cache `0.5 × D × (30|90 if ES)`; remote `Remote_Store_GB ≈ D × R × Comp`.

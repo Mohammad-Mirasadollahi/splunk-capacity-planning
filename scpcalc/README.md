@@ -198,7 +198,7 @@ Resolution: **CLI → process env → `.env` → defaults**.
 | `--concurrent-searches INT` | Peak concurrent searches **S** (default = U); raise N_SH so cores ≥ S (1 search ≤ 1 CPU core) |
 | `--saved-searches INT` | Total saved/scheduled searches (Dimensions); default `0` |
 | `--indexer-cluster` | Enable indexer clustering |
-| `--search-head-cluster` | Enable SHC (floor ≥ 3 SH + deployer) |
+| `--search-head-cluster` | Enable SHC (1 or ≥3 members + deployer; never 2) |
 | `--rf INT` `--sf INT` | Used when indexer cluster on (defaults `3` / `2`) |
 | `--n-idx INT` `--n-sh INT` | `0` = auto from table + search-core + floors |
 | `--smartstore` | SmartStore sizing hints |

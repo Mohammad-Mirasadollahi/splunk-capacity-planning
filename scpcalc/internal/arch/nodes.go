@@ -129,19 +129,14 @@ func ResolveNodeCounts(p model.PlanInput, dailyGB float64) NodePlan {
 		plan.Steps = append(plan.Steps, fmt.Sprintf("No indexer cluster → %d standalone indexers (not clustered)", plan.NIDX))
 	}
 
-	// Search head cluster: N_SH ≥ 3 + deployer; cannot stay combined
+	// Search head cluster: deployer required; member count normalized later (1 or ≥3, never 2).
 	if p.SearchHeadCluster {
 		plan.SHCDeployer = true
 		plan.CombinedInstance = false
 		if plan.NSH < 1 {
 			plan.NSH = 1
 		}
-		if plan.NSH < 3 {
-			plan.Steps = append(plan.Steps, fmt.Sprintf("SHC enabled → raise N_SH from %d to 3 (+ 1 deployer)", plan.NSH))
-			plan.NSH = 3
-		} else {
-			plan.Steps = append(plan.Steps, fmt.Sprintf("SHC enabled → N_SH=%d (+ 1 deployer); odd peer count preferred", plan.NSH))
-		}
+		plan.Steps = append(plan.Steps, "SHC enabled → add 1 deployer (members normalized to 1 or ≥3 — never 2)")
 	}
 
 	// Concurrent search volume floor (Reference hardware Search Head):
@@ -209,10 +204,6 @@ func ResolveNodeCounts(p model.PlanInput, dailyGB float64) NodePlan {
 		plan.Steps = append(plan.Steps, fmt.Sprintf("Override n_sh=%d (auto was %d)", p.NSh, autoNSH))
 		plan.NSH = p.NSh
 		plan.CombinedInstance = false
-		if p.SearchHeadCluster && plan.NSH < 3 {
-			plan.Warnings = append(plan.Warnings, "n_sh raised to 3 for SHC minimum")
-			plan.NSH = 3
-		}
 	}
 
 	// Separate ES / ITSI search tiers
@@ -220,12 +211,8 @@ func ResolveNodeCounts(p model.PlanInput, dailyGB float64) NodePlan {
 		plan.NSHES = plan.NSH
 		plan.NSHITSI = plan.NSH
 		if p.SearchHeadCluster {
-			if plan.NSHES < 3 {
-				plan.NSHES = 3
-			}
-			if plan.NSHITSI < 3 {
-				plan.NSHITSI = 3
-			}
+			plan.NSHES = normalizeSHCMembers(&plan, plan.NSHES, "ES SHC tier")
+			plan.NSHITSI = normalizeSHCMembers(&plan, plan.NSHITSI, "ITSI SHC tier")
 		}
 		plan.Steps = append(plan.Steps, fmt.Sprintf(
 			"ES+ITSI → separate search tiers: %d ES SH + %d ITSI SH (total headline N_SH=%d)",
@@ -233,8 +220,18 @@ func ResolveNodeCounts(p model.PlanInput, dailyGB float64) NodePlan {
 		plan.NSH = plan.NSHES + plan.NSHITSI
 	} else if p.HasES {
 		plan.NSHES = plan.NSH
+		if p.SearchHeadCluster {
+			plan.NSH = normalizeSHCMembers(&plan, plan.NSH, "SHC membership")
+			plan.NSHES = plan.NSH
+		}
 	} else if p.HasITSI {
 		plan.NSHITSI = plan.NSH
+		if p.SearchHeadCluster {
+			plan.NSH = normalizeSHCMembers(&plan, plan.NSH, "SHC membership")
+			plan.NSHITSI = plan.NSH
+		}
+	} else if p.SearchHeadCluster {
+		plan.NSH = normalizeSHCMembers(&plan, plan.NSH, "SHC membership")
 	}
 
 	if plan.CombinedInstance {
@@ -267,7 +264,7 @@ func appendTopologySuggestions(plan *NodePlan, p model.PlanInput, dailyGB float6
 			plan.Suggestions = append(plan.Suggestions, model.TopologySuggestion{
 				ID:     "enable_shc",
 				Title:  "Enable Search Head Cluster",
-				Reason: "Recommended because " + strings.Join(why, "; ") + ". SHC raises N_SH to ≥3 and adds a deployer.",
+				Reason: "Recommended because " + strings.Join(why, "; ") + ". SHC adds a deployer; use 1 member (single-member / interim) or ≥3 members — not 2 (Splunk SHC system requirements).",
 				Enable: map[string]bool{"search_head_cluster": true},
 			})
 		}
@@ -383,11 +380,47 @@ func applySearchConcurrencyFloor(plan *NodePlan, p model.PlanInput, searches int
 			"Concurrent search volume S=%d covered by N_SH=%d × %d cores/SH = %d cores (1 active search ≤ 1 CPU core)",
 			searches, plan.NSH, cores, plan.NSH*cores))
 	}
+}
 
-	if p.SearchHeadCluster && plan.NSH < 3 {
-		plan.Steps = append(plan.Steps, fmt.Sprintf("SHC minimum still applies → raise N_SH from %d to 3", plan.NSH))
-		plan.NSH = 3
+// normalizeSHCMembers enforces Splunk SHC membership rules for one cluster:
+//   - 1 member: allowed as a single-member (interim) cluster — no HA search
+//   - 2 members: invalid for HA / captain majority → raise to 3
+//   - ≥3 members: HA search
+// Ref: https://docs.splunk.com/Documentation/Splunk/latest/DistSearch/SHCsystemrequirements
+func normalizeSHCMembers(plan *NodePlan, n int, context string) int {
+	const doc = "https://docs.splunk.com/Documentation/Splunk/latest/DistSearch/SHCsystemrequirements"
+	if n < 1 {
+		n = 1
 	}
+	switch {
+	case n == 2:
+		msg := fmt.Sprintf(
+			"%s: N_SH=2 is not a valid Search Head Cluster size — Splunk requires ≥3 members for HA (captain election / majority) or exactly 1 for a single-member interim cluster. Raised to 3 (+ deployer). See %s",
+			context, doc)
+		plan.Warnings = append(plan.Warnings, msg)
+		plan.Steps = append(plan.Steps, fmt.Sprintf("%s → reject 2 members, raise to 3 (+ 1 deployer) [%s]", context, doc))
+		return 3
+	case n == 1:
+		plan.Steps = append(plan.Steps, fmt.Sprintf("%s → 1 member single-member SHC (+ 1 deployer); interim only — no HA until ≥3 [%s]", context, doc))
+		if !containsString(plan.Warnings, "single-member") {
+			plan.Warnings = append(plan.Warnings, fmt.Sprintf(
+				"SHC with 1 member is a single-member (interim) cluster — does not provide high-availability search. For HA use ≥3 members. See %s",
+				doc))
+		}
+		return 1
+	default:
+		plan.Steps = append(plan.Steps, fmt.Sprintf("%s → %d members (+ 1 deployer); odd count preferred for captain election [%s]", context, n, doc))
+		return n
+	}
+}
+
+func containsString(list []string, substr string) bool {
+	for _, s := range list {
+		if strings.Contains(s, substr) {
+			return true
+		}
+	}
+	return false
 }
 
 func FormatNodePlan(plan NodePlan) string {
