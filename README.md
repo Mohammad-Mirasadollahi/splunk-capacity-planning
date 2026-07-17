@@ -27,6 +27,8 @@ Portable single binary (Go): **CLI + local Web UI**, same engine — also runs *
 
 Estimates searchable storage / retention MB fields, recommends **N_SH / N_IDX** from concurrent users × daily volume × concurrent searches × clustering, drafts hardware layers + **`indexes.conf`**.
 
+**Recent calculator UX (0.2):** plan retention by **time or disk** (linked like GB/day = EPS), labeled **Nodes** inventory (Indexer → Peer), fullscreen/copy on result panels, chart totals, and a dynamic `indexes.conf` header with author + plan snapshot.
+
 | | |
 |---|---|
 | **User guide (full CLI + UI + API)** | [`scpcalc/README.md`](scpcalc/README.md) |

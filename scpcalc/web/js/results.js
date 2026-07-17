@@ -9,6 +9,7 @@ import { closeWizard, showStep } from "./wizard.js";
 import { runPlan } from "./engine.js";
 import { t } from "./i18n.js";
 import { askSuggestions, updateAutoRecBadges, pendingSuggestions } from "./suggestions.js";
+import { expandResourceNodes, formatLayerSpecs } from "./nodes.js";
 
 function applyTableFind(inputId, tbodyId, countId) {
   const input = document.getElementById(inputId);
@@ -47,6 +48,123 @@ export function bindResultTableFind() {
   };
   wire("res-find", "res-body", "res-find-count");
   wire("ix-find", "ix-body", "ix-find-count");
+  wire("node-find", "node-pick-body", "node-find-count");
+}
+
+function renderNodeDetail() {
+  const nodes = state.planNodes || [];
+  const selected = nodes.filter((n) => n.selected);
+  const body = document.getElementById("node-detail-body");
+  const wrap = document.getElementById("node-detail-wrap");
+  const empty = document.getElementById("node-detail-empty");
+  if (!body) return;
+  if (!selected.length) {
+    body.innerHTML = "";
+    if (wrap) wrap.hidden = true;
+    if (empty) empty.hidden = false;
+    return;
+  }
+  if (wrap) wrap.hidden = false;
+  if (empty) empty.hidden = true;
+  body.innerHTML = selected
+    .map((n) => {
+      const s = formatLayerSpecs(n.layer || {});
+      const find = [n.label, n.id, n.role, n.tier, s.cpuPhys, s.cpuLog, s.ram, s.iops, s.raid, s.storage, s.disk, s.net, s.virt, s.para, s.notes]
+        .filter(Boolean)
+        .join(" ");
+      return `<tr data-find="${escapeAttr(find)}">
+        <td><strong>${escapeAttr(n.label)}</strong></td>
+        <td><code>${escapeAttr(n.id)}</code></td>
+        <td>${escapeAttr(n.role)}</td>
+        <td>${escapeAttr(n.tier)}</td>
+        <td><strong>${escapeAttr(s.cpuPhys)}</strong></td>
+        <td>${escapeAttr(s.cpuLog)}</td>
+        <td>${escapeAttr(s.ram)}</td>
+        <td class="cell-notes">${escapeAttr(s.iops)}</td>
+        <td class="cell-notes">${escapeAttr(s.raid)}</td>
+        <td>${escapeAttr(s.storage)}</td>
+        <td>${escapeAttr(s.disk)}</td>
+        <td>${escapeAttr(s.net)}</td>
+        <td class="cell-notes">${escapeAttr(s.virt)}</td>
+        <td class="cell-notes">${escapeAttr(s.para)}</td>
+        <td class="cell-notes">${escapeAttr(s.notes)}</td>
+      </tr>`;
+    })
+    .join("");
+  bindTips(body);
+}
+
+function renderNodePicker() {
+  const body = document.getElementById("node-pick-body");
+  if (!body) return;
+  const nodes = state.planNodes || [];
+  body.innerHTML = nodes
+    .map((n, i) => {
+      const s = formatLayerSpecs(n.layer || {});
+      const find = [n.label, n.id, n.role, n.tier, s.ram, s.cpuPhys, s.disk, "peer", "node"].filter(Boolean).join(" ");
+      return `<tr data-node-idx="${i}" data-find="${escapeAttr(find)}" class="${n.selected ? "is-node-selected" : ""}">
+        <td class="col-check"><input type="checkbox" data-node-check ${n.selected ? "checked" : ""} aria-label="${escapeAttr(n.id)}"></td>
+        <td><span class="node-label-pill">${escapeAttr(n.label)}</span></td>
+        <td><code>${escapeAttr(n.id)}</code></td>
+        <td>${escapeAttr(n.role)}</td>
+        <td>${escapeAttr(n.tier)}</td>
+        <td>${escapeAttr(s.ram)}</td>
+        <td>${escapeAttr(s.cpuPhys)}</td>
+        <td>${escapeAttr(s.disk)}</td>
+      </tr>`;
+    })
+    .join("");
+  applyTableFind("node-find", "node-pick-body", "node-find-count");
+  renderNodeDetail();
+}
+
+export function bindNodePicker() {
+  const body = document.getElementById("node-pick-body");
+  if (body && body.dataset.nodeBound !== "1") {
+    body.dataset.nodeBound = "1";
+    body.addEventListener("change", (e) => {
+      const cb = e.target?.closest?.("[data-node-check]");
+      if (!cb) return;
+      const tr = cb.closest("tr");
+      const idx = Number(tr?.dataset?.nodeIdx);
+      if (!Number.isFinite(idx) || !state.planNodes?.[idx]) return;
+      state.planNodes[idx].selected = !!cb.checked;
+      tr.classList.toggle("is-node-selected", !!cb.checked);
+      renderNodeDetail();
+    });
+    body.addEventListener("click", (e) => {
+      if (e.target?.closest?.("[data-node-check]")) return;
+      const tr = e.target?.closest?.("tr[data-node-idx]");
+      if (!tr) return;
+      const idx = Number(tr.dataset.nodeIdx);
+      const cb = tr.querySelector("[data-node-check]");
+      if (!Number.isFinite(idx) || !state.planNodes?.[idx] || !cb) return;
+      cb.checked = !cb.checked;
+      state.planNodes[idx].selected = cb.checked;
+      tr.classList.toggle("is-node-selected", cb.checked);
+      renderNodeDetail();
+    });
+  }
+  const allBtn = document.getElementById("btn-node-select-all");
+  if (allBtn && allBtn.dataset.bound !== "1") {
+    allBtn.dataset.bound = "1";
+    allBtn.addEventListener("click", () => {
+      (state.planNodes || []).forEach((n) => {
+        n.selected = true;
+      });
+      renderNodePicker();
+    });
+  }
+  const noneBtn = document.getElementById("btn-node-select-none");
+  if (noneBtn && noneBtn.dataset.bound !== "1") {
+    noneBtn.dataset.bound = "1";
+    noneBtn.addEventListener("click", () => {
+      (state.planNodes || []).forEach((n) => {
+        n.selected = false;
+      });
+      renderNodePicker();
+    });
+  }
 }
 
 /** Click column headers to sort. Uses data-sort on each <td> when present. */
@@ -196,35 +314,27 @@ function renderPlanResult(data) {
     .join("\n\n");
 
   if (resBody) {
+    state.planNodes = expandResourceNodes(d.resources || []);
+    renderNodePicker();
+
     resBody.innerHTML = (d.resources || [])
       .map((r) => {
-        const phys = r.cpu_physical_cores || r.cpu_cores || 0;
-        const logi = r.cpu_logical_vcpu || r.vcpu || 0;
-        const cpuPhys = phys ? `${phys} physical @ ≥2 GHz` : "—";
-        const cpuLog = logi ? `${logi} logical / vCPU (HT 2×)` : "—";
-        const ram = r.ram_gb ? `${r.ram_gb} GB` : "—";
-        const disk = r.disk_gb_hint ? `≈${Math.round(r.disk_gb_hint)} GB` : "—";
-        const net = r.network || "—";
-        const virt = r.virt_cpu_rule || (phys ? "Reserve full CPU/RAM — no oversubscribe" : "—");
-        const para = r.splunk_parallelization || "—";
-        const iops = r.iops_hint || (r.iops_min ? `≥${r.iops_min} IOPS` : "—");
-        const raid = r.raid_hint || "—";
-        const notes = r.notes || "—";
+        const s = formatLayerSpecs(r);
         const find = [
           r.role,
           r.count,
           r.tier,
-          cpuPhys,
-          cpuLog,
-          ram,
-          iops,
-          raid,
+          s.cpuPhys,
+          s.cpuLog,
+          s.ram,
+          s.iops,
+          s.raid,
           r.storage_type,
-          disk,
-          net,
-          virt,
-          para,
-          notes,
+          s.disk,
+          s.net,
+          s.virt,
+          s.para,
+          s.notes,
           "physical",
           "logical",
           "vCPU",
@@ -247,17 +357,17 @@ function renderPlanResult(data) {
             <td>${escapeAttr(r.role)}</td>
             <td>${r.count}</td>
             <td>${escapeAttr(r.tier)}</td>
-            <td><strong>${escapeAttr(cpuPhys)}</strong></td>
-            <td>${escapeAttr(cpuLog)}</td>
-            <td>${ram}</td>
-            <td class="cell-notes">${escapeAttr(iops)}</td>
-            <td class="cell-notes">${escapeAttr(raid)}</td>
+            <td><strong>${escapeAttr(s.cpuPhys)}</strong></td>
+            <td>${escapeAttr(s.cpuLog)}</td>
+            <td>${s.ram}</td>
+            <td class="cell-notes">${escapeAttr(s.iops)}</td>
+            <td class="cell-notes">${escapeAttr(s.raid)}</td>
             <td>${escapeAttr(r.storage_type || "")}</td>
-            <td>${disk}</td>
-            <td>${escapeAttr(net)}</td>
-            <td class="cell-notes">${escapeAttr(virt)}</td>
-            <td class="cell-notes">${escapeAttr(para)}</td>
-            <td class="cell-notes">${escapeAttr(notes)}</td>
+            <td>${s.disk}</td>
+            <td>${escapeAttr(s.net)}</td>
+            <td class="cell-notes">${escapeAttr(s.virt)}</td>
+            <td class="cell-notes">${escapeAttr(s.para)}</td>
+            <td class="cell-notes">${escapeAttr(s.notes)}</td>
           </tr>`;
       })
       .join("");

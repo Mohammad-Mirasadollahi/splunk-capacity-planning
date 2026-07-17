@@ -13,7 +13,7 @@ function syncWizardBackLabel() {
   if (!btnBack) return;
   btnBack.setAttribute("data-i18n", "back");
   btnBack.textContent = t("back");
-  setSoftTip(btnBack, state.step === 0 ? t("cancel") : t("back"));
+  setSoftTip(btnBack, t("back"));
 }
 
 export function showStep(n) {
@@ -32,10 +32,10 @@ export function showStep(n) {
     li.classList.toggle("is-active", i === state.step);
     li.classList.toggle("is-done", i < state.step);
   });
-  // Back is always visible and clickable.
+  // First step: only Cancel closes the wizard — Back has nowhere to go.
   if (btnBack) {
-    btnBack.hidden = false;
-    btnBack.disabled = false;
+    btnBack.hidden = state.step === 0;
+    btnBack.disabled = state.step === 0;
   }
   const last = state.step === STEPS - 1;
   if (btnNext) btnNext.hidden = last;
@@ -67,8 +67,8 @@ export function bindWizard() {
   });
 
   document.getElementById("btn-wiz-back")?.addEventListener("click", () => {
-    if (state.step === 0) closeWizard();
-    else showStep(state.step - 1);
+    if (state.step <= 0) return;
+    showStep(state.step - 1);
   });
   document.getElementById("btn-wiz-next")?.addEventListener("click", () => showStep(state.step + 1));
   document.querySelectorAll("#wizard-steps li").forEach((li) => {

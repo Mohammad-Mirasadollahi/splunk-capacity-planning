@@ -1,0 +1,181 @@
+/* 13-view-blocks.css — Copy + fullscreen chrome for result panels */
+
+.view-block {
+  margin: 0 0 1.15rem;
+  padding: 0.75rem 0.85rem 0.85rem;
+  border-radius: 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.view-block:last-child {
+  margin-bottom: 0;
+}
+
+.view-block-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem 0.85rem;
+  margin: 0 0 0.7rem;
+}
+
+.view-block-bar-start {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem 0.85rem;
+  min-width: 0;
+  flex: 1 1 16rem;
+}
+
+.view-block-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.view-block-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin-inline-start: auto;
+}
+
+.view-block-status {
+  color: var(--accent);
+  font-size: 0.82rem;
+  max-width: 14rem;
+}
+
+.view-block-body {
+  min-width: 0;
+}
+
+.view-block .table-toolbar {
+  margin: 0;
+}
+
+.view-block .conf-block.modal-pre {
+  margin: 0;
+}
+
+body.view-fullscreen {
+  overflow: hidden;
+}
+
+.view-block.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  margin: 0;
+  border-radius: 0;
+  border: 0;
+  padding: 1rem clamp(0.85rem, 2vw, 1.5rem) 1.25rem;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(63, 224, 197, 0.12), transparent 55%),
+    linear-gradient(165deg, #0a1c26 0%, #07141c 55%, #0b1f28 100%);
+  box-shadow: none;
+}
+
+.view-block.is-fullscreen .view-block-bar {
+  flex-shrink: 0;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.view-block.is-fullscreen .view-block-title {
+  font-size: 1.2rem;
+}
+
+.view-block.is-fullscreen .view-block-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.view-block.is-fullscreen .table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  height: 100%;
+  overflow: auto;
+}
+
+.view-block.is-fullscreen .conf-block,
+.view-block.is-fullscreen .modal-pre {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none !important;
+  height: 100%;
+}
+
+@media (max-width: 720px) {
+  .view-block-bar {
+    align-items: stretch;
+  }
+
+  .view-block-actions {
+    width: 100%;
+    margin-inline-start: 0;
+  }
+
+  .view-block-actions .btn-ghost {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+}
+
+.node-detail-title {
+  margin: 1rem 0 0.45rem;
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.node-label-pill {
+  display: inline-block;
+  padding: 0.12rem 0.45rem;
+  border-radius: 0.4rem;
+  border: 1px solid rgba(63, 224, 197, 0.35);
+  background: rgba(63, 224, 197, 0.1);
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.node-pick-table tbody tr {
+  cursor: pointer;
+}
+
+.node-pick-table tbody tr.is-node-selected {
+  background: rgba(63, 224, 197, 0.08);
+}
+
+.node-pick-table .col-check {
+  width: 2.2rem;
+  text-align: center;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

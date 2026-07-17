@@ -8,11 +8,12 @@ import { bindModalChrome, closeModal, openModal } from "./js/modal.js";
 import { initTabBars, setTabsHooks } from "./js/tabs.js";
 import { bindSourcesTable, rowFromPreset, renderRows } from "./js/sources.js";
 import { applyDemoSourceDefaults, demoGlobals } from "./js/defaults.js";
-import { bindPlanFormChrome, snapshot, applySnapshot, applyGlobals, fillReview, syncArchiveFields, syncColdVolumePreview } from "./js/plan-form.js";
+import { bindPlanFormChrome, snapshot, applySnapshot, applyGlobals, fillReview, syncArchiveFields, syncCapacityPair } from "./js/plan-form.js";
 import { bindConfEditor, getConfText, copyConf } from "./js/conf-editor.js";
 import { renderAllCharts } from "./js/charts.js";
 import { bindWizard, openWizard, closeWizard, showStep, syncWizardBackLabel } from "./js/wizard.js";
-import { runCalculate, bindResultTableFind, bindTableSort } from "./js/results.js";
+import { runCalculate, bindResultTableFind, bindTableSort, bindNodePicker } from "./js/results.js";
+import { bindViewBlocks } from "./js/view-blocks.js";
 import { downloadText } from "./js/util.js";
 import { initEngine, fetchPresets, engineMode } from "./js/engine.js";
 import {
@@ -204,7 +205,7 @@ setI18nHooks({
   onAfterSetLang() {
     bindTips(document);
     syncArchiveFields();
-    syncColdVolumePreview();
+    syncCapacityPair("mode");
     syncWizardBackLabel();
     refreshOpenTip();
     renderRows();
@@ -237,6 +238,8 @@ bindPersistence();
 bindCalculate();
 bindResultTableFind();
 bindTableSort("ix-table");
+bindNodePicker();
+bindViewBlocks();
 
 boot().catch((ex) => {
   flashSave("Failed to load presets: " + (ex.message || ex));

@@ -3,6 +3,8 @@ export const state = {
   rows: [],
   step: 0,
   volumeInputMode: "daily_gb", // "daily_gb" | "eps" — both are raw/pre-indexed ingest
+  capacityPlanMode: "time", // "time" | "disk" — retention days ↔ searchable disk GB
+  planNodes: [],
   lastConf: "",
   lastConfGenerated: "",
   lastDesignTxt: "",

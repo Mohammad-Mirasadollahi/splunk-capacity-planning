@@ -105,6 +105,19 @@
   height: 240px;
 }
 
+.chart-total {
+  margin: 0.45rem 0 0;
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 650;
+  color: var(--accent);
+  letter-spacing: 0.01em;
+}
+
+.chart-total[hidden] {
+  display: none !important;
+}
+
 .chart-canvas-wrap canvas {
   max-width: 100% !important;
   max-height: 100% !important;

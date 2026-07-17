@@ -35,14 +35,21 @@ function buildChartDatasets(data) {
   const ret = g.retention_days || 90;
   const coldDays = Math.max(ret - hotDays, 0);
 
+  const hotGB = d.hot_need_gb || 0;
+  const coldGB = d.cold_need_gb || 0;
+  const sumGB = d.summaries_need_gb || 0;
   return {
     storage: {
-      labels: ["hot/warm", "cold", "summaries"],
-      values: [d.hot_need_gb || 0, d.cold_need_gb || 0, d.summaries_need_gb || 0],
+      labels: [t("chart_lbl_hot"), t("chart_lbl_cold"), t("chart_lbl_summaries")],
+      values: [hotGB, coldGB, sumGB],
+      total: hotGB + coldGB + sumGB,
+      totalKey: "chart_storage_total",
     },
     retention: {
-      labels: ["hot/warm days", "cold days", "total retention"],
+      labels: [t("chart_lbl_hot_days"), t("chart_lbl_cold_days"), t("chart_lbl_total_days")],
       values: [hotDays, coldDays, ret],
+      total: ret,
+      totalKey: "chart_retention_total",
     },
     index_daily: {
       labels: indexes.map((ix) => ix.index_name),
@@ -169,7 +176,9 @@ function paintOne(canvasId, chartId, type, labels, values) {
 export function ensureChartCards(hostId = "charts-inline", idPrefix = "charts-inline") {
   const host = document.getElementById(hostId);
   if (!host) return;
-  if (host.dataset.ready === "1" && host.dataset.prefix === idPrefix) return;
+  if (host.dataset.ready === "1" && host.dataset.prefix === idPrefix && host.querySelector("[data-chart-total]")) {
+    return;
+  }
   host.dataset.prefix = idPrefix;
   host.innerHTML =
     `<p class="charts-empty hint" id="${idPrefix}-empty" hidden data-i18n="charts_none">${t("charts_none")}</p>` +
@@ -190,6 +199,7 @@ export function ensureChartCards(hostId = "charts-inline", idPrefix = "charts-in
           <div class="chart-canvas-wrap">
             <canvas id="${canvasId}"></canvas>
           </div>
+          <p class="chart-total" data-chart-total="${def.id}" hidden></p>
         </article>`;
     }).join("");
   host.dataset.ready = "1";
@@ -234,6 +244,20 @@ export function renderAllCharts(data, opts = {}) {
     const type = chartTypes[def.id] || def.defaultType;
     chartTypes[def.id] = type;
     paintOne(canvasId, def.id, type, pack.labels, pack.values);
+    const totalEl = card?.querySelector(`[data-chart-total="${def.id}"]`);
+    if (totalEl) {
+      const total = Number(pack.total);
+      if (Number.isFinite(total) && total > 0 && pack.totalKey) {
+        totalEl.hidden = false;
+        totalEl.textContent = t(pack.totalKey).replace(
+          "{n}",
+          total.toLocaleString(undefined, { maximumFractionDigits: total >= 100 ? 0 : 2 })
+        );
+      } else {
+        totalEl.hidden = true;
+        totalEl.textContent = "";
+      }
+    }
   });
   if (emptyEl) emptyEl.hidden = shown > 0;
 }

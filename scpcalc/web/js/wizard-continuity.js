@@ -62,8 +62,12 @@ function buildContextHTML(step) {
   }
 
   if (step >= 2) {
+    const coldDays = Math.max(0, (g.retention_days || 0) - (g.hot_warm_days || 0));
     const ret = [
-      t("ctx_retention").replace("{r}", String(g.retention_days)).replace("{hw}", String(g.hot_warm_days)),
+      t("ctx_retention")
+        .replace("{r}", String(g.retention_days))
+        .replace("{hw}", String(g.hot_warm_days))
+        .replace("{c}", String(coldDays)),
       t("ctx_headroom").replace("{h}", String(g.headroom)),
     ];
     if (g.archive_frozen) ret.push(t("ctx_archive_on").replace("{p}", g.frozen_path || "/frozen"));
@@ -154,13 +158,17 @@ export function bindWizardContinuity() {
   form.addEventListener("change", (e) => {
     const name = e.target?.name || e.target?.dataset?.f;
     if (name === "summary_retention_days") markSummaryRetentionEdited();
-    if (name === "retention_days") syncLinkedSummaryRetention();
+    if (name === "retention_days" || name === "hot_warm_days" || name === "cold_days") {
+      syncLinkedSummaryRetention();
+    }
     if (state.step >= 1) refreshWizardContext(state.step);
   });
   form.addEventListener("input", (e) => {
     const name = e.target?.name || e.target?.dataset?.f;
     if (name === "summary_retention_days") markSummaryRetentionEdited();
-    if (name === "retention_days") syncLinkedSummaryRetention();
+    if (name === "retention_days" || name === "hot_warm_days" || name === "cold_days") {
+      syncLinkedSummaryRetention();
+    }
     if (state.step >= 1) refreshWizardContext(state.step);
   });
 }

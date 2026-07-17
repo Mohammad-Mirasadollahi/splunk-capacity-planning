@@ -86,76 +86,209 @@
       </div>
 
       <div class="tab-panel" data-panel="design" role="tabpanel" hidden>
-        <pre id="design" class="conf-block modal-pre"></pre>
+        <section class="view-block" data-view-block="design">
+          <div class="view-block-bar">
+            <h3 class="view-block-title" data-i18n="design_text_title">Architecture design</h3>
+            <div class="view-block-actions">
+              <span class="view-block-status" data-view-status hidden></span>
+              <button type="button" class="btn-ghost" data-view-copy data-i18n="copy">Copy</button>
+              <button type="button" class="btn-ghost" data-view-expand data-i18n="fullscreen">Fullscreen</button>
+              <button type="button" class="btn-ghost" data-view-collapse hidden data-i18n="exit_fullscreen">Exit fullscreen</button>
+            </div>
+          </div>
+          <div class="view-block-body">
+            <pre id="design" class="conf-block modal-pre"></pre>
+          </div>
+        </section>
       </div>
 
       <div class="tab-panel" data-panel="resources" role="tabpanel" hidden>
-        <div class="table-toolbar">
-          <label class="table-find">
-            <span data-i18n="table_find">Find in table</span>
-            <input type="search" id="res-find" data-i18n-placeholder="table_find_ph" placeholder="role, tier, RAM…" autocomplete="off">
-          </label>
-          <span class="table-find-count" id="res-find-count" hidden></span>
-        </div>
-        <div class="table-wrap modal-table">
-          <table class="src-table result-table" id="res-table">
-            <thead>
-              <tr>
-                <th data-i18n="res_role">Role</th>
-                <th>×</th>
-                <th data-i18n="res_tier">Tier</th>
-                <th data-i18n="res_cpu_phys">CPU physical</th>
-                <th data-i18n="res_cpu_logical">CPU logical / vCPU</th>
-                <th>RAM</th>
-                <th data-i18n="res_iops">IOPS</th>
-                <th data-i18n="res_raid">RAID</th>
-                <th data-i18n="res_storage">Storage</th>
-                <th data-i18n="res_disk">Disk/node</th>
-                <th data-i18n="res_network">Network</th>
-                <th data-i18n="res_virt">Virtualization</th>
-                <th data-i18n="res_parallel">Splunk parallelization</th>
-                <th data-i18n="res_notes">Notes</th>
-              </tr>
-            </thead>
-            <tbody id="res-body"></tbody>
-          </table>
-        </div>
-        <pre id="resources" class="conf-block modal-pre"></pre>
+        <section class="view-block" data-view-block="node-table">
+          <div class="view-block-bar">
+            <div class="view-block-bar-start">
+              <h3 class="view-block-title" data-i18n="node_table_title">Nodes</h3>
+              <label class="table-find">
+                <span data-i18n="table_find">Find in table</span>
+                <input type="search" id="node-find" data-i18n-placeholder="node_find_ph" placeholder="Peer, SH, RAM…" autocomplete="off">
+              </label>
+              <span class="table-find-count" id="node-find-count" hidden></span>
+            </div>
+            <div class="view-block-actions">
+              <button type="button" class="btn-ghost" id="btn-node-select-all" data-i18n="node_select_all">Select all</button>
+              <button type="button" class="btn-ghost" id="btn-node-select-none" data-i18n="node_select_none">Clear</button>
+              <span class="view-block-status" data-view-status hidden></span>
+              <button type="button" class="btn-ghost" data-view-copy data-i18n="copy">Copy</button>
+              <button type="button" class="btn-ghost" data-view-expand data-i18n="fullscreen">Fullscreen</button>
+              <button type="button" class="btn-ghost" data-view-collapse hidden data-i18n="exit_fullscreen">Exit fullscreen</button>
+            </div>
+          </div>
+          <div class="view-block-body">
+            <p class="hint" data-i18n="node_table_hint">Each planning role is expanded into labeled nodes (e.g. Indexer → Peer). Select rows to see full specs below.</p>
+            <div class="table-wrap modal-table">
+              <table class="src-table result-table node-pick-table" id="node-pick-table">
+                <thead>
+                  <tr>
+                    <th class="col-check"><span class="sr-only" data-i18n="node_select">Select</span></th>
+                    <th data-i18n="node_label">Label</th>
+                    <th data-i18n="node_name">Node</th>
+                    <th data-i18n="res_role">Role</th>
+                    <th data-i18n="res_tier">Tier</th>
+                    <th>RAM</th>
+                    <th data-i18n="res_cpu_phys">CPU physical</th>
+                    <th data-i18n="res_disk">Disk/node</th>
+                  </tr>
+                </thead>
+                <tbody id="node-pick-body"></tbody>
+              </table>
+            </div>
+            <h4 class="node-detail-title" data-i18n="node_detail_title">Selected node specs</h4>
+            <p class="hint" id="node-detail-empty" data-i18n="node_detail_empty">Select one or more nodes above to show full hardware specs.</p>
+            <div class="table-wrap modal-table" id="node-detail-wrap" hidden>
+              <table class="src-table result-table" id="node-detail-table">
+                <thead>
+                  <tr>
+                    <th data-i18n="node_label">Label</th>
+                    <th data-i18n="node_name">Node</th>
+                    <th data-i18n="res_role">Role</th>
+                    <th data-i18n="res_tier">Tier</th>
+                    <th data-i18n="res_cpu_phys">CPU physical</th>
+                    <th data-i18n="res_cpu_logical">CPU logical / vCPU</th>
+                    <th>RAM</th>
+                    <th data-i18n="res_iops">IOPS</th>
+                    <th data-i18n="res_raid">RAID</th>
+                    <th data-i18n="res_storage">Storage</th>
+                    <th data-i18n="res_disk">Disk/node</th>
+                    <th data-i18n="res_network">Network</th>
+                    <th data-i18n="res_virt">Virtualization</th>
+                    <th data-i18n="res_parallel">Splunk parallelization</th>
+                    <th data-i18n="res_notes">Notes</th>
+                  </tr>
+                </thead>
+                <tbody id="node-detail-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="view-block" data-view-block="res-table">
+          <div class="view-block-bar">
+            <div class="view-block-bar-start">
+              <h3 class="view-block-title" data-i18n="res_table_title">Hardware by role</h3>
+              <label class="table-find">
+                <span data-i18n="table_find">Find in table</span>
+                <input type="search" id="res-find" data-i18n-placeholder="table_find_ph" placeholder="role, tier, RAM…" autocomplete="off">
+              </label>
+              <span class="table-find-count" id="res-find-count" hidden></span>
+            </div>
+            <div class="view-block-actions">
+              <span class="view-block-status" data-view-status hidden></span>
+              <button type="button" class="btn-ghost" data-view-copy data-i18n="copy">Copy</button>
+              <button type="button" class="btn-ghost" data-view-expand data-i18n="fullscreen">Fullscreen</button>
+              <button type="button" class="btn-ghost" data-view-collapse hidden data-i18n="exit_fullscreen">Exit fullscreen</button>
+            </div>
+          </div>
+          <div class="view-block-body">
+            <div class="table-wrap modal-table">
+              <table class="src-table result-table" id="res-table">
+                <thead>
+                  <tr>
+                    <th data-i18n="res_role">Role</th>
+                    <th>×</th>
+                    <th data-i18n="res_tier">Tier</th>
+                    <th data-i18n="res_cpu_phys">CPU physical</th>
+                    <th data-i18n="res_cpu_logical">CPU logical / vCPU</th>
+                    <th>RAM</th>
+                    <th data-i18n="res_iops">IOPS</th>
+                    <th data-i18n="res_raid">RAID</th>
+                    <th data-i18n="res_storage">Storage</th>
+                    <th data-i18n="res_disk">Disk/node</th>
+                    <th data-i18n="res_network">Network</th>
+                    <th data-i18n="res_virt">Virtualization</th>
+                    <th data-i18n="res_parallel">Splunk parallelization</th>
+                    <th data-i18n="res_notes">Notes</th>
+                  </tr>
+                </thead>
+                <tbody id="res-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="view-block" data-view-block="res-text">
+          <div class="view-block-bar">
+            <h3 class="view-block-title" data-i18n="res_text_title">Recommended resources</h3>
+            <div class="view-block-actions">
+              <span class="view-block-status" data-view-status hidden></span>
+              <button type="button" class="btn-ghost" data-view-copy data-i18n="copy">Copy</button>
+              <button type="button" class="btn-ghost" data-view-expand data-i18n="fullscreen">Fullscreen</button>
+              <button type="button" class="btn-ghost" data-view-collapse hidden data-i18n="exit_fullscreen">Exit fullscreen</button>
+            </div>
+          </div>
+          <div class="view-block-body">
+            <pre id="resources" class="conf-block modal-pre"></pre>
+          </div>
+        </section>
       </div>
 
       <div class="tab-panel" data-panel="settings" role="tabpanel" hidden>
-        <pre id="settings" class="conf-block modal-pre"></pre>
+        <section class="view-block" data-view-block="settings">
+          <div class="view-block-bar">
+            <h3 class="view-block-title" data-i18n="settings_text_title">Planning settings</h3>
+            <div class="view-block-actions">
+              <span class="view-block-status" data-view-status hidden></span>
+              <button type="button" class="btn-ghost" data-view-copy data-i18n="copy">Copy</button>
+              <button type="button" class="btn-ghost" data-view-expand data-i18n="fullscreen">Fullscreen</button>
+              <button type="button" class="btn-ghost" data-view-collapse hidden data-i18n="exit_fullscreen">Exit fullscreen</button>
+            </div>
+          </div>
+          <div class="view-block-body">
+            <pre id="settings" class="conf-block modal-pre"></pre>
+          </div>
+        </section>
       </div>
 
       <div class="tab-panel" data-panel="indexes" role="tabpanel" hidden>
-        <div class="table-toolbar">
-          <label class="table-find">
-            <span data-i18n="table_find">Find in table</span>
-            <input type="search" id="ix-find" data-i18n-placeholder="table_find_ph_ix" placeholder="index, GB, MB…" autocomplete="off">
-          </label>
-          <span class="table-find-count" id="ix-find-count" hidden></span>
-        </div>
-        <div class="table-wrap modal-table">
-          <table class="src-table result-table" id="ix-table">
-            <thead>
-              <tr>
-                <th class="sortable" data-sort-key="index" data-i18n="ix_index" data-soft-tip-key="ix_tip_index">Index name</th>
-                <th class="sortable" data-sort-key="label" data-i18n="ix_label" data-soft-tip-key="ix_tip_label">Source label</th>
-                <th class="sortable" data-sort-key="event_bytes" data-i18n="ix_event_bytes" data-soft-tip-key="ix_tip_event_bytes">Avg event size</th>
-                <th class="sortable" data-sort-key="daily_raw" data-i18n="ix_daily_raw" data-soft-tip-key="ix_tip_daily_raw">Daily raw volume</th>
-                <th class="sortable" data-sort-key="on_disk" data-i18n="ix_on_disk" data-soft-tip-key="ix_tip_on_disk">Daily on-disk</th>
-                <th class="sortable" data-sort-key="searchable" data-i18n="ix_searchable" data-soft-tip-key="ix_tip_searchable">Searchable size</th>
-                <th class="sortable" data-sort-key="max_total" data-i18n="ix_max_total" data-soft-tip-key="ix_tip_max_total">Total Index volume</th>
-                <th class="sortable" data-sort-key="home" data-i18n="ix_home" data-soft-tip-key="ix_tip_home">Hot/warm (homePath)</th>
-                <th class="sortable" data-sort-key="cold" data-i18n="ix_cold" data-soft-tip-key="ix_tip_cold">Cold volume</th>
-                <th class="sortable" data-sort-key="max_data" data-i18n="ix_max_data" data-soft-tip-key="ix_tip_max_data">Hot bucket size</th>
-                <th class="sortable" data-sort-key="frozen" data-i18n="ix_frozen_days" data-soft-tip-key="ix_tip_frozen">Retention days</th>
-                <th class="sortable" data-sort-key="summary" data-i18n="ix_summary" data-soft-tip-key="ix_tip_summary">Summary index</th>
-              </tr>
-            </thead>
-            <tbody id="ix-body"></tbody>
-          </table>
-        </div>
+        <section class="view-block" data-view-block="ix-table">
+          <div class="view-block-bar">
+            <div class="view-block-bar-start">
+              <h3 class="view-block-title" data-i18n="ix_table_title">Per-index sizing</h3>
+              <label class="table-find">
+                <span data-i18n="table_find">Find in table</span>
+                <input type="search" id="ix-find" data-i18n-placeholder="table_find_ph_ix" placeholder="index, GB, MB…" autocomplete="off">
+              </label>
+              <span class="table-find-count" id="ix-find-count" hidden></span>
+            </div>
+            <div class="view-block-actions">
+              <span class="view-block-status" data-view-status hidden></span>
+              <button type="button" class="btn-ghost" data-view-copy data-i18n="copy">Copy</button>
+              <button type="button" class="btn-ghost" data-view-expand data-i18n="fullscreen">Fullscreen</button>
+              <button type="button" class="btn-ghost" data-view-collapse hidden data-i18n="exit_fullscreen">Exit fullscreen</button>
+            </div>
+          </div>
+          <div class="view-block-body">
+            <div class="table-wrap modal-table">
+              <table class="src-table result-table" id="ix-table">
+                <thead>
+                  <tr>
+                    <th class="sortable" data-sort-key="index" data-i18n="ix_index" data-soft-tip-key="ix_tip_index">Index name</th>
+                    <th class="sortable" data-sort-key="label" data-i18n="ix_label" data-soft-tip-key="ix_tip_label">Source label</th>
+                    <th class="sortable" data-sort-key="event_bytes" data-i18n="ix_event_bytes" data-soft-tip-key="ix_tip_event_bytes">Avg event size</th>
+                    <th class="sortable" data-sort-key="daily_raw" data-i18n="ix_daily_raw" data-soft-tip-key="ix_tip_daily_raw">Daily raw volume</th>
+                    <th class="sortable" data-sort-key="on_disk" data-i18n="ix_on_disk" data-soft-tip-key="ix_tip_on_disk">Daily on-disk</th>
+                    <th class="sortable" data-sort-key="searchable" data-i18n="ix_searchable" data-soft-tip-key="ix_tip_searchable">Searchable size</th>
+                    <th class="sortable" data-sort-key="max_total" data-i18n="ix_max_total" data-soft-tip-key="ix_tip_max_total">Total Index volume</th>
+                    <th class="sortable" data-sort-key="home" data-i18n="ix_home" data-soft-tip-key="ix_tip_home">Hot/warm (homePath)</th>
+                    <th class="sortable" data-sort-key="cold" data-i18n="ix_cold" data-soft-tip-key="ix_tip_cold">Cold volume</th>
+                    <th class="sortable" data-sort-key="max_data" data-i18n="ix_max_data" data-soft-tip-key="ix_tip_max_data">Hot bucket size</th>
+                    <th class="sortable" data-sort-key="frozen" data-i18n="ix_frozen_days" data-soft-tip-key="ix_tip_frozen">Retention days</th>
+                    <th class="sortable" data-sort-key="summary" data-i18n="ix_summary" data-soft-tip-key="ix_tip_summary">Summary index</th>
+                  </tr>
+                </thead>
+                <tbody id="ix-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
       </div>
 
       <div class="tab-panel" data-panel="conf" role="tabpanel" hidden>
@@ -332,30 +465,72 @@
 
         <section class="wiz-pane" data-pane="1" hidden>
           <h3 data-i18n="retention">Retention & paths</h3>
+          <div class="mode-row cap-mode-row" role="radiogroup" aria-label="Capacity planning basis">
+            <label class="mode-chip">
+              <input type="radio" name="capacity_plan_mode" value="time" checked>
+              <span data-i18n="cap_mode_time">Plan by time</span>
+            </label>
+            <label class="mode-chip">
+              <input type="radio" name="capacity_plan_mode" value="disk">
+              <span data-i18n="cap_mode_disk">Plan by disk</span>
+            </label>
+          </div>
+          <p class="hint" id="cap-mode-hint" data-i18n="cap_mode_hint_time">Choose time or disk — the other side converts automatically from daily ingest × compression × headroom (same idea as GB/day = EPS).</p>
           <div class="tab-bar tab-bar-sm" role="tablist" data-tabs="reten">
             <button type="button" class="tab-btn is-active" role="tab" aria-selected="true" data-tab="ret-policy" data-i18n="tab_policy">Policy</button>
             <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="ret-paths" data-i18n="tab_paths">Paths</button>
             <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="ret-vol" data-i18n="tab_volumes">Volumes</button>
           </div>
           <div class="tab-panel is-active" data-panel="ret-policy" role="tabpanel">
-            <div class="grid">
-              <div class="field index-volume-field">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="retention_days" data-i18n="lbl_retention">Total Index volume</span><span class="field-hint" id="hint_retention_dyn" data-i18n="hint_retention_delete">After this period, buckets are deleted</span></span>
-                <input name="retention_days" type="number" value="90" min="1">
-                <label class="field check glass-chip index-volume-freeze"><input name="archive_frozen" type="checkbox" id="archive_frozen"> <span class="tip-mark" data-tip="retention_days" data-i18n="lbl_archive">Archive on freeze</span></label>
+            <div class="cap-pair-block" role="group" aria-label="Time equals searchable disk">
+              <div class="subpanel cap-side" id="cap-time-box" data-cap-side="time">
+                <h4 data-i18n="cap_time_title">Retention time</h4>
+                <div class="grid">
+                  <label class="field">
+                    <span class="field-copy"><span class="field-label tip-mark" data-tip="hot_warm_days" data-i18n="lbl_hot_warm">Days on fast (hot/warm) disk</span><span class="field-hint" data-i18n="hint_hot_warm">Recent searchable data on SSD/fast volume</span></span>
+                    <input name="hot_warm_days" id="hot_warm_days" type="number" value="30" min="0" step="1">
+                  </label>
+                  <label class="field">
+                    <span class="field-copy"><span class="field-label tip-mark" data-tip="cold_days" data-i18n="lbl_cold_days">Days on cold disk</span><span class="field-hint" data-i18n="hint_cold_days">Older searchable data before freeze</span></span>
+                    <input name="cold_days" id="cold_days" type="number" value="60" min="0" step="1">
+                  </label>
+                  <div class="field field-readonly" aria-live="polite">
+                    <span class="field-copy"><span class="field-label tip-mark" data-tip="retention_days" data-i18n="lbl_retention_total">Total searchable days</span><span class="field-hint" id="hint_retention_dyn" data-i18n="hint_retention_delete">After this period, buckets are deleted</span></span>
+                    <output id="retention_total_out" class="readonly-value" for="hot_warm_days cold_days">90</output>
+                    <input type="hidden" name="retention_days" id="retention_days" value="90">
+                  </div>
+                  <div class="field index-volume-field">
+                    <span class="field-copy"><span class="field-label tip-mark" data-tip="retention_days" data-i18n="lbl_archive_policy">After searchable retention</span><span class="field-hint" data-i18n="hint_archive_short">Archive keeps frozen buckets; off deletes them</span></span>
+                    <label class="field check glass-chip index-volume-freeze"><input name="archive_frozen" type="checkbox" id="archive_frozen"> <span class="tip-mark" data-tip="retention_days" data-i18n="lbl_archive">Archive on freeze</span></label>
+                  </div>
+                  <label class="field" data-depends-on="archive_frozen" hidden>
+                    <span class="field-copy"><span class="field-label tip-mark" data-tip="frozen_path" data-i18n="lbl_frozen_path">Frozen / archive path</span><span class="field-hint" data-i18n="hint_frozen_path">Used when archive on freeze is on</span></span>
+                    <input name="frozen_path" id="frozen_path" type="text" value="/frozen">
+                  </label>
+                </div>
+                <p class="callout-note" id="cap-time-scenario" aria-live="polite"></p>
               </div>
-              <label class="field" data-depends-on="archive_frozen" hidden>
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="frozen_path" data-i18n="lbl_frozen_path">Frozen / archive path</span><span class="field-hint" data-i18n="hint_frozen_path">Used when archive on freeze is on</span></span>
-                <input name="frozen_path" id="frozen_path" type="text" value="/frozen">
-              </label>
-              <label class="field">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="hot_warm_days" data-i18n="lbl_hot_warm">Days on fast (hot/warm) disk</span><span class="field-hint" data-i18n="hint_hot_warm">Rest of retention moves to cold</span></span>
-                <input name="hot_warm_days" type="number" value="30" min="1">
-              </label>
-              <div class="field field-readonly" aria-live="polite">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="cold_path_max" data-i18n="lbl_cold_vol">Cold volume (auto)</span><span class="field-hint" data-i18n="hint_cold_vol">Derived: maxTotal − homePath — not entered by you</span></span>
-                <output id="cold_vol_auto" class="readonly-value" for="retention_days hot_warm_days">—</output>
+              <span class="vol-eq vol-eq-lg cap-eq" aria-hidden="true">=</span>
+              <div class="subpanel cap-side" id="cap-disk-box" data-cap-side="disk">
+                <h4 data-i18n="cap_disk_title">Searchable disk (GB)</h4>
+                <div class="grid">
+                  <label class="field">
+                    <span class="field-copy"><span class="field-label tip-mark" data-tip="available_hot_gb" id="lbl_cap_hot" data-i18n="lbl_avail_hot">Hot/warm disk (GB)</span><span class="field-hint" id="hint_cap_hot" data-i18n="hint_avail_hot">Fast disk for recent data</span></span>
+                    <input name="available_hot_gb" id="available_hot_gb" type="number" step="any" min="0" value="10000" placeholder="e.g. 10000" data-i18n-placeholder="ph_avail_hot">
+                  </label>
+                  <label class="field">
+                    <span class="field-copy"><span class="field-label tip-mark" data-tip="available_cold_gb" id="lbl_cap_cold" data-i18n="lbl_avail_cold">Cold disk (GB)</span><span class="field-hint" id="hint_cap_cold" data-i18n="hint_avail_cold">Slower disk for older searchable data</span></span>
+                    <input name="available_cold_gb" id="available_cold_gb" type="number" step="any" min="0" value="20000" placeholder="e.g. 20000" data-i18n-placeholder="ph_avail_cold">
+                  </label>
+                  <div class="field field-readonly" aria-live="polite">
+                    <span class="field-copy"><span class="field-label" data-i18n="lbl_disk_total">Total searchable disk</span><span class="field-hint" data-i18n="hint_disk_total">Hot + cold (summaries are separate)</span></span>
+                    <output id="disk_total_out" class="readonly-value" for="available_hot_gb available_cold_gb">—</output>
+                  </div>
+                </div>
+                <p class="hint" id="cap-disk-bridge" data-i18n="cap_bridge_hint">Bridge: disk ≈ daily on-disk × days × headroom. Set daily GB on Volumes (or sources) so conversion stays accurate.</p>
               </div>
+            </div>
+            <div class="grid" style="margin-top:0.85rem">
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="headroom" data-i18n="lbl_headroom">Safety margin</span><span class="field-hint" data-i18n="hint_headroom">e.g. 1.2 = keep 20% spare capacity</span></span>
                 <input name="headroom" type="number" step="0.05" value="1.2" min="1">
@@ -368,6 +543,10 @@
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="summary_retention_days" data-i18n="lbl_summary_ret">Summary retention (days)</span><span class="field-hint" data-i18n="hint_summary_ret">How long summary indexes stay searchable</span></span>
                 <input name="summary_retention_days" type="number" value="90" min="1">
               </label>
+            </div>
+            <div class="field field-readonly" aria-live="polite" style="margin-top:0.65rem">
+              <span class="field-copy"><span class="field-label tip-mark" data-tip="cold_path_max" data-i18n="lbl_cold_vol">Cold volume (indexes.conf)</span><span class="field-hint" data-i18n="hint_cold_vol">After Calculate: coldPath.maxDataSizeMB = maxTotal − homePath</span></span>
+              <output id="cold_vol_auto" class="readonly-value" for="retention_days hot_warm_days">—</output>
             </div>
             <p class="hint" id="hint_archive_policy" data-i18n="hint_archive_policy_delete">Freeze off: Splunk deletes buckets at freeze — no archive path.</p>
           </div>
@@ -388,7 +567,7 @@
             </div>
           </div>
           <div class="tab-panel" data-panel="ret-vol" role="tabpanel" hidden>
-            <p class="hint" id="vol-mode-hint" data-i18n="tab_volumes_hint">Optional extras: a single daily total and/or how much disk you already have. Combine with source rows as you like.</p>
+            <p class="hint" id="vol-mode-hint" data-i18n="tab_volumes_hint">Daily ingest drives the time↔disk conversion. Summaries disk is planned separately from hot/cold searchable retention.</p>
             <div id="total-box" class="subpanel">
               <h4 data-i18n="total_title">Total daily volume</h4>
               <div class="vol-pair-block" role="group" aria-label="Total daily GB equals EPS">
@@ -405,22 +584,14 @@
               <p class="hint" data-i18n="total_hint">Leave both blank if you only use per-source volumes below. Edit either box — the other updates automatically. Calculate always uses Daily GB.</p>
             </div>
             <div id="capacity-box" class="subpanel">
-              <h4 data-i18n="cap_title">Disk you already have (GB)</h4>
+              <h4 data-i18n="cap_sum_title">Summaries disk (GB)</h4>
               <div class="grid">
-                <label class="field">
-                  <span class="field-copy"><span class="field-label tip-mark" data-tip="available_hot_gb" data-i18n="lbl_avail_hot">Available hot/warm disk</span><span class="field-hint" data-i18n="hint_avail_hot">Fast disk budget for recent data</span></span>
-                  <input name="available_hot_gb" type="number" step="any" min="0" value="10000" placeholder="e.g. 10000" data-i18n-placeholder="ph_avail_hot">
-                </label>
-                <label class="field">
-                  <span class="field-copy"><span class="field-label tip-mark" data-tip="available_cold_gb" data-i18n="lbl_avail_cold">Available cold disk</span><span class="field-hint" data-i18n="hint_avail_cold">Slower disk for older searchable data</span></span>
-                  <input name="available_cold_gb" type="number" step="any" min="0" value="20000" placeholder="e.g. 20000" data-i18n-placeholder="ph_avail_cold">
-                </label>
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="available_summaries_gb" data-i18n="lbl_avail_sum">Available summaries disk</span><span class="field-hint" data-i18n="hint_avail_sum">Space for summary / DMA data</span></span>
                   <input name="available_summaries_gb" type="number" step="any" min="0" value="2000" placeholder="e.g. 2000" data-i18n-placeholder="ph_avail_sum">
                 </label>
               </div>
-              <p class="hint" data-i18n="cap_hint">Used to check fit and estimate the max daily volume your disks can hold.</p>
+              <p class="hint" data-i18n="cap_sum_hint">Hot/cold searchable disk is linked to retention time on the Policy tab (plan by time or by disk).</p>
             </div>
           </div>
         </section>

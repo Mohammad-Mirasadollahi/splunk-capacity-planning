@@ -4,6 +4,14 @@ import { t, localizeFlow } from "./i18n.js";
 import { refreshOpenTip } from "./tips-ui.js";
 import { normalizeSnapshotRows, refreshTotalCounterpart, renderRows } from "./sources.js";
 import { dailyGBFromEPS, formatDailyGB, numOr0, resolveEventBytes, epsFromDailyGB } from "./volume-convert.js";
+import {
+  dailyOnDiskFromRaw,
+  daysFromDiskGB,
+  diskGBFromDays,
+  estimateCompression,
+  formatDiskGB,
+  roundDiskGB,
+} from "./retention-convert.js";
 
 /** Mark checkbox chips on/off and show/hide fields with data-depends-on="<checkbox id>". */
 export function syncToggleUI() {
@@ -80,28 +88,232 @@ export function syncArchiveFields() {
     policyHint.setAttribute("data-i18n", policyKey);
     policyHint.textContent = t(policyKey);
   }
-  syncColdVolumePreview();
+  syncCapacityPair(null);
   refreshOpenTip();
 }
 
-/** Read-only cold days preview: coldPath.maxDataSizeMB = maxTotal − homePath (after calc). */
+function readIntDays(el, fallback = 0) {
+  const n = Number(el?.value);
+  if (!Number.isFinite(n) || n < 0) return fallback;
+  return Math.floor(n);
+}
+
+function planningDailyRawGB() {
+  const g = collectGlobals();
+  if (g.total_daily_gb > 0) return g.total_daily_gb;
+  let sum = 0;
+  state.rows
+    .filter((r) => r.enabled)
+    .forEach((r) => {
+      const bytes = resolveEventBytes(r, state.rows);
+      let daily = numOr0(r.daily_gb);
+      if (!(daily > 0) && numOr0(r.eps) > 0) daily = dailyGBFromEPS(r.eps, bytes);
+      sum += daily;
+    });
+  return sum;
+}
+
+function planningDailyOnDiskGB() {
+  const g = collectGlobals();
+  const raw = planningDailyRawGB();
+  const comp = estimateCompression({
+    compression: g.compression,
+    indexer_cluster: g.indexer_cluster,
+    rf: g.rf,
+    sf: g.sf,
+  });
+  return dailyOnDiskFromRaw(raw, comp);
+}
+
+export function readCapacityPlanMode() {
+  const checked = document.querySelector('input[name="capacity_plan_mode"]:checked');
+  const mode = checked?.value === "disk" ? "disk" : "time";
+  state.capacityPlanMode = mode;
+  return mode;
+}
+
+function setCapSideEnabled(side, enabled) {
+  const box = document.getElementById(side === "time" ? "cap-time-box" : "cap-disk-box");
+  if (!box) return;
+  box.classList.toggle("is-primary", enabled);
+  box.classList.toggle("is-counterpart", !enabled);
+  box.querySelectorAll("input:not([type=hidden]):not([type=checkbox])").forEach((el) => {
+    if (el.name === "frozen_path") return;
+    el.readOnly = !enabled;
+    el.classList.toggle("is-counterpart-input", !enabled);
+  });
+}
+
+function updateCapacityLabels(mode) {
+  const hotLbl = document.getElementById("lbl_cap_hot");
+  const coldLbl = document.getElementById("lbl_cap_cold");
+  const hotHint = document.getElementById("hint_cap_hot");
+  const coldHint = document.getElementById("hint_cap_cold");
+  const modeHint = document.getElementById("cap-mode-hint");
+  if (mode === "disk") {
+    if (hotLbl) {
+      hotLbl.setAttribute("data-i18n", "lbl_avail_hot");
+      hotLbl.textContent = t("lbl_avail_hot");
+    }
+    if (coldLbl) {
+      coldLbl.setAttribute("data-i18n", "lbl_avail_cold");
+      coldLbl.textContent = t("lbl_avail_cold");
+    }
+    if (hotHint) {
+      hotHint.setAttribute("data-i18n", "hint_avail_hot");
+      hotHint.textContent = t("hint_avail_hot");
+    }
+    if (coldHint) {
+      coldHint.setAttribute("data-i18n", "hint_avail_cold");
+      coldHint.textContent = t("hint_avail_cold");
+    }
+    if (modeHint) {
+      modeHint.setAttribute("data-i18n", "cap_mode_hint_disk");
+      modeHint.textContent = t("cap_mode_hint_disk");
+    }
+  } else {
+    if (hotLbl) {
+      hotLbl.setAttribute("data-i18n", "lbl_need_hot");
+      hotLbl.textContent = t("lbl_need_hot");
+    }
+    if (coldLbl) {
+      coldLbl.setAttribute("data-i18n", "lbl_need_cold");
+      coldLbl.textContent = t("lbl_need_cold");
+    }
+    if (hotHint) {
+      hotHint.setAttribute("data-i18n", "hint_need_hot");
+      hotHint.textContent = t("hint_need_hot");
+    }
+    if (coldHint) {
+      coldHint.setAttribute("data-i18n", "hint_need_cold");
+      coldHint.textContent = t("hint_need_cold");
+    }
+    if (modeHint) {
+      modeHint.setAttribute("data-i18n", "cap_mode_hint_time");
+      modeHint.textContent = t("cap_mode_hint_time");
+    }
+  }
+}
+
+function syncRetentionTotal(hot, cold) {
+  const total = Math.max(0, hot + cold);
+  const hidden = document.getElementById("retention_days") || document.querySelector('input[name="retention_days"]');
+  const out = document.getElementById("retention_total_out");
+  if (hidden) hidden.value = String(total || "");
+  if (out) out.textContent = total > 0 ? String(total) : "—";
+  return total;
+}
+
+function syncDiskTotal(hotGB, coldGB) {
+  const out = document.getElementById("disk_total_out");
+  const sum = numOr0(hotGB) + numOr0(coldGB);
+  if (out) {
+    out.textContent = sum > 0 ? t("disk_total_fmt").replace("{n}", formatDiskGB(sum)) : "—";
+  }
+  return sum;
+}
+
+function updateTimeScenario(hot, cold, total) {
+  const el = document.getElementById("cap-time-scenario");
+  if (!el) return;
+  const archive = !!document.getElementById("archive_frozen")?.checked;
+  const key = archive ? "cap_scenario_archive" : "cap_scenario_delete";
+  el.setAttribute("data-i18n", key);
+  el.textContent = t(key)
+    .replace("{hot}", String(hot))
+    .replace("{cold}", String(cold))
+    .replace("{total}", String(total));
+}
+
+/** Read-only coldPath preview after days are known. */
 export function syncColdVolumePreview() {
   const out = document.getElementById("cold_vol_auto");
   if (!out) return;
-  const ret = Number(document.querySelector('input[name="retention_days"]')?.value);
-  const hw = Number(document.querySelector('input[name="hot_warm_days"]')?.value);
-  const retN = Number.isFinite(ret) && ret > 0 ? Math.floor(ret) : 0;
-  const hwN = Number.isFinite(hw) && hw > 0 ? Math.floor(hw) : 0;
-  const coldDays = Math.max(0, retN - hwN);
-  if (!retN) {
+  const hot = readIntDays(document.getElementById("hot_warm_days") || document.querySelector('input[name="hot_warm_days"]'));
+  const coldEl = document.getElementById("cold_days");
+  let cold = coldEl ? readIntDays(coldEl) : 0;
+  const retHidden = document.getElementById("retention_days");
+  const ret = retHidden ? readIntDays(retHidden) : hot + cold;
+  if (!coldEl && ret > hot) cold = ret - hot;
+  if (!ret) {
     out.textContent = "—";
     return;
   }
-  if (coldDays <= 0) {
+  if (cold <= 0) {
     out.textContent = t("cold_vol_auto_zero");
     return;
   }
-  out.textContent = t("cold_vol_auto").replace("{days}", String(coldDays));
+  out.textContent = t("cold_vol_auto").replace("{days}", String(cold));
+}
+
+/**
+ * Sync retention time ↔ searchable disk GB.
+ * @param {"hot_days"|"cold_days"|"hot_gb"|"cold_gb"|"mode"|"bridge"|null} edited
+ */
+export function syncCapacityPair(edited = null) {
+  const mode = readCapacityPlanMode();
+  setCapSideEnabled("time", mode === "time");
+  setCapSideEnabled("disk", mode === "disk");
+  updateCapacityLabels(mode);
+
+  const hotDaysEl = document.getElementById("hot_warm_days") || document.querySelector('input[name="hot_warm_days"]');
+  const coldDaysEl = document.getElementById("cold_days");
+  const hotGBEl = document.getElementById("available_hot_gb") || document.querySelector('input[name="available_hot_gb"]');
+  const coldGBEl = document.getElementById("available_cold_gb") || document.querySelector('input[name="available_cold_gb"]');
+  if (!hotDaysEl || !coldDaysEl || !hotGBEl || !coldGBEl) {
+    syncColdVolumePreview();
+    return;
+  }
+
+  const g = collectGlobals();
+  const headroom = g.headroom > 0 ? g.headroom : 1.2;
+  const rate = planningDailyOnDiskGB();
+  const bridge = document.getElementById("cap-disk-bridge");
+  if (bridge) {
+    if (!(rate > 0)) {
+      bridge.setAttribute("data-i18n", "cap_bridge_need_volume");
+      bridge.textContent = t("cap_bridge_need_volume");
+    } else {
+      bridge.setAttribute("data-i18n", "cap_bridge_hint");
+      bridge.textContent = t("cap_bridge_hint").replace("{rate}", formatDiskGB(rate)).replace("{h}", String(headroom));
+    }
+  }
+
+  if (mode === "time") {
+    const hot = readIntDays(hotDaysEl, 0);
+    const cold = readIntDays(coldDaysEl, 0);
+    const total = syncRetentionTotal(hot, cold);
+    updateTimeScenario(hot, cold, total);
+    if (rate > 0) {
+      if (document.activeElement !== hotGBEl) {
+        const needHot = roundDiskGB(diskGBFromDays(hot, rate, headroom));
+        hotGBEl.value = needHot > 0 ? String(needHot) : "";
+      }
+      if (document.activeElement !== coldGBEl) {
+        const needCold = roundDiskGB(diskGBFromDays(cold, rate, headroom));
+        coldGBEl.value = needCold > 0 ? String(needCold) : "";
+      }
+    }
+    syncDiskTotal(numOr0(hotGBEl.value), numOr0(coldGBEl.value));
+  } else {
+    const hotGB = numOr0(hotGBEl.value);
+    const coldGB = numOr0(coldGBEl.value);
+    syncDiskTotal(hotGB, coldGB);
+    if (rate > 0) {
+      if (document.activeElement !== hotDaysEl) {
+        hotDaysEl.value = String(daysFromDiskGB(hotGB, rate, headroom));
+      }
+      if (document.activeElement !== coldDaysEl) {
+        coldDaysEl.value = String(daysFromDiskGB(coldGB, rate, headroom));
+      }
+    }
+    const hot = readIntDays(hotDaysEl, 0);
+    const cold = readIntDays(coldDaysEl, 0);
+    const total = syncRetentionTotal(hot, cold);
+    updateTimeScenario(hot, cold, total);
+  }
+
+  syncColdVolumePreview();
 }
 
 export function syncVolumeInputMode(_mode, { convert: _convert = false } = {}) {
@@ -137,9 +349,16 @@ export function collectGlobals() {
   const archiveOn = fd.get("archive_frozen") === "on";
   const smartOn = fd.get("smartstore") === "on";
   const dmaOn = fd.get("enable_dma") === "on";
+  const hotDays = num(fd, "hot_warm_days", 30);
+  const coldDaysRaw = fd.get("cold_days");
+  let retention = num(fd, "retention_days", 90);
+  if (coldDaysRaw != null && String(coldDaysRaw) !== "") {
+    const cold = Math.max(0, Math.floor(Number(coldDaysRaw) || 0));
+    retention = Math.max(0, Math.floor(hotDays) + cold);
+  }
   return {
-    retention_days: num(fd, "retention_days", 90),
-    hot_warm_days: num(fd, "hot_warm_days", 30),
+    retention_days: retention,
+    hot_warm_days: hotDays,
     headroom: num(fd, "headroom", 1.2),
     summary_pct: num(fd, "summary_pct", 0.1),
     summary_retention_days: num(fd, "summary_retention_days", 90),
@@ -168,6 +387,7 @@ export function collectGlobals() {
     available_hot_gb: num(fd, "available_hot_gb", 0),
     available_cold_gb: num(fd, "available_cold_gb", 0),
     available_summaries_gb: num(fd, "available_summaries_gb", 0),
+    capacity_plan_mode: readCapacityPlanMode(),
   };
 }
 
@@ -206,6 +426,17 @@ export function applyGlobals(g) {
     const el = form.elements.namedItem(k);
     if (el) el.checked = !!g[k];
   }
+  const coldEl = document.getElementById("cold_days");
+  if (coldEl) {
+    const ret = Number(g.retention_days) || 0;
+    const hw = Number(g.hot_warm_days) || 0;
+    coldEl.value = String(Math.max(0, ret - hw));
+  }
+  const mode = g.capacity_plan_mode === "disk" ? "disk" : "time";
+  document.querySelectorAll('input[name="capacity_plan_mode"]').forEach((el) => {
+    el.checked = el.value === mode;
+  });
+  state.capacityPlanMode = mode;
   syncClusterFields();
   syncArchiveFields();
 }
@@ -223,8 +454,9 @@ export function migrateWizardStep(data) {
 
 export function snapshot() {
   return {
-    version: 5,
+    version: 6,
     volume_input_mode: readVolumeInputMode(),
+    capacity_plan_mode: readCapacityPlanMode(),
     globals: collectGlobals(),
     rows: state.rows,
     step: state.step,
@@ -233,6 +465,9 @@ export function snapshot() {
 
 export function applySnapshot(data) {
   if (!data || !Array.isArray(data.rows)) throw new Error("invalid save file");
+  if (data.capacity_plan_mode && data.globals) {
+    data.globals.capacity_plan_mode = data.capacity_plan_mode;
+  }
   applyGlobals(data.globals);
   state.rows = normalizeSnapshotRows(data.rows);
   renderRows();
@@ -243,9 +478,11 @@ export function applySnapshot(data) {
     (state.rows.some((r) => Number(r.eps) > 0 && !(Number(r.daily_gb) > 0)) ? "eps" : "daily_gb");
   syncVolumeInputMode(mode);
   syncArchiveFields();
+  syncCapacityPair("mode");
 }
 
 export function buildPlanBody() {
+  syncCapacityPair(null);
   const g = collectGlobals();
   syncVolumeInputMode("daily_gb");
   const sources = state.rows
@@ -275,7 +512,8 @@ export function buildPlanBody() {
       if (r.summary_index_name) row.summary_index_name = String(r.summary_index_name).trim();
       return row;
     });
-  return { ...g, sources };
+  const { capacity_plan_mode: _mode, ...payload } = g;
+  return { ...payload, sources };
 }
 
 export function fillReview() {
@@ -290,20 +528,21 @@ export function fillReview() {
     if (!(daily > 0) && numOr0(r.eps) > 0) daily = dailyGBFromEPS(r.eps, bytes);
     srcSum += daily;
   });
+  const coldDays = Math.max(0, g.retention_days - g.hot_warm_days);
   const lines = [
     `— From topology —`,
     `Indexer cluster: ${g.indexer_cluster} (RF=${g.rf} SF=${g.sf}) | n_idx=${g.n_idx || "auto"}`,
     `Search head cluster: ${g.search_head_cluster} | users=${g.concurrent_users} searches=${g.concurrent_searches} saved=${g.saved_searches} | n_sh=${g.n_sh || "auto"}`,
     `apps: ES=${g.has_es} ITSI=${g.has_itsi} DMA=${g.enable_dma} SmartStore=${g.smartstore}`,
     `— From retention —`,
-    `retention: ${g.retention_days}d | hot_warm: ${g.hot_warm_days}d | headroom: ${g.headroom} | summary_ret: ${g.summary_retention_days}d`,
+    `plan by: ${g.capacity_plan_mode} | hot: ${g.hot_warm_days}d + cold: ${coldDays}d = total ${g.retention_days}d | headroom: ${g.headroom} | summary_ret: ${g.summary_retention_days}d`,
     `archive_frozen: ${g.archive_frozen}${g.archive_frozen ? ` → ${g.frozen_path}` : ""}`,
     `paths: ${g.hot_path} | ${g.cold_path} | ${g.frozen_path} | ${g.summaries_path}`,
   ];
   if (g.total_daily_gb) lines.push(`total_daily_gb: ${g.total_daily_gb} (sources scale to this when both set)`);
   if (g.available_hot_gb || g.available_cold_gb || g.available_summaries_gb) {
     lines.push(
-      `disk budget GB: hot=${g.available_hot_gb || 0} cold=${g.available_cold_gb || 0} summaries=${g.available_summaries_gb || 0}`
+      `disk GB: hot=${g.available_hot_gb || 0} cold=${g.available_cold_gb || 0} summaries=${g.available_summaries_gb || 0}`
     );
   }
   lines.push(`— From sources —`);
@@ -323,8 +562,10 @@ export function fillReview() {
 export function bindPlanFormChrome() {
   document.querySelectorAll('.field.check input[type="checkbox"]').forEach((input) => {
     input.addEventListener("change", () => {
-      if (input.id === "indexer_cluster") syncClusterFields();
-      else if (input.id === "search_head_cluster") {
+      if (input.id === "indexer_cluster") {
+        syncClusterFields();
+        syncCapacityPair("bridge");
+      } else if (input.id === "search_head_cluster") {
         syncSHCMemberHint();
         syncToggleUI();
       } else if (input.id === "archive_frozen") syncArchiveFields();
@@ -339,10 +580,26 @@ export function bindPlanFormChrome() {
   document.querySelector('input[name="n_sh"]')?.addEventListener("input", syncSHCMemberHint);
   syncClusterFields();
   syncArchiveFields();
-  document.querySelectorAll('input[name="retention_days"], input[name="hot_warm_days"]').forEach((el) => {
-    el.addEventListener("input", syncColdVolumePreview);
-    el.addEventListener("change", syncColdVolumePreview);
+
+  document.querySelectorAll('input[name="capacity_plan_mode"]').forEach((el) => {
+    el.addEventListener("change", () => syncCapacityPair("mode"));
   });
-  syncColdVolumePreview();
+
+  const wire = (sel, edited) => {
+    document.querySelectorAll(sel).forEach((el) => {
+      el.addEventListener("input", () => syncCapacityPair(edited));
+      el.addEventListener("change", () => syncCapacityPair(edited));
+    });
+  };
+  wire('input[name="hot_warm_days"], #hot_warm_days', "hot_days");
+  wire('input[name="cold_days"], #cold_days', "cold_days");
+  wire('input[name="available_hot_gb"], #available_hot_gb', "hot_gb");
+  wire('input[name="available_cold_gb"], #available_cold_gb', "cold_gb");
+  wire(
+    'input[name="headroom"], input[name="total_daily_gb"], input[name="compression"], input[name="rf"], input[name="sf"]',
+    "bridge"
+  );
+
+  syncCapacityPair("mode");
   syncVolumeInputMode("daily_gb");
 }

@@ -351,7 +351,9 @@ See also [`examples/plan.sample.json`](examples/plan.sample.json).
 
 First-run Web UI seeds the same volume defaults (`total_daily_gb` 500, hot/cold/summaries disk budgets, Windows 400 + Linux 100 GB/day raw) so Calculate works before you edit anything.
 
-**Volume mode:** choose **Daily GB** *or* **EPS** (not both as primary inputs). Under each number the other unit is estimated from average event size; sources without an EPS inherit the average EPS of filled sources.
+**Volume pair:** each source (and Total daily volume) uses linked **GB/day = EPS** inputs — edit either side; planning math uses raw Daily GB.
+
+**Retention pair:** on Policy, choose **Plan by time** or **Plan by disk**. Hot days + cold days = total searchable days; searchable hot/cold GB convert via `daily on-disk × days × headroom` (same dual-edit idea as GB/day = EPS). Archive on freeze is policy only (does not add days).
 
 ---
 
@@ -359,10 +361,11 @@ First-run Web UI seeds the same volume defaults (`total_daily_gb` 500, hot/cold/
 
 1. `./bin/scpcalc serve` → open `http://127.0.0.1:12345`  
    (or GitHub Pages: `https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/`)
-2. **Start wizard:** topology → retention (Volumes: optional total/disk) → sources → review → **Calculate**
-3. **Results tabs:** Overview (metrics + node-count rationale) · Charts · Design · Resources · Settings · Per index · indexes.conf (editor / rename)
-4. Language toggle **EN / FA**; hover dotted labels for formula + example + official links
-5. Download design text / `indexes.conf` from the results toolbar
+2. **Start wizard:** topology → retention (Policy: time↔disk · Volumes: daily GB/EPS + summaries disk) → sources → review → **Calculate**
+3. **Results tabs:** Overview · Charts (layer totals) · Design · Resources (labeled **Nodes** + role table) · Settings · Per index · indexes.conf (editor / rename)
+4. **Fullscreen / Copy** on Design, Resources, Settings, Nodes, and Per-index panels
+5. Language toggle **EN / FA**; soft tips (dark) for formulas + official links
+6. Download design text / `indexes.conf` from the results toolbar — conf header includes author, GitHub, and a plan snapshot from your settings
 
 ### Save / Export / Import
 
