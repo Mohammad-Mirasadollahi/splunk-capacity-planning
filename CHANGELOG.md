@@ -2,6 +2,10 @@
 
 All notable changes to this repository are documented here.
 
+## 0.2.0 — 2026-07-17
+
+- Capacity UX 0.2: time↔disk retention, labeled Nodes (Peer), fullscreen/copy panels, chart totals, dynamic indexes.conf header, hide Back on wizard step 1
+
 ## 0.1.4 — 2026-07-17
 
 - SHC 1-or-≥3 + Manager/Deployer, cluster Yes/No prompts, wizard Back beside Next, Persian RTL arrows, and issue templates
