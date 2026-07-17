@@ -14,9 +14,9 @@
   --glass-strong: rgba(255, 255, 255, 0.1);
   --line: rgba(255, 255, 255, 0.16);
   --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-  --font: "Segoe UI", system-ui, -apple-system, sans-serif;
-  --font-display: "Segoe UI", system-ui, -apple-system, sans-serif;
-  --font-fa: Tahoma, "Segoe UI", sans-serif;
+  --font: "DM Sans", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Fraunces", "DM Sans", Georgia, serif;
+  --font-fa: "Vazirmatn", Tahoma, "Segoe UI", sans-serif;
   --mono: ui-monospace, "Cascadia Code", "Consolas", monospace;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --mx: 50%;
@@ -93,6 +93,16 @@ body[data-lang="fa"] {
 
 body[data-lang="fa"] h1,
 body[data-lang="fa"] h2,
-body[data-lang="fa"] h3 {
+body[data-lang="fa"] h3,
+body[data-lang="fa"] .field-label,
+body[data-lang="fa"] .eyebrow,
+body[data-lang="fa"] .wizard-steps {
   font-family: var(--font-fa);
+}
+
+body {
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
