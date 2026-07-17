@@ -459,6 +459,24 @@ window.SCP_TIPS = {
         { label: "ES scaling", url: "https://help.splunk.com/en/splunk-enterprise-security-8/install/8.5/planning/considerations-for-scaling-deployments" },
       ],
     },
+    "Cluster manager": {
+      title: "Cluster manager",
+      formula: "1 management node when indexer_cluster=true (not a data peer)",
+      body: "Required for an indexer cluster. Coordinates RF/SF, bucket fix-up, and peer membership. Do not store customer searchable data here.",
+      example: "3 indexer peers + 1 cluster manager.",
+      links: [
+        { label: "About indexer clusters", url: "https://docs.splunk.com/Documentation/Splunk/latest/Indexer/Aboutclusters" },
+      ],
+    },
+    "SHC deployer": {
+      title: "SHC deployer",
+      formula: "1 deployer when search_head_cluster=true (not a search member)",
+      body: "Pushes apps/config to SHC members. Must not run on a cluster member. Members are 1 (interim) or ≥3 — never 2.",
+      example: "3 SH members + 1 deployer.",
+      links: [
+        { label: "SHC system requirements", url: "https://docs.splunk.com/Documentation/Splunk/latest/DistSearch/SHCsystemrequirements" },
+      ],
+    },
     "CPU physical": {
       title: "CPU physical cores (sizing basis)",
       formula: "Assign PHYSICAL cores from Reference hardware / ES / ITSI tables",

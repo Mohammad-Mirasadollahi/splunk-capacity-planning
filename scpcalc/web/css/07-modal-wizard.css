@@ -97,6 +97,42 @@ body.modal-open {
   overflow: auto;
 }
 
+#feature-prompt-modal {
+  z-index: 95;
+}
+
+.feature-prompt-modal {
+  width: min(560px, 100%);
+  max-height: min(92vh, 640px);
+}
+
+.feature-prompt-body {
+  padding: 0.85rem 1.25rem 0.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.feature-prompt-doc {
+  font-size: 0.82rem;
+  word-break: break-word;
+}
+
+.feature-prompt-doc a {
+  color: var(--accent, #3fe0c5);
+}
+
+.feature-prompt-dont {
+  align-self: flex-start;
+}
+
+.is-prompt-enabled {
+  outline: 2px solid rgba(63, 224, 197, 0.85);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 6px rgba(63, 224, 197, 0.18);
+  transition: outline-color 0.3s ease, box-shadow 0.3s ease;
+}
+
 .suggest-list {
   display: grid;
   gap: 0.65rem;

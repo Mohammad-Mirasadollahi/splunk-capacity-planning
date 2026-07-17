@@ -22,6 +22,7 @@ import {
   extractShareFragment,
   hasShareHash,
 } from "./js/share-url.js";
+import { bindFeaturePrompts } from "./js/feature-prompt.js";
 
 function flashSave(msg) {
   const saveMsg = document.getElementById("save-msg");
@@ -214,9 +215,16 @@ bindAtmosphere();
 initTabBars();
 bindModalChrome({
   onEscapeWizard: closeWizard,
-  onEscapeOther: (el) => closeModal(el),
+  onEscapeOther: (el) => {
+    if (el?.id === "feature-prompt-modal") {
+      document.getElementById("feature-prompt-no")?.click();
+      return;
+    }
+    closeModal(el);
+  },
 });
 bindPlanFormChrome();
+bindFeaturePrompts();
 bindSourcesTable();
 bindWizard();
 bindConfEditor();

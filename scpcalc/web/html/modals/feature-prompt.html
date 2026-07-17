@@ -1,0 +1,32 @@
+  <!-- Reusable Yes / No / Don't show prompt (cluster & other feature toggles) -->
+  <div class="modal-root" id="feature-prompt-modal" hidden>
+    <div class="modal-backdrop" data-fp-dismiss></div>
+    <div class="modal glass feature-prompt-modal" role="dialog" aria-modal="true" aria-labelledby="feature-prompt-title">
+      <div class="panel-shine" aria-hidden="true"></div>
+      <header class="wizard-head">
+        <div>
+          <p class="eyebrow" id="feature-prompt-eyebrow" data-i18n="fp_eyebrow">Topology choice</p>
+          <h2 id="feature-prompt-title">Enable clustering?</h2>
+        </div>
+        <button type="button" class="btn-x" data-fp-dismiss aria-label="Close">×</button>
+      </header>
+      <div class="feature-prompt-body">
+        <p class="hint" id="feature-prompt-body"></p>
+        <p class="hint feature-prompt-doc" id="feature-prompt-doc" hidden></p>
+        <label class="field check glass-chip feature-prompt-dont">
+          <input type="checkbox" id="feature-prompt-dont">
+          <span data-i18n="fp_dont_show">Don't show this again</span>
+        </label>
+      </div>
+      <footer class="wizard-foot">
+        <button type="button" class="btn-ghost" id="feature-prompt-no" data-i18n="fp_no">No</button>
+        <div class="wiz-foot-right">
+          <button type="button" class="btn-ghost" id="feature-prompt-dont-btn" data-i18n="fp_dont_show_btn">Don't show</button>
+          <button type="button" class="cta" id="feature-prompt-yes">
+            <span class="cta-label" data-i18n="fp_yes">Yes, enable</span>
+            <span class="cta-glow" aria-hidden="true"></span>
+          </button>
+        </div>
+      </footer>
+    </div>
+  </div>
