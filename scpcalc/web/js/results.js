@@ -49,6 +49,72 @@ export function bindResultTableFind() {
   wire("ix-find", "ix-body", "ix-find-count");
 }
 
+/** Click column headers to sort. Uses data-sort on each <td> when present. */
+export function bindTableSort(tableId) {
+  const table = document.getElementById(tableId);
+  if (!table) return;
+  const heads = table.querySelectorAll("thead th[data-sort-key]");
+  if (!heads.length) return;
+  if (table.dataset.sortBound === "1") return;
+  table.dataset.sortBound = "1";
+
+  heads.forEach((th, colIdx) => {
+    th.classList.add("sortable");
+    th.setAttribute("role", "columnheader");
+    th.tabIndex = 0;
+    if (!th.getAttribute("aria-sort")) th.setAttribute("aria-sort", "none");
+    th.title = ""; // native title off — soft tip handles help
+    const sortCol = () => {
+      const asc = th.getAttribute("aria-sort") !== "ascending";
+      heads.forEach((h) => {
+        h.setAttribute("aria-sort", "none");
+      });
+      th.setAttribute("aria-sort", asc ? "ascending" : "descending");
+      const tbody = table.tBodies[0];
+      if (!tbody) return;
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      rows.sort((a, b) => {
+        const ac = a.children[colIdx];
+        const bc = b.children[colIdx];
+        const av = ac?.dataset?.sort ?? ac?.textContent ?? "";
+        const bv = bc?.dataset?.sort ?? bc?.textContent ?? "";
+        const an = Number(av);
+        const bn = Number(bv);
+        const bothNum =
+          Number.isFinite(an) &&
+          Number.isFinite(bn) &&
+          String(av).trim() !== "" &&
+          String(bv).trim() !== "" &&
+          !Number.isNaN(an) &&
+          !Number.isNaN(bn);
+        let cmp = 0;
+        if (bothNum) cmp = an - bn;
+        else cmp = String(av).localeCompare(String(bv), undefined, { numeric: true, sensitivity: "base" });
+        return asc ? cmp : -cmp;
+      });
+      rows.forEach((r) => tbody.appendChild(r));
+      const findId = tableId === "ix-table" ? "ix-find" : tableId === "res-table" ? "res-find" : null;
+      if (findId) {
+        const countId = findId === "ix-find" ? "ix-find-count" : "res-find-count";
+        const bodyId = findId === "ix-find" ? "ix-body" : "res-body";
+        applyTableFind(findId, bodyId, countId);
+      }
+    };
+    th.addEventListener("click", (e) => {
+      // Don't steal clicks from tip interaction — tip is hover only.
+      e.preventDefault();
+      sortCol();
+    });
+    th.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        sortCol();
+      }
+    });
+  });
+  bindTips(table.querySelector("thead"));
+}
+
 function renderPlanResult(data) {
   const err = document.getElementById("err");
   const out = document.getElementById("out");
@@ -230,21 +296,24 @@ function renderPlanResult(data) {
           .filter((x) => x != null && x !== "")
           .join(" ");
         return `<tr data-find="${escapeAttr(find)}">
-            <td>${escapeAttr(ix.index_name)}</td>
-            <td>${escapeAttr(label)}</td>
-            <td>${ix.event_bytes ?? "—"}</td>
-            <td>${ix.daily_raw_gb}</td>
-            <td>${ix.daily_on_disk_gb}</td>
-            <td>${ix.searchable_tb}</td>
-            <td>${ix.max_total_data_size_mb}</td>
-            <td>${ix.home_path_max_data_size_mb}</td>
-            <td>${coldMB}</td>
-            <td>${escapeAttr(ix.max_data_size || "—")}</td>
-            <td>${frozenDays}</td>
-            <td>${escapeAttr(sum)}</td>
+            <td data-sort="${escapeAttr(String(ix.index_name || ""))}">${escapeAttr(ix.index_name)}</td>
+            <td data-sort="${escapeAttr(String(label))}">${escapeAttr(label)}</td>
+            <td data-sort="${Number(ix.event_bytes) || 0}">${ix.event_bytes ?? "—"} <span class="unit">B</span></td>
+            <td data-sort="${Number(ix.daily_raw_gb) || 0}">${ix.daily_raw_gb} <span class="unit">GB/d</span></td>
+            <td data-sort="${Number(ix.daily_on_disk_gb) || 0}">${ix.daily_on_disk_gb} <span class="unit">GB/d</span></td>
+            <td data-sort="${Number(ix.searchable_tb) || 0}">${ix.searchable_tb} <span class="unit">TB</span></td>
+            <td data-sort="${Number(ix.max_total_data_size_mb) || 0}">${ix.max_total_data_size_mb} <span class="unit">MB</span></td>
+            <td data-sort="${Number(ix.home_path_max_data_size_mb) || 0}">${ix.home_path_max_data_size_mb} <span class="unit">MB</span></td>
+            <td data-sort="${Number(coldMB) || 0}">${coldMB} <span class="unit">MB</span></td>
+            <td data-sort="${escapeAttr(String(ix.max_data_size || ""))}">${escapeAttr(ix.max_data_size || "—")}</td>
+            <td data-sort="${frozenDays === "—" ? -1 : Number(frozenDays) || 0}">${frozenDays}${frozenDays === "—" ? "" : ` <span class="unit">d</span>`}</td>
+            <td data-sort="${escapeAttr(sum)}">${escapeAttr(sum)}</td>
           </tr>`;
       })
       .join("");
+    bindTips(document.querySelector("#ix-table thead"));
+    bindTableSort("ix-table");
+    applyTableFind("ix-find", "ix-body", "ix-find-count");
   }
 
   bindResultTableFind();

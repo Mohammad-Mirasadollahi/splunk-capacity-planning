@@ -12,7 +12,7 @@ import { bindPlanFormChrome, snapshot, applySnapshot, applyGlobals, fillReview, 
 import { bindConfEditor, getConfText, copyConf } from "./js/conf-editor.js";
 import { renderAllCharts } from "./js/charts.js";
 import { bindWizard, openWizard, closeWizard, showStep, syncWizardBackLabel } from "./js/wizard.js";
-import { runCalculate, bindResultTableFind } from "./js/results.js";
+import { runCalculate, bindResultTableFind, bindTableSort } from "./js/results.js";
 import { downloadText } from "./js/util.js";
 import { initEngine, fetchPresets, engineMode } from "./js/engine.js";
 import {
@@ -236,6 +236,7 @@ bindConfEditor();
 bindPersistence();
 bindCalculate();
 bindResultTableFind();
+bindTableSort("ix-table");
 
 boot().catch((ex) => {
   flashSave("Failed to load presets: " + (ex.message || ex));

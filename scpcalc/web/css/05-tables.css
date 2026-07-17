@@ -306,6 +306,51 @@
   color: var(--muted);
 }
 
+.result-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  position: relative;
+  padding-inline-end: 1.35rem;
+  transition: color 0.15s var(--ease);
+}
+
+.result-table th.sortable:hover,
+.result-table th.sortable:focus-visible {
+  color: var(--accent);
+  outline: none;
+}
+
+.result-table th.sortable::after {
+  content: "↕";
+  position: absolute;
+  inset-inline-end: 0.35rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.72rem;
+  opacity: 0.4;
+  color: var(--muted);
+}
+
+.result-table th.sortable[aria-sort="ascending"]::after {
+  content: "↑";
+  opacity: 1;
+  color: var(--accent);
+}
+
+.result-table th.sortable[aria-sort="descending"]::after {
+  content: "↓";
+  opacity: 1;
+  color: var(--accent);
+}
+
+.result-table td .unit {
+  margin-inline-start: 0.2rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+
 #ix-table {
   min-width: 980px;
 }

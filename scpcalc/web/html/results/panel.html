@@ -84,18 +84,18 @@
           <table class="src-table result-table" id="ix-table">
             <thead>
               <tr>
-                <th data-i18n="ix_index">index</th>
-                <th data-i18n="ix_label">label</th>
-                <th data-i18n="ix_event_bytes">event_bytes</th>
-                <th data-i18n="ix_daily_raw">daily_raw</th>
-                <th data-i18n="ix_on_disk">on_disk</th>
-                <th data-i18n="ix_searchable">searchable_tb</th>
-                <th data-i18n="ix_max_total">maxTotal MB</th>
-                <th data-i18n="ix_home">homePath MB</th>
-                <th data-i18n="ix_cold">coldPath MB</th>
-                <th data-i18n="ix_max_data">maxDataSize</th>
-                <th data-i18n="ix_frozen_days">frozen days</th>
-                <th data-i18n="ix_summary">summary</th>
+                <th class="sortable" data-sort-key="index" data-i18n="ix_index" data-soft-tip-key="ix_tip_index">Index name</th>
+                <th class="sortable" data-sort-key="label" data-i18n="ix_label" data-soft-tip-key="ix_tip_label">Source label</th>
+                <th class="sortable" data-sort-key="event_bytes" data-i18n="ix_event_bytes" data-soft-tip-key="ix_tip_event_bytes">Avg event size</th>
+                <th class="sortable" data-sort-key="daily_raw" data-i18n="ix_daily_raw" data-soft-tip-key="ix_tip_daily_raw">Daily raw volume</th>
+                <th class="sortable" data-sort-key="on_disk" data-i18n="ix_on_disk" data-soft-tip-key="ix_tip_on_disk">Daily on-disk</th>
+                <th class="sortable" data-sort-key="searchable" data-i18n="ix_searchable" data-soft-tip-key="ix_tip_searchable">Searchable size</th>
+                <th class="sortable" data-sort-key="max_total" data-i18n="ix_max_total" data-soft-tip-key="ix_tip_max_total">Total Index volume</th>
+                <th class="sortable" data-sort-key="home" data-i18n="ix_home" data-soft-tip-key="ix_tip_home">Hot/warm (homePath)</th>
+                <th class="sortable" data-sort-key="cold" data-i18n="ix_cold" data-soft-tip-key="ix_tip_cold">Cold volume</th>
+                <th class="sortable" data-sort-key="max_data" data-i18n="ix_max_data" data-soft-tip-key="ix_tip_max_data">Hot bucket size</th>
+                <th class="sortable" data-sort-key="frozen" data-i18n="ix_frozen_days" data-soft-tip-key="ix_tip_frozen">Retention days</th>
+                <th class="sortable" data-sort-key="summary" data-i18n="ix_summary" data-soft-tip-key="ix_tip_summary">Summary index</th>
               </tr>
             </thead>
             <tbody id="ix-body"></tbody>

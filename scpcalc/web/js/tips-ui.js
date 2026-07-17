@@ -1,5 +1,5 @@
 import { escapeAttr } from "./util.js";
-import { lang, localizeFlow } from "./i18n.js";
+import { lang, localizeFlow, t } from "./i18n.js";
 
 const tipPop = document.getElementById("tip-pop");
 let tipHideTimer = null;
@@ -119,12 +119,18 @@ function positionTip(anchor) {
 
 function showTip(anchor) {
   if (!tipPop || !anchor) return;
-  const soft = anchor.getAttribute("data-soft-tip");
+  const tipKey = anchor.getAttribute("data-soft-tip-key");
+  const soft = tipKey ? t(tipKey) : anchor.getAttribute("data-soft-tip");
   const key = anchor.getAttribute("data-tip");
   let html = "";
   if (soft) {
     tipPop.classList.add("is-soft");
-    html = renderSoftTipHTML(soft, anchor.getAttribute("data-soft-tip-title") || "");
+    const heading =
+      tipKey && soft
+        ? anchor.getAttribute("data-soft-tip-title") ||
+          (anchor.getAttribute("data-i18n") ? t(anchor.getAttribute("data-i18n")) : anchor.textContent?.trim() || "")
+        : anchor.getAttribute("data-soft-tip-title") || "";
+    html = renderSoftTipHTML(soft, heading);
   } else if (key) {
     tipPop.classList.remove("is-soft");
     const tip = enrichTip(key, tipCatalog()[key]);
@@ -164,7 +170,7 @@ function wireTipEl(el) {
 
 export function bindTips(root) {
   const scope = root || document;
-  scope.querySelectorAll("[data-tip], [data-soft-tip]").forEach(wireTipEl);
+  scope.querySelectorAll("[data-tip], [data-soft-tip], [data-soft-tip-key]").forEach(wireTipEl);
 }
 
 export function initTips() {
