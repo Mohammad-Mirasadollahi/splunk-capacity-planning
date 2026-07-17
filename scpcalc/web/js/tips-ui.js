@@ -1,5 +1,5 @@
 import { escapeAttr } from "./util.js";
-import { lang } from "./i18n.js";
+import { lang, localizeFlow } from "./i18n.js";
 
 const tipPop = document.getElementById("tip-pop");
 let tipHideTimer = null;
@@ -10,25 +10,29 @@ export function tipCatalog() {
   return pack[lang()] || pack.en || {};
 }
 
+function tipText(s) {
+  return escapeAttr(localizeFlow(s || ""));
+}
+
 function renderTipHTML(tip) {
   if (!tip) return "";
   const links = (tip.links || [])
     .map(
       (L) =>
-        `<a class="tip-doc" href="${L.url}" target="_blank" rel="noopener noreferrer">${escapeAttr(L.label)} ↗</a>`
+        `<a class="tip-doc" href="${L.url}" target="_blank" rel="noopener noreferrer">${escapeAttr(L.label)} ${lang() === "fa" ? "↖" : "↗"}</a>`
     )
     .join("");
   const isFa = lang() === "fa";
   const exampleBlock = tip.example
-    ? `<p class="tip-example"><span>${isFa ? "مثال" : "Example"}</span> ${escapeAttr(tip.example)}</p>`
+    ? `<p class="tip-example"><span>${isFa ? "مثال" : "Example"}</span> ${tipText(tip.example)}</p>`
     : "";
   const impactBlock = tip.impact
-    ? `<p class="tip-impact"><span>${isFa ? "اگر عوض شود" : "If you change this"}</span> ${escapeAttr(tip.impact)}</p>`
+    ? `<p class="tip-impact"><span>${isFa ? "اگر عوض شود" : "If you change this"}</span> ${tipText(tip.impact)}</p>`
     : "";
   return `<div class="tip-inner">
-      <strong class="tip-title">${escapeAttr(tip.title || "")}</strong>
-      <p class="tip-body">${escapeAttr(tip.body || "")}</p>
-      <pre class="tip-formula">${escapeAttr(tip.formula || "")}</pre>
+      <strong class="tip-title">${tipText(tip.title || "")}</strong>
+      <p class="tip-body">${tipText(tip.body || "")}</p>
+      <pre class="tip-formula">${tipText(tip.formula || "")}</pre>
       ${exampleBlock}
       ${impactBlock}
       <div class="tip-links">${links}</div>

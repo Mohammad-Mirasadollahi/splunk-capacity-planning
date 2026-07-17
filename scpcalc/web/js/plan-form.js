@@ -1,6 +1,6 @@
 import { state } from "./state.js";
 import { num } from "./util.js";
-import { t } from "./i18n.js";
+import { t, localizeFlow } from "./i18n.js";
 import { normalizeSnapshotRows, refreshTotalCounterpart, renderRows } from "./sources.js";
 import { convertRowsForMode, resolveEPS, resolveEventBytes, dailyGBFromEPS, formatDailyGB, numOr0 } from "./volume-convert.js";
 
@@ -309,7 +309,7 @@ export function fillReview() {
     );
   });
   lines.push(`— Calculate uses all of the above together —`);
-  reviewBox.textContent = lines.join("\n");
+  reviewBox.textContent = localizeFlow(lines.join("\n"));
 }
 
 export function bindPlanFormChrome() {

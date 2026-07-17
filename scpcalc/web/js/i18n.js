@@ -15,8 +15,21 @@ export function lang() {
   return "en";
 }
 
+/** Flip LTR flow arrows for Persian/RTL UI (→ becomes ←, etc.). */
+export function localizeFlow(text) {
+  if (text == null) return text;
+  const s = String(text);
+  if (lang() !== "fa") return s;
+  return s
+    .replaceAll("→", "←")
+    .replaceAll("⟶", "⟵")
+    .replaceAll("⇒", "⇐")
+    .replaceAll("↗", "↖");
+}
+
 export function t(key) {
-  return (I18N[lang()] || I18N.en)[key] || key;
+  const raw = (I18N[lang()] || I18N.en)[key] || key;
+  return localizeFlow(raw);
 }
 
 export function setLang(next) {
@@ -34,20 +47,21 @@ export function setLang(next) {
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const k = el.getAttribute("data-i18n");
     if (!dict[k]) return;
+    const text = localizeFlow(dict[k]);
     if (el.classList.contains("cta") || el.querySelector?.(".cta-label")) {
       const label = el.querySelector(".cta-label") || el;
-      label.textContent = dict[k];
+      label.textContent = text;
     } else {
-      el.textContent = dict[k];
+      el.textContent = text;
     }
   });
   document.querySelectorAll("[data-i18n-html]").forEach((el) => {
     const k = el.getAttribute("data-i18n-html");
-    if (dict[k]) el.innerHTML = dict[k];
+    if (dict[k]) el.innerHTML = localizeFlow(dict[k]);
   });
   document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
     const k = el.getAttribute("data-i18n-placeholder");
-    if (dict[k]) el.setAttribute("placeholder", dict[k]);
+    if (dict[k]) el.setAttribute("placeholder", localizeFlow(dict[k]));
   });
   onAfterSetLang?.(l);
 }
