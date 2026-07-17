@@ -10,6 +10,12 @@ on:
       - "index.html"
       - "view.html"
       - "assets/**"
+      - "README.md"
+      - "CHANGELOG.md"
+      - "CONTRIBUTING.md"
+      - "VERSION.md"
+      - "LICENSE"
+      - "calc/README.md"
       - ".github/workflows/scpcalc-pages.yml"
   workflow_dispatch:
 
@@ -40,12 +46,13 @@ jobs:
       - name: Assemble Pages site (docs + /calc)
         run: |
           mkdir -p _site
-          cp -a index.html view.html VERSION.md LICENSE CONTRIBUTING.md README.md _site/ 2>/dev/null || true
+          cp -a index.html view.html VERSION.md LICENSE CONTRIBUTING.md README.md CHANGELOG.md _site/ 2>/dev/null || true
           cp -a docs assets tools _site/ 2>/dev/null || true
           rm -rf _site/calc
           cp -a calc _site/calc
           # Point readers at the live calculator
           echo "Static calculator: /calc/" > _site/CALC.txt
+          echo "Changelog: /CHANGELOG.md" >> _site/CALC.txt
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
