@@ -41,12 +41,14 @@ Retention & paths:
   --archive-frozen         coldToFrozenDir instead of delete
   --compression FLOAT      measured C; 0 = derive from RF/SF
 
-Topology (users × volume → N_SH / N_IDX):
-  --concurrent-users INT   (default 8)
+Topology (users × searches × volume → N_SH / N_IDX):
+  --concurrent-users INT      (default 8; Performance Recommendations “Total Users”)
+  --concurrent-searches INT   (default = users; peak scheduled+ad-hoc; 1 search ≤ 1 CPU core)
+  --saved-searches INT        (default 0; Dimensions saved-search count)
   --indexer-cluster
   --search-head-cluster
   --rf INT --sf INT        used when indexer-cluster (defaults 3/2)
-  --n-idx INT --n-sh INT   0 = auto from table + floors
+  --n-idx INT --n-sh INT   0 = auto from table + search-core + floors
   --smartstore [--remote-path STRING]
   --has-es --has-itsi
   --es-smartstore          alias: has-es + smartstore

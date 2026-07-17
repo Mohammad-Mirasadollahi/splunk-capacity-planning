@@ -76,3 +76,40 @@ func TestResolveNodeCounts_OverrideBelowFloorWarns(t *testing.T) {
 		t.Fatal("expected warning for n_idx below auto")
 	}
 }
+
+func TestResolveNodeCounts_ConcurrentSearchesRaiseSH(t *testing.T) {
+	// users×volume alone: U=8, D=100 → 1 SH + 1 IDX
+	p := model.PlanInput{
+		ConcurrentUsers:    8,
+		ConcurrentSearches: 40, // ceil(40/16)=3
+		SavedSearches:      80,
+		RF:                 1,
+		SF:                 1,
+	}
+	plan := arch.ResolveNodeCounts(p, 100)
+	if plan.NSH < 3 {
+		t.Fatalf("want N_SH≥3 from search-core floor, got %d steps=%v", plan.NSH, plan.Steps)
+	}
+	if plan.CombinedInstance {
+		t.Fatal("high concurrent searches should not stay combined")
+	}
+	joined := strings.Join(plan.Steps, "\n")
+	if !strings.Contains(joined, "Concurrent search volume") && !strings.Contains(joined, "1 active search") {
+		t.Fatalf("expected search-core rationale in steps: %s", joined)
+	}
+}
+
+func TestResolveNodeCounts_SearchLoadFitsWithoutRaise(t *testing.T) {
+	p := model.PlanInput{
+		ConcurrentUsers:    12,
+		ConcurrentSearches: 20, // 2 SH × 16 cores covers 20
+		SavedSearches:      40,
+		RF:                 1,
+		SF:                 1,
+	}
+	plan := arch.ResolveNodeCounts(p, 800) // baseline 2 SH + 4 IDX
+	if plan.NSH != 2 {
+		t.Fatalf("want N_SH=2 (search load fits), got %d", plan.NSH)
+	}
+}
+

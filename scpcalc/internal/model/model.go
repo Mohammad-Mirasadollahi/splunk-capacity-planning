@@ -55,9 +55,15 @@ type PlanInput struct {
 	HasES             bool `json:"has_es"`
 	HasITSI           bool `json:"has_itsi"`
 	ESSmartStore      bool `json:"es_smartstore"` // legacy alias → HasES + SmartStore
-	ConcurrentUsers   int  `json:"concurrent_users"`
-	NIdx              int  `json:"n_idx"` // 0 = auto from table; >0 force (floors warn)
-	NSh               int  `json:"n_sh"`
+	// ConcurrentUsers maps to "Total Users" rows in Summary of performance recommendations.
+	ConcurrentUsers int `json:"concurrent_users"`
+	// ConcurrentSearches is peak concurrent scheduled+ad-hoc search jobs (Reference hardware:
+	// each active search consumes up to 1 CPU core). 0 = unset (engine may infer from users).
+	ConcurrentSearches int `json:"concurrent_searches"`
+	// SavedSearches is total saved/scheduled searches (Dimensions of a Splunk Enterprise deployment).
+	SavedSearches int `json:"saved_searches"`
+	NIdx          int `json:"n_idx"` // 0 = auto from table; >0 force (floors warn)
+	NSh           int `json:"n_sh"`
 
 	// Archive frozen buckets instead of delete (docs/en/05 — coldToFrozenDir optional).
 	ArchiveFrozen bool `json:"archive_frozen"`
@@ -128,6 +134,9 @@ type Design struct {
 	BaseNSH              int         `json:"base_n_sh,omitempty"`  // from D×U table before cluster/app floors
 	BaseNIDX             int         `json:"base_n_idx,omitempty"` // from D×U table before floors
 	ConcurrentUsers      int         `json:"concurrent_users,omitempty"`
+	ConcurrentSearches   int         `json:"concurrent_searches,omitempty"`
+	SavedSearches        int         `json:"saved_searches,omitempty"`
+	SHCoresPerNode       int         `json:"sh_cores_per_node,omitempty"` // reference SH physical cores used for search floor
 	DailyGBForCounts     float64     `json:"daily_gb_for_counts,omitempty"`
 	NodePlanText         string      `json:"node_plan_text,omitempty"` // how N_SH / N_IDX were derived
 	CombinedInstance     bool        `json:"combined_instance"`
@@ -308,6 +317,14 @@ func (p *PlanInput) ApplyDefaults() {
 	}
 	if p.ConcurrentUsers <= 0 {
 		p.ConcurrentUsers = 8
+	}
+	// Peak concurrent search jobs: if unset, assume ~1 active search per concurrent user
+	// (Reference hardware: count scheduled and ad-hoc searches; Dimensions: concurrent search volume).
+	if p.ConcurrentSearches <= 0 {
+		p.ConcurrentSearches = p.ConcurrentUsers
+	}
+	if p.SavedSearches < 0 {
+		p.SavedSearches = 0
 	}
 	if p.DMAPct <= 0 {
 		p.DMAPct = 0.10

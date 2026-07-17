@@ -125,25 +125,28 @@ func RecommendResources(p model.PlanInput, d model.Design, dailyGB float64) []mo
 		out = append(out, hwLayer(
 			"ES search head / SHC", maxInt(d.NSH, 1), tierSHES, "search",
 			"SSD (preferred) or HDD ≥800 IOPS", net, "≥800 sustained IOPS",
-			"ES production min 16 physical CPU cores / 32 GB RAM / 32 vCPU; dedicated SH/SHC",
+			fmt.Sprintf("ES production min 16 physical CPU cores / 32 GB RAM / 32 vCPU; dedicated SH/SHC. Peak concurrent searches=%d (1 search ≤1 core); saved/detections≈%d — scale CPU/RAM for ad-hoc and detection load (ES §6.5).", p.ConcurrentSearches, p.SavedSearches),
 			300,
 		))
 	case d.HasITSI:
 		out = append(out, hwLayer(
 			"ITSI search head / SHC", maxInt(d.NSH, 1), tierSHITSI, "search",
 			"SSD; ≥30 GB free in $SPLUNK_HOME", net, "≥800 sustained IOPS",
-			"ITSI dedicated SH; 16 physical required (24+ recommended) or 32 vCPU @ ≥2 GHz; KPI/entity tables not fully automated here",
+			fmt.Sprintf("ITSI dedicated SH; 16 physical required (24+ recommended). Peak concurrent searches=%d; saved/KPI searches≈%d — KPI count ≠ search count; validate with ITSI tables.", p.ConcurrentSearches, p.SavedSearches),
 			300,
 		))
 	default:
 		sh := tierSHMin
-		if dailyGB >= 600 || p.ConcurrentUsers >= 16 {
+		if dailyGB >= 600 || p.ConcurrentUsers >= 16 || p.ConcurrentSearches > 16 || p.SavedSearches >= 100 {
 			sh = hwTier{"mid-range SH", 16, 32, 32}
 		}
+		searchNote := fmt.Sprintf(
+			"Each active search ≤1 physical CPU core (Reference hardware). Peak concurrent searches=%d → need ≥%d cores across SH tier; saved/scheduled=%d (Dimensions). Prefer SSD when ad-hoc/scheduled load is high; min 300 GB dedicated.",
+			p.ConcurrentSearches, p.ConcurrentSearches, p.SavedSearches)
 		out = append(out, hwLayer(
 			"Search head", maxInt(d.NSH, 1), sh, "search",
 			"SSD (preferred) or HDD ≥800 IOPS", net, "≥800 sustained IOPS on install/search volume",
-			"Each active search ≤1 physical CPU core equivalent; HDD ≥800 IOPS or prefer SSD; min 300 GB dedicated",
+			searchNote,
 			300,
 		))
 	}
@@ -275,8 +278,10 @@ func renderStructure(p model.PlanInput, d model.Design, out model.PlanResult) st
 	}
 	fmt.Fprintf(&b, ")\n\n")
 
-	fmt.Fprintf(&b, "Node counts (users × volume × clustering):\n")
+	fmt.Fprintf(&b, "Node counts (users × searches × volume × clustering):\n")
 	fmt.Fprintf(&b, "  Concurrent SH users (U): %d\n", d.ConcurrentUsers)
+	fmt.Fprintf(&b, "  Peak concurrent searches (S): %d\n", d.ConcurrentSearches)
+	fmt.Fprintf(&b, "  Saved / scheduled searches: %d\n", d.SavedSearches)
 	fmt.Fprintf(&b, "  Daily volume for sizing (D): %.1f GB/day\n", d.DailyGBForCounts)
 	if d.CombinedInstance {
 		fmt.Fprintf(&b, "  Result: 1 combined SH+IDX node\n")

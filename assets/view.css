@@ -4,12 +4,22 @@
   border-radius: 1rem;
   padding: 1.4rem 1.5rem 2rem;
   line-height: 1.7;
-  overflow-x: auto;
+  overflow-x: visible;
+  overflow-wrap: anywhere;
 }
 
 body[data-lang="fa"] .doc-view {
   font-family: var(--font-fa);
   line-height: 1.9;
+  direction: rtl;
+  text-align: right;
+}
+
+/* Embedded markdown chrome must never appear twice on Pages */
+.doc-view nav.lang-switch,
+.doc-view link,
+.doc-view style {
+  display: none !important;
 }
 
 .doc-view h1,
@@ -18,6 +28,7 @@ body[data-lang="fa"] .doc-view {
 .doc-view h4 {
   font-family: var(--font-display);
   line-height: 1.25;
+  overflow-wrap: normal;
 }
 
 body[data-lang="fa"] .doc-view h1,
@@ -40,12 +51,26 @@ body[data-lang="fa"] .doc-view h4 {
   padding: 0.9rem 1rem;
   border-radius: 0.6rem;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.doc-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1rem 0;
+  border-radius: 0.5rem;
 }
 
 .doc-view table {
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   border-collapse: collapse;
-  margin: 1rem 0;
+  margin: 0;
   font-size: 0.92rem;
 }
 
@@ -55,6 +80,26 @@ body[data-lang="fa"] .doc-view h4 {
   padding: 0.45rem 0.55rem;
   text-align: left;
   vertical-align: top;
+}
+
+body[data-lang="fa"] .doc-view th,
+body[data-lang="fa"] .doc-view td,
+body[data-lang="fa"] .doc-view p,
+body[data-lang="fa"] .doc-view li,
+body[data-lang="fa"] .doc-view h1,
+body[data-lang="fa"] .doc-view h2,
+body[data-lang="fa"] .doc-view h3,
+body[data-lang="fa"] .doc-view h4,
+body[data-lang="fa"] .doc-view blockquote {
+  text-align: right;
+}
+
+body[data-lang="fa"] .doc-view code,
+body[data-lang="fa"] .doc-view pre,
+body[data-lang="fa"] .doc-view a {
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: left;
 }
 
 .doc-view blockquote {
@@ -80,4 +125,54 @@ body[data-lang="fa"] .doc-view h4 {
 .status {
   color: #ffb4a8;
   margin: 0 0 1rem;
+}
+
+.view-foot {
+  margin-top: 1.25rem;
+}
+
+/* Full-viewport scroll surface — scrollbar sits on the window edge */
+body.view-page {
+  height: 100%;
+  overflow: hidden;
+}
+
+body.view-page .view-scroll {
+  height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+  scrollbar-width: auto;
+  scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+}
+
+body.view-page .view-scroll::-webkit-scrollbar {
+  width: 14px;
+}
+
+body.view-page .view-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+body.view-page .view-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(61, 184, 160, 0.75), rgba(61, 184, 160, 0.45));
+  border-radius: 8px;
+  min-height: 56px;
+  box-shadow: inset 0 0 0 1px rgba(232, 241, 244, 0.12);
+}
+
+body.view-page .view-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(61, 184, 160, 0.95), rgba(61, 184, 160, 0.65));
+}
+
+body.view-page .view-scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+body.view-page .shell.view-shell {
+  height: auto;
+  overflow: visible;
+  padding-top: 1.5rem;
+  padding-bottom: 1.75rem;
 }

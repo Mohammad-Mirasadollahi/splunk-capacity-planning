@@ -4,7 +4,7 @@ Portable **Splunk Capacity Planning** calculator — **CLI + local Web UI** in o
 
 **Designed by [Mohammad Mirasadollahi](https://github.com/Mohammad-Mirasadollahi)** · **Repository:** [splunk-capacity-planning](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning)
 
-Same engine for CLI, `serve`, and in-browser WASM: multi-index storage sizing, **N_SH / N_IDX** from concurrent users × daily volume × clustering, hardware layers, design narrative, and a draft **`indexes.conf`**.
+Same engine for CLI, `serve`, and in-browser WASM: multi-index storage sizing, **N_SH / N_IDX** from concurrent users × daily volume × **concurrent searches** × clustering, hardware layers, design narrative, and a draft **`indexes.conf`**.
 
 | | |
 |---|---|
@@ -20,7 +20,7 @@ Same engine for CLI, `serve`, and in-browser WASM: multi-index storage sizing, *
 
 - **Inputs:** per-source volumes, optional `total_daily_gb`, optional disk budgets — combinable (no exclusive planning mode)
 - **Multi-index:** `daily_gb` and/or EPS × event size; optional summary indexes
-- **Node counts:** `concurrent_users` × daily volume → platform table, then SHC / indexer-cluster / ES / ITSI floors
+- **Node counts:** `concurrent_users` × daily volume → platform table; then raise `N_SH` so total SH cores cover `concurrent_searches` (1 active search ≤ 1 CPU core); then SHC / indexer-cluster / ES / ITSI floors. `saved_searches` is a Dimensions input (warnings / SH notes).
 - **Topology:** indexer cluster (RF/SF), SHC (+ deployer), SmartStore (local cache + remote size), ES, ITSI
 - **Storage:** compression from RF/SF or measured `C`; DMA/tstats; optional frozen archive (`coldToFrozenDir`)
 - **Conf:** per-peer MB fields when `N_IDX > 1`; volume stanzas; downloadable draft
@@ -85,9 +85,10 @@ Open **http://127.0.0.1:12345** → Start wizard → Calculate → Overview / De
 ## How node counts are chosen
 
 1. **Base:** Splunk [Summary of performance recommendations](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Summaryofperformancerecommendations) — daily ingest **D** × concurrent SH users **U** → baseline `N_SH` / `N_IDX` (or one combined node for tiny labs).
-2. **Indexer cluster:** never stay combined; peers ≥ **RF**; + cluster manager.
-3. **SHC:** `N_SH` ≥ **3** + deployer.
-4. **ES / ITSI:** indexer floors from doc tables / `≈ceil(D/100)` for ITSI.
+2. **Concurrent search volume:** [Reference hardware](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware) — each active search ≤ **1 CPU core**. Raise `N_SH` to `ceil(S / 16)` when peak concurrent searches **S** need more cores. [Dimensions](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/DimensionsofaSplunkEnterprisedeployment) also list **saved searches** as a sizing input.
+3. **Indexer cluster:** never stay combined; peers ≥ **RF**; + cluster manager.
+4. **SHC:** `N_SH` ≥ **3** + deployer.
+5. **ES / ITSI:** indexer floors from doc tables / `≈ceil(D/100)` for ITSI.
 5. **Overrides:** `--n-idx` / `--n-sh` (or JSON `n_idx` / `n_sh`); `0` = auto. Values below floors warn; RF / SHC still hard-raise when clustering is on.
 
 CLI and Overview both print the step-by-step **NODE COUNTS** rationale.
@@ -159,15 +160,17 @@ Resolution: **CLI → process env → `.env` → defaults**.
 | `--archive-frozen` | emit `coldToFrozenDir` instead of delete |
 | `--compression FLOAT` | measured C; `0` = derive from RF/SF (or 0.5 standalone) |
 
-#### Topology (users × volume → N_SH / N_IDX)
+#### Topology (users × searches × volume → N_SH / N_IDX)
 
 | Flag | Meaning |
 |---|---|
-| `--concurrent-users INT` | Concurrent SH users **U** (default `8`) |
+| `--concurrent-users INT` | Concurrent SH users **U** (default `8`) — Performance Recommendations row |
+| `--concurrent-searches INT` | Peak concurrent searches **S** (default = U); raise N_SH so cores ≥ S (1 search ≤ 1 CPU core) |
+| `--saved-searches INT` | Total saved/scheduled searches (Dimensions); default `0` |
 | `--indexer-cluster` | Enable indexer clustering |
 | `--search-head-cluster` | Enable SHC (floor ≥ 3 SH + deployer) |
 | `--rf INT` `--sf INT` | Used when indexer cluster on (defaults `3` / `2`) |
-| `--n-idx INT` `--n-sh INT` | `0` = auto from table + floors |
+| `--n-idx INT` `--n-sh INT` | `0` = auto from table + search-core + floors |
 | `--smartstore` | SmartStore sizing hints |
 | `--remote-path STRING` | Object-store path hint |
 | `--has-es` `--has-itsi` | Premium apps (floors / separate SH tiers) |

@@ -99,10 +99,29 @@ window.SCP_TIPS = {
     concurrent_users: {
       title: "Concurrent users",
       formula: "Lookup N_SH / N_IDX from Performance Recommendations table (users × daily GB)",
-      body: "Approximate concurrent search users to pick a row in Splunk’s official SH×IDX count table. This is a guideline — heavy scheduled search or premium apps may need more.",
-      example: "12 users, 800 GB/day → ~2 SH + 4 IDX from the summary table (before ES floors).",
+      body: "Official “Total Users” row in Splunk’s SH×IDX summary table. Approximate people searching / using the SH tier at once.",
+      example: "12 users, 800 GB/day → ~2 SH + 4 IDX from the summary table (before search-core / ES floors).",
       links: [
         { label: "Summary of performance recommendations", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Summaryofperformancerecommendations" },
+      ],
+    },
+    concurrent_searches: {
+      title: "Peak concurrent searches",
+      formula: "N_SH ≥ ceil(S / 16) — Reference hardware: 1 active search ≤ 1 CPU core",
+      body: "Count scheduled and ad-hoc jobs that run at the same time (Dimensions: concurrent search volume). SCPcalc raises N_SH so total SH cores cover S.",
+      example: "S=40 with 16-core reference SH → need at least 3 search heads even if the users×volume table said fewer.",
+      links: [
+        { label: "Reference hardware (Search Head)", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware" },
+        { label: "Dimensions of a deployment", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/DimensionsofaSplunkEnterprisedeployment" },
+      ],
+    },
+    saved_searches: {
+      title: "Saved / scheduled searches",
+      formula: "Dimensions input — high counts need more SH capacity; ≥200 suggests reviewing SHC",
+      body: "Total enabled saved/scheduled searches (use ES detections count when planning ES). Official Dimensions list this separately from concurrent users.",
+      example: "150 saved searches with peak concurrency 20 → size cores for 20; plan schedule density for 150.",
+      links: [
+        { label: "Dimensions of a deployment", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/DimensionsofaSplunkEnterprisedeployment" },
       ],
     },
     n_idx: {
@@ -117,7 +136,7 @@ window.SCP_TIPS = {
     n_sh: {
       title: "n_sh override",
       formula: "If >0, force search-head count; SHC may still enforce ≥3",
-      body: "Leave 0 for automatic recommendation from the users×volume table (and premium-app rules).",
+      body: "Leave 0 for automatic recommendation from users×volume, concurrent search volume (1 search ≤1 core), and premium-app rules.",
       example: "Table suggests 2 SH; with SHC enabled design raises to ≥3.",
       links: [
         { label: "Reference hardware", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware" },
@@ -377,25 +396,44 @@ window.SCP_TIPS = {
     "Concurrent users": {
       title: "Concurrent users (U)",
       formula: "Row in Performance Recommendations × daily volume (D) → base N_SH / N_IDX",
-      body: "Same as concurrent_users input. Drives search-head and indexer count before cluster/ES floors.",
+      body: "Same as concurrent_users input. Drives search-head and indexer count before search-core / cluster / ES floors.",
       example: "U=12, D=800 GB/day → table baseline 2 SH + 4 IDX.",
       links: [
         { label: "Summary of performance recommendations", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Summaryofperformancerecommendations" },
       ],
     },
+    "Peak concurrent searches": {
+      title: "Peak concurrent searches (S)",
+      formula: "N_SH ≥ ceil(S / cores_per_SH); 1 active search ≤ 1 CPU core",
+      body: "Official Reference hardware Search Head note. Raises N_SH when users×volume alone would leave too few cores.",
+      example: "S=40 → at least 3×16-core search heads.",
+      links: [
+        { label: "Reference hardware", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware" },
+      ],
+    },
+    "Saved / scheduled searches": {
+      title: "Saved / scheduled searches",
+      formula: "Dimensions sizing dimension",
+      body: "Total enabled saved searches. High counts need more capacity; SCPcalc warns and may suggest SHC.",
+      example: "≥200 saved searches → review Search Head Cluster.",
+      links: [
+        { label: "Dimensions of a deployment", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/DimensionsofaSplunkEnterprisedeployment" },
+      ],
+    },
     "Table baseline (SH+IDX)": {
       title: "Table baseline",
-      formula: "RecommendCounts(D, U) before SHC / indexer-cluster / ES / ITSI floors",
-      body: "Raw lookup from Splunk’s users×volume summary table. Final N_SH / N_IDX may be higher after clustering or premium-app floors.",
+      formula: "RecommendCounts(D, U) before SHC / search-core / indexer-cluster / ES / ITSI floors",
+      body: "Raw lookup from Splunk’s users×volume summary table. Final N_SH / N_IDX may be higher after concurrent-search, clustering, or premium-app floors.",
       example: "Baseline 1 SH; with SHC → final N_SH=3.",
     },
     "N_SH": {
       title: "N_SH (design)",
-      formula: "From Performance Recommendations (+ SHC ≥3, premium-app rules)",
-      body: "Recommended search-head count for your users×volume (guideline).",
-      example: "See Summary of performance recommendations table.",
+      formula: "max(users×volume table, ceil(S/16 cores), SHC≥3, premium-app rules)",
+      body: "Recommended search-head count from official users×volume table plus concurrent search volume (1 active search ≤ 1 CPU core).",
+      example: "See Summary of performance recommendations + Reference hardware Search Head note.",
       links: [
         { label: "Performance recommendations", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Summaryofperformancerecommendations" },
+        { label: "Reference hardware", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware" },
       ],
     },
     "N_IDX": {
@@ -510,9 +548,11 @@ window.SCP_TIPS.fa = JSON.parse(JSON.stringify(window.SCP_TIPS.en));
     smartstore: ["SmartStore", "داده گرم عمدتاً در object store؛ کش محلی NVMe/SSD. با ES کش ۹۰ روزه."],
     has_es: ["Enterprise Security", "SH اختصاصی، کف سخت‌افزار ۱۶ هسته/۳۲GB، جدا از ITSI، کش SmartStore ۹۰ روز."],
     has_itsi: ["ITSI", "SH جدا از ES؛ KV≥۳۰GB آزاد؛ N_IDX نمونه ≈ ceil(D/100)."],
-    concurrent_users: ["کاربران همزمان", "تعداد SH و IDX از جدول رسمی کاربران × حجم روزانه به‌دست می‌آید؛ کلاسترینگ و ES کف را بالاتر می‌برند."],
+    concurrent_users: ["کاربران همزمان", "ردیف جدول رسمی کاربران × حجم روزانه برای N_SH/N_IDX."],
+    concurrent_searches: ["اوج سرچ همزمان", "هر سرچ فعال ≤۱ هسته CPU؛ N_SH طوری بالا می‌رود که مجموع هسته‌ها ≥ S باشد."],
+    saved_searches: ["سرچ ذخیره‌شده", "بعد Dimensions؛ تعداد بالا → ظرفیت بیشتر / بررسی SHC."],
     n_idx: ["n_idx", "۰ = خودکار از کاربران×حجم (+کف کلاستر/ES)؛ کمتر از کف توصیه → هشدار؛ RF همچنان حداقل peer را سخت اعمال می‌کند."],
-    n_sh: ["n_sh", "۰ = خودکار از کاربران×حجم؛ با SHC حداقل ۳ سخت اعمال می‌شود."],
+    n_sh: ["n_sh", "۰ = خودکار از کاربران×حجم×سرچ‌ها؛ با SHC حداقل ۳ سخت اعمال می‌شود."],
     retention_days: ["retention_days", "عمر searchable تا freeze؛ frozenTimePeriodInSecs = روز×۸۶۴۰۰."],
     hot_warm_days: ["hot_warm_days", "روزهای روی SSD hot/warm؛ مبنای homePath.maxDataSizeMB."],
     headroom: ["headroom", "ضریب اطمینان روی سقف‌های MB (مثلاً ۱.۲)."],

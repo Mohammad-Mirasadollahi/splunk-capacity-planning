@@ -43,10 +43,12 @@
       start: "Start here",
       policy: "Doc policy",
       "policy-body":
-        "Tracks Splunk Enterprise /latest/, Enterprise Security 8.5, and ITSI 5.0. English is the source of truth; Persian must stay structurally synced.",
+        "Tracks Splunk Enterprise /latest/, Enterprise Security 8.5, and ITSI 5.0. English is the default language; use فارسی to switch the whole site.",
       versions: "VERSION.md",
       readme: "README",
-      footer: "Default language: English. Preference is saved in this browser.",
+      calc: "Calculator",
+      changelog: "Changelog",
+      lang_label: "Language",
       credit_html:
         'Designed by <strong>Mohammad Mirasadollahi</strong> · <a href="https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning" target="_blank" rel="noopener noreferrer">GitHub</a>',
       footer_html:
@@ -59,14 +61,16 @@
       start: "از اینجا شروع کنید",
       policy: "سیاست مستند",
       "policy-body":
-        "خط Enterprise با /latest/، Enterprise Security 8.5 و ITSI 5.0. انگلیسی منبع حقیقت است؛ فارسی باید از نظر ساختار همگام بماند.",
+        "خط Enterprise با /latest/، Enterprise Security 8.5 و ITSI 5.0. زبان پیش‌فرض انگلیسی است؛ با فارسی کل سایت عوض می‌شود.",
       versions: "VERSION.md",
       readme: "README",
-      footer: "زبان پیش‌فرض: انگلیسی. ترجیح در این مرورگر ذخیره می‌شود.",
+      calc: "ماشین‌حساب",
+      changelog: "تغییرات",
+      lang_label: "زبان",
       credit_html:
-        'طراحی: <strong>محمد میراسدالهی (Mohammad Mirasadollahi)</strong> · <a href="https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning" target="_blank" rel="noopener noreferrer">GitHub</a>',
+        'طراحی: <strong>محمد میراسدالهی</strong> · <a href="https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning" target="_blank" rel="noopener noreferrer">GitHub</a>',
       footer_html:
-        'طراحی: <strong>محمد میراسدالهی (Mohammad Mirasadollahi)</strong> · <a href="https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning" target="_blank" rel="noopener noreferrer">github.com/Mohammad-Mirasadollahi/splunk-capacity-planning</a>',
+        'طراحی: <strong>محمد میراسدالهی</strong> · <a href="https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning" target="_blank" rel="noopener noreferrer">github.com/Mohammad-Mirasadollahi/splunk-capacity-planning</a>',
     },
   };
 
@@ -93,6 +97,7 @@
   }
 
   function apply(lang) {
+    const dict = I18N[lang] || I18N.en;
     document.documentElement.lang = lang;
     document.body.dataset.lang = lang;
     document.body.dir = lang === "fa" ? "rtl" : "ltr";
@@ -100,8 +105,11 @@
     document.querySelectorAll(".lang-switch button").forEach((btn) => {
       btn.setAttribute("aria-pressed", String(btn.dataset.lang === lang));
     });
+    const nav = document.querySelector(".lang-switch");
+    if (nav) nav.setAttribute("aria-label", dict.lang_label);
+    const label = document.getElementById("lang-label");
+    if (label) label.textContent = dict.lang_label;
 
-    const dict = I18N[lang];
     document.querySelectorAll("[data-i18n]").forEach((el) => {
       const key = el.getAttribute("data-i18n");
       if (dict[key]) el.textContent = dict[key];
@@ -111,7 +119,14 @@
       if (dict[key]) el.innerHTML = dict[key];
     });
 
+    const calc = document.getElementById("calc-link");
+    if (calc) {
+      calc.href = `calc/?lang=${lang}`;
+      calc.textContent = dict.calc;
+    }
+
     const list = document.getElementById("doc-list");
+    if (!list) return;
     list.innerHTML = "";
     DOCS.forEach((doc) => {
       const meta = doc[lang];

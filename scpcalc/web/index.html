@@ -243,7 +243,7 @@
             <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="topo-adv" data-i18n="tab_advanced">Advanced</button>
           </div>
           <div class="tab-panel is-active" data-panel="topo-cluster" role="tabpanel">
-            <p class="hint" data-i18n="tab_cluster_hint">Choose clustering and how many users search at the same time. Peer counts can stay automatic.</p>
+            <p class="hint" data-i18n="tab_cluster_hint">Set concurrent users and searches — Splunk sizes Search Heads from users × daily volume, then raises SH count so total cores cover peak concurrent searches.</p>
             <div class="grid">
               <label class="field check glass-chip"><input name="indexer_cluster" type="checkbox" id="indexer_cluster"> <span class="tip-mark" data-tip="indexer_cluster" data-i18n="idx_cluster">Indexer cluster</span></label>
               <label class="field">
@@ -256,15 +256,23 @@
               </label>
               <label class="field check glass-chip"><input name="search_head_cluster" type="checkbox"> <span class="tip-mark" data-tip="shc" data-i18n="shc">Search head cluster</span></label>
               <label class="field">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="concurrent_users" data-i18n="lbl_users">Concurrent search users</span><span class="field-hint" data-i18n="hint_users">People searching at the same time</span></span>
-                <input name="concurrent_users" type="number" value="8" min="1">
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="concurrent_users" data-i18n="lbl_users">Concurrent search users</span><span class="field-hint" data-i18n="hint_users">People searching at the same time (official SH×IDX table)</span></span>
+                <input name="concurrent_users" type="number" value="8" min="1" required>
+              </label>
+              <label class="field">
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="concurrent_searches" data-i18n="lbl_searches">Peak concurrent searches</span><span class="field-hint" data-i18n="hint_searches">Scheduled + ad-hoc jobs at peak (1 search ≈ 1 CPU core)</span></span>
+                <input name="concurrent_searches" type="number" value="8" min="1" required>
+              </label>
+              <label class="field">
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="saved_searches" data-i18n="lbl_saved">Saved / scheduled searches</span><span class="field-hint" data-i18n="hint_saved">Total enabled saved searches (Dimensions sizing input)</span></span>
+                <input name="saved_searches" type="number" value="20" min="0" required>
               </label>
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="n_idx" data-i18n="lbl_n_idx">Number of indexers</span><span class="field-hint" data-i18n="hint_n_idx">Leave 0 to calculate automatically</span></span>
                 <input name="n_idx" type="number" value="0" min="0" placeholder="0">
               </label>
               <label class="field">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="n_sh" data-i18n="lbl_n_sh">Number of search heads</span><span class="field-hint" data-i18n="hint_n_sh">Leave 0 to calculate automatically</span></span>
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="n_sh" data-i18n="lbl_n_sh">Number of search heads</span><span class="field-hint" data-i18n="hint_n_sh">Leave 0 to calculate from users × volume × searches</span></span>
                 <input name="n_sh" type="number" value="0" min="0" placeholder="0">
               </label>
             </div>

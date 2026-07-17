@@ -134,7 +134,10 @@ MaxRetentionDays ≈ AvailableSearchable / (Daily_OnDisk)     # if ingest known
 
 ## 9. Architecture counts (guideline)
 
-- Base `N_SH` / `N_IDX` from Performance Recommendations (users × daily GB); table clamps at ≤3 TB/day and ≤48 users with a warning when exceeded.
+- Base `N_SH` / `N_IDX` from Performance Recommendations (**concurrent users × daily GB**); table clamps at ≤3 TB/day and ≤48 users with a warning when exceeded.
+- **Concurrent search volume** (Reference hardware Search Head + Dimensions): each active search consumes up to **1 CPU core**. With reference SH = **16 physical cores**, raise `N_SH` to `ceil(concurrent_searches / 16)` when that exceeds the users×volume baseline. Combined instances use a ~12-core budget before splitting.
+- **Saved / scheduled searches** (Dimensions): required planning input; high counts (≥200) warn toward SHC / more capacity. Does not replace peak concurrent searches for the core floor.
+- Defaults: if `concurrent_searches` unset → equal to `concurrent_users`; `saved_searches` default 0.
 - ES floors from doc 01 §6.4 (300→3, 1TB→10, &lt;15TB→24, 15TB→150, &gt;15TB→300 single-SH or 240 SHC).
 - ITSI: `N_IDX ≥ ceil(D/100)` (KPI tables not automated — HLD non-goal).
 - Indexer cluster: peers ≥ RF; add cluster manager.
@@ -142,6 +145,8 @@ MaxRetentionDays ≈ AvailableSearchable / (Daily_OnDisk)     # if ingest known
 - `n_idx` / `n_sh` &gt; 0: use override; warn if below recommended floor; RF / SHC minima still hard-raise.
 - ES+ITSI: separate SH tiers (`n_sh_es` + `n_sh_itsi`); resources list both.
 - SmartStore: local cache `0.5 × D × (30|90 if ES)`; remote `Remote_Store_GB ≈ D × R × Comp`.
+
+Official sources: [Summary of performance recommendations](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Summaryofperformancerecommendations), [Reference hardware](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware), [Dimensions of a Splunk Enterprise deployment](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/DimensionsofaSplunkEnterprisedeployment).
 
 Hardware tiers per role: Reference hardware minimum / mid / high (and ES floors). See `internal/arch`.
 

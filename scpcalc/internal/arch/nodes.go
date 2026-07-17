@@ -30,6 +30,7 @@ type NodePlan struct {
 	CombinedInstance bool
 	ClusterManager   bool
 	SHCDeployer      bool
+	SHCoresPerNode   int // physical cores per SH used for concurrent-search floor
 	Steps            []string // human-readable derivation
 	Warnings         []string
 }
@@ -64,6 +65,11 @@ func ResolveNodeCounts(p model.PlanInput, dailyGB float64) NodePlan {
 	if users <= 0 {
 		users = 8
 	}
+	searches := p.ConcurrentSearches
+	if searches <= 0 {
+		searches = users
+	}
+	saved := p.SavedSearches
 	base := RecommendCounts(dailyGB, users)
 	plan := NodePlan{
 		UserBand:         base.UserBand,
@@ -73,16 +79,26 @@ func ResolveNodeCounts(p model.PlanInput, dailyGB float64) NodePlan {
 		NSH:              base.NSH,
 		NIDX:             base.NIDX,
 		CombinedInstance: base.CombinedInstance,
+		SHCoresPerNode:   referenceSHCores(p),
 	}
 	plan.Steps = append(plan.Steps, fmt.Sprintf(
 		"Base from Performance Recommendations: D≈%.1f GB/day (%s) × U=%d (%s) → %s",
 		dailyGB, base.VolumeBand, users, base.UserBand, formatBaseCounts(base)))
+	plan.Steps = append(plan.Steps, fmt.Sprintf(
+		"Search load inputs (Dimensions / Reference hardware): concurrent users U=%d, peak concurrent searches S=%d, saved/scheduled searches=%d",
+		users, searches, saved))
 
 	if dailyGB > 3072 {
 		plan.Warnings = append(plan.Warnings, "daily ingest exceeds platform reference table (≤3 TB/day) — recommendation clamped to 2–3 TB column; validate with Splunk/PS")
 	}
 	if users > 48 {
 		plan.Warnings = append(plan.Warnings, "concurrent_users exceeds platform reference table (≤48) — recommendation clamped to ≤48 row; validate with Splunk/PS")
+	}
+	if saved > 0 && saved < searches {
+		plan.Warnings = append(plan.Warnings, "saved_searches is lower than concurrent_searches — usually total saved ≥ peak concurrent; verify inputs")
+	}
+	if saved >= 200 && !p.SearchHeadCluster {
+		plan.Warnings = append(plan.Warnings, "high saved/scheduled search count (≥200) — consider Search Head Cluster for schedule stability (see ITSI/SHC guidance; platform Dimensions: saved searches need more capacity)")
 	}
 
 	// Indexer cluster: never keep combined; peers ≥ RF (and typically ≥3)
@@ -124,6 +140,10 @@ func ResolveNodeCounts(p model.PlanInput, dailyGB float64) NodePlan {
 			plan.Steps = append(plan.Steps, fmt.Sprintf("SHC enabled → N_SH=%d (+ 1 deployer); odd peer count preferred", plan.NSH))
 		}
 	}
+
+	// Concurrent search volume floor (Reference hardware Search Head):
+	// each active search consumes up to 1 CPU core — size total SH cores ≥ peak concurrent searches.
+	applySearchConcurrencyFloor(&plan, p, searches)
 
 	if p.HasES {
 		esIdx := ESMinIndexers(dailyGB, p.SearchHeadCluster)
@@ -228,9 +248,79 @@ func formatBaseCounts(c Counts) string {
 	return fmt.Sprintf("%d SH + %d IDX", c.NSH, c.NIDX)
 }
 
+// referenceSHCores is the physical-core planning unit for a Search Head (Reference hardware /
+// ES / ITSI minima). Used with concurrent searches: 1 active search ≤ 1 CPU core.
+func referenceSHCores(p model.PlanInput) int {
+	if p.HasITSI {
+		return 16 // ITSI: 16 required; 24+ recommended — we floor on required, warn separately
+	}
+	return 16 // platform + ES production minimum
+}
+
+func combinedInstanceCores() int {
+	return 12 // single-instance / combined minimum reference host
+}
+
+// applySearchConcurrencyFloor raises N_SH so total SH cores can cover peak concurrent searches.
+// Official: Reference hardware Search Head — each active search consumes up to 1 CPU core;
+// Dimensions — concurrent search volume is a primary distributed sizing factor.
+func applySearchConcurrencyFloor(plan *NodePlan, p model.PlanInput, searches int) {
+	if searches <= 0 {
+		return
+	}
+	cores := plan.SHCoresPerNode
+	if cores <= 0 {
+		cores = referenceSHCores(p)
+		plan.SHCoresPerNode = cores
+	}
+
+	if plan.CombinedInstance {
+		capCores := combinedInstanceCores()
+		if searches > capCores {
+			plan.CombinedInstance = false
+			if plan.NSH < 1 {
+				plan.NSH = 1
+			}
+			if plan.NIDX < 1 {
+				plan.NIDX = 1
+			}
+			plan.Steps = append(plan.Steps, fmt.Sprintf(
+				"Peak concurrent searches S=%d exceeds combined-instance capacity (~%d cores) → split to dedicated search tier",
+				searches, capCores))
+		} else {
+			plan.Steps = append(plan.Steps, fmt.Sprintf(
+				"Peak concurrent searches S=%d fits combined-instance ~%d cores (1 active search ≤ 1 CPU core)",
+				searches, capCores))
+			return
+		}
+	}
+
+	need := int(math.Ceil(float64(searches) / float64(cores)))
+	if need < 1 {
+		need = 1
+	}
+	if need > plan.NSH {
+		plan.Steps = append(plan.Steps, fmt.Sprintf(
+			"Concurrent search volume S=%d → ceil(S / %d cores per SH) = %d SH (Reference hardware: 1 active search ≤ 1 CPU core); raise N_SH from %d",
+			searches, cores, need, plan.NSH))
+		plan.NSH = need
+		plan.Warnings = append(plan.Warnings,
+			"Raising search-head count for concurrent search volume also increases search load on indexers — confirm indexer tier still matches Reference hardware guidance")
+	} else {
+		plan.Steps = append(plan.Steps, fmt.Sprintf(
+			"Concurrent search volume S=%d covered by N_SH=%d × %d cores/SH = %d cores (1 active search ≤ 1 CPU core)",
+			searches, plan.NSH, cores, plan.NSH*cores))
+	}
+
+	if p.SearchHeadCluster && plan.NSH < 3 {
+		plan.Steps = append(plan.Steps, fmt.Sprintf("SHC minimum still applies → raise N_SH from %d to 3", plan.NSH))
+		plan.NSH = 3
+	}
+}
+
 func FormatNodePlan(plan NodePlan) string {
 	var b strings.Builder
-	fmt.Fprintf(&b, "NODE COUNTS (from concurrent users × daily ingest × topology)\n")
+	fmt.Fprintf(&b, "NODE COUNTS (users × daily ingest × concurrent searches × topology)\n")
 	for i, s := range plan.Steps {
 		fmt.Fprintf(&b, "  %d. %s\n", i+1, s)
 	}
@@ -346,10 +436,15 @@ func BuildDesign(p model.PlanInput, out model.PlanResult) model.Design {
 		ColdAvailableGB:      p.AvailableColdGB,
 		SummariesAvailableGB: p.AvailableSummariesGB,
 		ConcurrentUsers:      p.ConcurrentUsers,
+		ConcurrentSearches:   p.ConcurrentSearches,
+		SavedSearches:        p.SavedSearches,
 		DailyGBForCounts:     out.TotalDailyRawGB,
 	}
 	if d.ConcurrentUsers <= 0 {
 		d.ConcurrentUsers = 8
+	}
+	if d.ConcurrentSearches <= 0 {
+		d.ConcurrentSearches = d.ConcurrentUsers
 	}
 
 	plan := ResolveNodeCounts(p, out.TotalDailyRawGB)
@@ -359,6 +454,7 @@ func BuildDesign(p model.PlanInput, out model.PlanResult) model.Design {
 	d.CombinedInstance = plan.CombinedInstance
 	d.ClusterManager = plan.ClusterManager
 	d.SHCDeployer = plan.SHCDeployer
+	d.SHCoresPerNode = plan.SHCoresPerNode
 	d.NodePlanText = FormatNodePlan(plan)
 	d.Warnings = append(d.Warnings, plan.Warnings...)
 

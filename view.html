@@ -10,20 +10,25 @@
   <link rel="stylesheet" href="assets/site.css">
   <link rel="stylesheet" href="assets/view.css">
 </head>
-<body>
-  <div class="shell view-shell">
-    <header class="top view-top">
-      <a class="home" href="index.html" id="home-link">← Home</a>
-      <nav class="lang-switch" aria-label="Language">
-        <button type="button" data-lang="en" aria-pressed="true">English</button>
-        <button type="button" data-lang="fa" aria-pressed="false">فارسی</button>
-      </nav>
-    </header>
-    <p id="status" class="status" hidden></p>
-    <article id="content" class="doc-view"></article>
-    <footer class="view-foot">
-      <p>Designed by <strong>Mohammad Mirasadollahi</strong> · <a href="https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning" target="_blank" rel="noopener noreferrer">GitHub</a></p>
-    </footer>
+<body class="view-page">
+  <div class="view-scroll" id="view-scroll">
+    <div class="shell view-shell">
+      <header class="top view-top">
+        <a class="home" href="index.html?lang=en" id="home-link">← Home</a>
+        <div class="lang-mode">
+          <span class="lang-label" id="lang-label">Language</span>
+          <nav class="lang-switch" aria-label="Language">
+            <button type="button" data-lang="en" aria-pressed="true">English</button>
+            <button type="button" data-lang="fa" aria-pressed="false">فارسی</button>
+          </nav>
+        </div>
+      </header>
+      <p id="status" class="status" hidden></p>
+      <article id="content" class="doc-view"></article>
+      <footer class="view-foot">
+        <p id="view-footer">Designed by <strong>Mohammad Mirasadollahi</strong> · <a href="https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning" target="_blank" rel="noopener noreferrer">GitHub</a></p>
+      </footer>
+    </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="assets/view.js"></script>

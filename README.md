@@ -4,7 +4,8 @@ Official Splunk **Capacity Planning** guidance (Infrastructure + Storage), extra
 
 **Designed by [Mohammad Mirasadollahi](https://github.com/Mohammad-Mirasadollahi)** · **GitHub:** [Mohammad-Mirasadollahi/splunk-capacity-planning](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning)
 
-**Live site (GitHub Pages):** [Documentation](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/) · [SCPcalc calculator](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/)
+**Language:** **English** (this page) · [فارسی](README.fa.md)  
+**Live site:** [Documentation](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=en) · [SCPcalc](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/?lang=en)
 
 Named after Splunk’s Capacity Planning Manual — see [Introduction to capacity planning](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/IntroductiontocapacityplanningforSplunkEnterprise).
 
@@ -14,7 +15,7 @@ Named after Splunk’s Capacity Planning Manual — see [Introduction to capacit
 
 Portable single binary (Go): **CLI + local Web UI**, same engine — also runs **in the browser via WebAssembly** (no server needed for GitHub Pages).
 
-Estimates searchable storage / retention MB fields, recommends **N_SH / N_IDX** from concurrent users × daily volume × clustering, drafts hardware layers + **`indexes.conf`**.
+Estimates searchable storage / retention MB fields, recommends **N_SH / N_IDX** from concurrent users × daily volume × concurrent searches × clustering, drafts hardware layers + **`indexes.conf`**.
 
 | | |
 |---|---|
@@ -42,14 +43,13 @@ make release                        # → scpcalc/releases/scpcalc-v* (gitignore
 
 Config: [`scpcalc/.env.example`](scpcalc/.env.example) → `.env` (`SCPCALC_HOST` / `SCPCALC_PORT`, default port **12345**).
 
-## Language (docs pack)
+## Language
 
 | | |
 |---|---|
-| **Default** | **English** (`docs/en/`) |
-| Alternate | فارسی (`docs/fa/`) |
-| Hub | [`index.html`](index.html)?`lang=en` (GitHub Pages) |
-| In every doc | Language switcher: **English** · **فارسی** |
+| **Default** | **English** — this README + [`docs/en/`](docs/en/) |
+| فارسی | Separate page: [`README.fa.md`](README.fa.md) + [`docs/fa/`](docs/fa/) |
+| Live hub | [Pages (English)](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=en) · [Pages (فارسی)](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=fa) |
 
 **English is the source of truth.** Persian docs must stay structurally synced (same files, section skeleton, citation URLs, version banners).
 
@@ -64,7 +64,7 @@ python3 tools/add_lang_switcher.py   # if you added a new paired file
 
 ```text
 splunk-capacity-planning/
-├── LICENSE / CONTRIBUTING.md / README.md / CHANGELOG.md
+├── LICENSE / CONTRIBUTING.md / README.md / README.fa.md / CHANGELOG.md
 ├── index.html / view.html / assets/   ← docs language hub (Pages)
 ├── docs/en + docs/fa                  ← knowledge pack
 ├── tools/                             ← doc sync scripts
@@ -76,7 +76,7 @@ splunk-capacity-planning/
     └── scpcalc-release.yml
 ```
 
-## Quick start (English — default)
+## Quick start
 
 0. **[Official References](docs/en/00-References.md)**  
 1. [Infrastructure Sizing](docs/en/01-Infrastructure-Sizing.md)  
@@ -85,22 +85,15 @@ splunk-capacity-planning/
 4. [IOPS by Storage Architecture](docs/en/04-IOPS-Sizing-by-Storage-Architecture.md)  
 5. [Index Buckets, Event Size & indexes.conf](docs/en/05-Index-Buckets-Retention-and-indexes-conf.md)
 
-## فارسی
-
-0. **[مراجع رسمی](docs/fa/00-References.md)**  
-1. [سایزینگ زیرساخت](docs/fa/01-Infrastructure-Sizing.md)  
-2. [سایزینگ Storage](docs/fa/02-Storage-Sizing.md)  
-3. [رسانه دیسک، IOPS و توپولوژی Storage](docs/fa/03-Disk-Media-IOPS-and-Storage-Topology.md)  
-4. [سایزینگ IOPS بر اساس معماری Storage](docs/fa/04-IOPS-Sizing-by-Storage-Architecture.md)  
-5. [Bucketها، حجم Event و indexes.conf](docs/fa/05-Index-Buckets-Retention-and-indexes-conf.md)
+Persian guide list → [`README.fa.md`](README.fa.md).
 
 ## GitHub Pages
 
-1. Settings → Pages → source: **GitHub Actions** (workflow [`scpcalc-pages.yml`](.github/workflows/scpcalc-pages.yml)), or deploy from branch `/` if you publish a built site locally.  
-2. Language defaults to **English**; use **فارسی** to switch.  
-3. Docs render via `view.html`. The calculator is also on Pages at **`/calc/`** (browser WASM; large `.wasm` built in CI, not committed). For LAN demos use `scpcalc serve` (SCPcalc binary) from a Release.  
+1. Settings → Pages → source: **GitHub Actions** (workflow [`scpcalc-pages.yml`](.github/workflows/scpcalc-pages.yml)).  
+2. Language defaults to **English**; click **فارسی** on the live site (or open [`?lang=fa`](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=fa)).  
+3. Docs render via `view.html`. Calculator: **`/calc/`** (browser WASM; large `.wasm` built in CI).  
    Live: [docs hub](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/) · [calculator](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/).  
-   Use **Export URL** / **Import** (paste link) to share a full plan via the URL hash — see [`scpcalc/README.md`](scpcalc/README.md#save--export--import).
+   Use **Export URL** / **Import** to share a plan via the URL hash — see [`scpcalc/README.md`](scpcalc/README.md#save--export--import).
 
 ## Contributing
 
@@ -108,7 +101,7 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md). PRs that touch docs must pass `check_e
 
 ## Official sources (summary)
 
-**Full index:** [docs/en/00-References.md](docs/en/00-References.md) · [docs/fa/00-References.md](docs/fa/00-References.md) · [`VERSION.md`](VERSION.md)
+**Full index:** [docs/en/00-References.md](docs/en/00-References.md) · [`VERSION.md`](VERSION.md)
 
 - [Reference hardware](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware)
 - [Estimate your storage requirements](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Estimateyourstoragerequirements)

@@ -39,9 +39,11 @@ func printPlanHuman(res model.PlanResult) {
 	}
 
 	if d := res.Design; d != nil {
-		fmt.Println("\n----- node counts (users × volume × topology) -----")
-		fmt.Printf("Concurrent users (U): %d\n", d.ConcurrentUsers)
-		fmt.Printf("Daily for sizing (D): %.1f GB/day\n", d.DailyGBForCounts)
+		fmt.Println("\n----- node counts (users × searches × volume × topology) -----")
+		fmt.Printf("Concurrent users (U):     %d\n", d.ConcurrentUsers)
+		fmt.Printf("Peak concurrent searches: %d\n", d.ConcurrentSearches)
+		fmt.Printf("Saved / scheduled searches: %d\n", d.SavedSearches)
+		fmt.Printf("Daily for sizing (D):     %.1f GB/day\n", d.DailyGBForCounts)
 		if d.CombinedInstance {
 			fmt.Printf("N_SH / N_IDX:         1 combined SH+IDX\n")
 		} else {

@@ -7,6 +7,9 @@
   --accent-ink: #06241e;
   --line: rgba(232, 241, 244, 0.14);
   --panel: rgba(12, 28, 36, 0.72);
+  --scroll-track: rgba(8, 18, 24, 0.85);
+  --scroll-thumb: rgba(61, 184, 160, 0.55);
+  --scroll-thumb-hover: rgba(61, 184, 160, 0.85);
   --font-en: "Source Sans 3", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-fa: "Vazirmatn", "IRANSans", Tahoma, "Segoe UI", sans-serif;
   --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
@@ -14,6 +17,75 @@
 }
 
 * { box-sizing: border-box; }
+
+html {
+  scrollbar-gutter: stable;
+  scrollbar-width: auto;
+  scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
+  background: var(--scroll-track);
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 8px;
+  min-height: 40px;
+}
+
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover {
+  background: var(--scroll-thumb-hover);
+}
+
+html::-webkit-scrollbar-corner,
+body::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Nested scroll areas (tables, code) share the same look */
+.scroll-x,
+.doc-view pre,
+.doc-table-wrap {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+}
+
+.scroll-x::-webkit-scrollbar,
+.doc-view pre::-webkit-scrollbar,
+.doc-table-wrap::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.scroll-x::-webkit-scrollbar-track,
+.doc-view pre::-webkit-scrollbar-track,
+.doc-table-wrap::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 8px;
+}
+
+.scroll-x::-webkit-scrollbar-thumb,
+.doc-view pre::-webkit-scrollbar-thumb,
+.doc-table-wrap::-webkit-scrollbar-thumb {
+  background: rgba(61, 184, 160, 0.6);
+  border-radius: 8px;
+}
+
+.scroll-x::-webkit-scrollbar-thumb:hover,
+.doc-view pre::-webkit-scrollbar-thumb:hover,
+.doc-table-wrap::-webkit-scrollbar-thumb:hover {
+  background: rgba(61, 184, 160, 0.85);
+}
 
 html, body {
   margin: 0;
@@ -24,6 +96,7 @@ html, body {
     radial-gradient(900px 500px at 100% 0%, rgba(72, 132, 180, 0.2), transparent 50%),
     linear-gradient(160deg, var(--bg0), var(--bg1));
   font-family: var(--font-en);
+  background-attachment: fixed;
 }
 
 body[data-lang="fa"] {
@@ -70,6 +143,26 @@ body[data-lang="fa"] h2 {
   max-width: 38rem;
   color: var(--muted);
   font-size: 1.05rem;
+}
+
+.lang-mode {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+body[data-lang="fa"] .lang-mode {
+  align-items: flex-start;
+}
+
+.lang-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
 }
 
 .lang-switch {

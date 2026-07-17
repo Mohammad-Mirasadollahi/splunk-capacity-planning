@@ -172,6 +172,14 @@ func parseCalcArgs(args []string) (calcOptions, int) {
 			if c := needInt(a, &p.ConcurrentUsers); c >= 0 {
 				return opts, c
 			}
+		case "--concurrent-searches":
+			if c := needInt(a, &p.ConcurrentSearches); c >= 0 {
+				return opts, c
+			}
+		case "--saved-searches":
+			if c := needInt(a, &p.SavedSearches); c >= 0 {
+				return opts, c
+			}
 		case "--indexer-cluster":
 			p.IndexerCluster = true
 			opts.ClusterSet = true

@@ -19,10 +19,13 @@
         <p class="lede" data-i18n="lede">Infrastructure, storage, disk media, and IOPS sizing from official Splunk docs — with citations.</p>
         <p class="credit" data-i18n-html="credit_html">Designed by <strong>Mohammad Mirasadollahi</strong> · <a href="https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning">GitHub</a></p>
       </div>
-      <nav class="lang-switch" aria-label="Language">
-        <button type="button" id="lang-en" data-lang="en" aria-pressed="true">English</button>
-        <button type="button" id="lang-fa" data-lang="fa" aria-pressed="false">فارسی</button>
-      </nav>
+      <div class="lang-mode">
+        <span class="lang-label" id="lang-label">Language</span>
+        <nav class="lang-switch" aria-label="Language">
+          <button type="button" id="lang-en" data-lang="en" aria-pressed="true">English</button>
+          <button type="button" id="lang-fa" data-lang="fa" aria-pressed="false">فارسی</button>
+        </nav>
+      </div>
     </header>
 
     <main>
@@ -37,7 +40,7 @@
         <p class="links">
           <a href="VERSION.md" data-i18n="versions">VERSION.md</a>
           <a href="README.md" data-i18n="readme">README</a>
-          <a href="calc/">Calculator</a>
+          <a href="calc/?lang=en" id="calc-link">Calculator</a>
           <a href="https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning" id="repo-link" target="_blank" rel="noopener noreferrer">GitHub</a>
         </p>
       </section>

@@ -73,6 +73,8 @@ export async function runCalculate() {
         : d.n_sh;
     const rowsM = [
       ["Concurrent users", d.concurrent_users],
+      ["Peak concurrent searches", d.concurrent_searches],
+      ["Saved / scheduled searches", d.saved_searches],
       ["Total daily raw GB/day", data.total_daily_raw_gb],
       ["Compression factor", data.compression_factor],
       ["Total on-disk GB/day", data.total_daily_on_disk_gb],
@@ -84,7 +86,7 @@ export async function runCalculate() {
       ["summaries need GB", d.summaries_need_gb],
     ];
     if (d.base_n_sh || d.base_n_idx) {
-      rowsM.splice(6, 0, [
+      rowsM.splice(8, 0, [
         "Table baseline (SH+IDX)",
         d.combined_instance && d.base_n_sh === 1 && d.base_n_idx === 1
           ? "combined"
