@@ -1,4 +1,4 @@
-# scpcalc — Low-Level Design (LLD)
+# SCPcalc — Low-Level Design (LLD)
 
 ## 1. Repository file map
 

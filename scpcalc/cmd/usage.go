@@ -6,7 +6,7 @@ import (
 )
 
 func printUsage() {
-	fmt.Fprintf(os.Stderr, `scpcalc — portable Splunk capacity calculator
+	fmt.Fprintf(os.Stderr, `SCPcalc — portable Splunk capacity calculator
 
 Usage:
   scpcalc calc [flags]

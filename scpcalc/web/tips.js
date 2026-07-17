@@ -401,11 +401,51 @@ window.SCP_TIPS = {
     "N_IDX": {
       title: "N_IDX (design)",
       formula: "max(platform table, ES table, ceil(D/100) for ITSI, RF)",
-      body: "Recommended indexer/peer count after applying platform and premium-app floors.",
+      body: "Recommended indexer/peer count after applying platform and premium-app floors. Each indexer still needs its own physical CPU cores (and typically 2× vCPU with HT).",
       example: "ES mid-range ~1 TB/day row uses 10 indexers in ES scaling table.",
       links: [
         { label: "Performance recommendations", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Summaryofperformancerecommendations" },
         { label: "ES scaling", url: "https://help.splunk.com/en/splunk-enterprise-security-8/install/8.5/planning/considerations-for-scaling-deployments" },
+      ],
+    },
+    "CPU physical": {
+      title: "CPU physical cores (sizing basis)",
+      formula: "Assign PHYSICAL cores from Reference hardware / ES / ITSI tables",
+      body: "Official planning unit is physical CPU cores. Logical/vCPU is listed separately (usually 2× with hyper-threading). Example ES production: 16 physical CPU cores AND 32 vCPU. Do not meet a 16-physical requirement with 16 HT threads on 8 physical cores.",
+      example: "Indexer minimum: 12 physical → assign 24 vCPU to the VM when HT is on.",
+      links: [
+        { label: "Reference hardware", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware" },
+        { label: "ES 8.5 minimum specs", url: "https://help.splunk.com/en/splunk-enterprise-security-8/install/8.5/planning/minimum-specifications-for-a-production-deployment" },
+      ],
+    },
+    "CPU logical / vCPU": {
+      title: "CPU logical / vCPU",
+      formula: "With HT: vCPU = 2 × physical_cores",
+      body: "Logical threads / hypervisor vCPUs. Splunk tables pair them with physical (12/24, 16/32, 24/48…). Cloud vCPU may be less than a full physical core — follow the vendor definition.",
+      example: "ES: 16 physical → 32 vCPU on the guest.",
+      links: [
+        { label: "ES 8.5 minimum specs", url: "https://help.splunk.com/en/splunk-enterprise-security-8/install/8.5/planning/minimum-specifications-for-a-production-deployment" },
+        { label: "Reference hardware (virtualization)", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware" },
+      ],
+    },
+    Virtualization: {
+      title: "Virtualization CPU rule",
+      formula: "Reserve full CPU+RAM; do NOT oversubscribe the hypervisor",
+      body: "Hypervisor CPU sharing across VMs is not how you scale Splunk. Reserve resources matching the physical/vCPU tables. VM indexers are ~10–15% slower on ingest than bare metal.",
+      example: "16 physical / 32 vCPU reserved exclusively for one ES indexer guest.",
+      links: [
+        { label: "Reference hardware — virtualized", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware" },
+        { label: "ES performance reference", url: "https://help.splunk.com/en/splunk-enterprise-security-8/install/8.5/planning/performance-reference-for-splunk-enterprise-security" },
+      ],
+    },
+    "Splunk parallelization": {
+      title: "Splunk software parallelization",
+      formula: "Enable pipeline sets / parallelization only when spare CPU > role minimum",
+      body: "Not the same as hypervisor oversubscription. Heavy Forwarder and indexers may use multiple pipeline sets when resources allow. ITSI: if indexer CPUs exceed the minimum, parallelization settings may be enabled for specific use cases.",
+      example: "Indexer already at 24 physical with headroom → consider index pipeline parallelization; do not oversubscribe the host.",
+      links: [
+        { label: "Reference hardware (pipeline sets)", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware" },
+        { label: "ITSI 5.0 Plan", url: "https://help.splunk.com/en/splunk-it-service-intelligence/splunk-it-service-intelligence/install-and-upgrade/5.0/planning/plan-your-itsi-deployment" },
       ],
     },
     "hot need GB": {

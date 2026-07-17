@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>scpcalc — Splunk Capacity Calculator</title>
+  <title>SCPcalc — Splunk Capacity Calculator</title>
   <link rel="stylesheet" href="app.css">
 </head>
 <body>
@@ -19,7 +19,7 @@
     <header class="top glass-nav reveal">
       <div class="brand">
         <p class="eyebrow" data-i18n="eyebrow">Portable calculator</p>
-        <h1>scpcalc</h1>
+        <h1>SCPcalc</h1>
         <p class="lede" data-i18n="lede">Step-by-step wizard → storage, design, resources, indexes.conf.</p>
         <p class="credit" data-i18n-html="credit_html">Designed by <strong>Mohammad Mirasadollahi</strong> · <a href="https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning" target="_blank" rel="noopener noreferrer">GitHub</a></p>
         <p id="engine-badge" class="engine-badge" hidden></p>
@@ -54,6 +54,7 @@
         <h2 data-i18n="results">Results</h2>
         <div class="row-actions" style="margin:0">
           <button type="button" class="btn-ghost" id="btn-reopen-wizard" data-i18n="edit_wizard">Edit in wizard</button>
+          <button type="button" class="btn-ghost" id="btn-share-url-out" data-i18n="share_url">Copy share URL</button>
           <button type="button" class="btn-ghost" id="btn-dl-conf" data-i18n="download_conf">Download indexes.conf</button>
           <button type="button" class="btn-ghost" id="btn-copy-conf-home" data-i18n="copy">Copy indexes.conf</button>
           <button type="button" class="btn-ghost" id="btn-dl-design" data-i18n="download_design">Download design.txt</button>
@@ -84,6 +85,13 @@
       </div>
 
       <div class="tab-panel" data-panel="resources" role="tabpanel" hidden>
+        <div class="table-toolbar">
+          <label class="table-find">
+            <span data-i18n="table_find">Find in table</span>
+            <input type="search" id="res-find" data-i18n-placeholder="table_find_ph" placeholder="role, tier, RAM…" autocomplete="off">
+          </label>
+          <span class="table-find-count" id="res-find-count" hidden></span>
+        </div>
         <div class="table-wrap modal-table">
           <table class="src-table result-table" id="res-table">
             <thead>
@@ -91,10 +99,15 @@
                 <th data-i18n="res_role">Role</th>
                 <th>×</th>
                 <th data-i18n="res_tier">Tier</th>
-                <th>CPU</th>
+                <th data-i18n="res_cpu_phys">CPU physical</th>
+                <th data-i18n="res_cpu_logical">CPU logical / vCPU</th>
                 <th>RAM</th>
                 <th data-i18n="res_storage">Storage</th>
                 <th data-i18n="res_disk">Disk/node</th>
+                <th data-i18n="res_network">Network</th>
+                <th data-i18n="res_virt">Virtualization</th>
+                <th data-i18n="res_parallel">Splunk parallelization</th>
+                <th data-i18n="res_notes">Notes</th>
               </tr>
             </thead>
             <tbody id="res-body"></tbody>
@@ -108,17 +121,28 @@
       </div>
 
       <div class="tab-panel" data-panel="indexes" role="tabpanel" hidden>
+        <div class="table-toolbar">
+          <label class="table-find">
+            <span data-i18n="table_find">Find in table</span>
+            <input type="search" id="ix-find" data-i18n-placeholder="table_find_ph_ix" placeholder="index, GB, MB…" autocomplete="off">
+          </label>
+          <span class="table-find-count" id="ix-find-count" hidden></span>
+        </div>
         <div class="table-wrap modal-table">
           <table class="src-table result-table" id="ix-table">
             <thead>
               <tr>
-                <th>index</th>
-                <th>daily_raw</th>
-                <th>on_disk</th>
-                <th>searchable_tb</th>
-                <th>maxTotal MB</th>
-                <th>homePath MB</th>
-                <th>summary</th>
+                <th data-i18n="ix_index">index</th>
+                <th data-i18n="ix_label">label</th>
+                <th data-i18n="ix_event_bytes">event_bytes</th>
+                <th data-i18n="ix_daily_raw">daily_raw</th>
+                <th data-i18n="ix_on_disk">on_disk</th>
+                <th data-i18n="ix_searchable">searchable_tb</th>
+                <th data-i18n="ix_max_total">maxTotal MB</th>
+                <th data-i18n="ix_home">homePath MB</th>
+                <th data-i18n="ix_max_data">maxDataSize</th>
+                <th data-i18n="ix_frozen_days">frozen days</th>
+                <th data-i18n="ix_summary">summary</th>
               </tr>
             </thead>
             <tbody id="ix-body"></tbody>
@@ -336,6 +360,7 @@
             <button type="button" class="btn-ghost" id="btn-add" data-i18n="add_row">+ Add custom source</button>
             <button type="button" class="btn-ghost" id="btn-save" data-i18n="save">Save</button>
             <button type="button" class="btn-ghost" id="btn-export" data-i18n="export">Export .json</button>
+            <button type="button" class="btn-ghost" id="btn-share-url" data-i18n="share_url">Copy share URL</button>
           </div>
         </section>
 

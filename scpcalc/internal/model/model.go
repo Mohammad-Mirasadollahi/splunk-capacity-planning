@@ -103,14 +103,21 @@ type LayerSpec struct {
 	Role         string  `json:"role"`
 	Count        int     `json:"count"`
 	Tier         string  `json:"tier"` // minimum | mid-range | high-performance | es-minimum | management
-	CPUCores     int     `json:"cpu_cores"`
-	VCPU         int     `json:"vcpu"`
+	CPUCores     int     `json:"cpu_cores"` // physical cores (planning unit)
+	VCPU         int     `json:"vcpu"`      // logical / vCPU with HT (typically 2× physical)
 	RAMGB        int     `json:"ram_gb"`
 	StorageType  string  `json:"storage_type"`
 	DiskGBHint   float64 `json:"disk_gb_hint,omitempty"`
 	Network      string  `json:"network"`
 	IOPSHint     string  `json:"iops_hint,omitempty"`
 	Notes        string  `json:"notes"`
+	// CPU guidance (Reference hardware + ES/ITSI): physical vs logical, virt, Splunk parallelization.
+	CPUPhysicalCores      int    `json:"cpu_physical_cores,omitempty"`
+	CPULogicalVCPU        int    `json:"cpu_logical_vcpu,omitempty"`
+	CPUBasis              string `json:"cpu_basis,omitempty"`               // always "physical_cores"
+	CPULogicalRule        string `json:"cpu_logical_rule,omitempty"`        // HT → 2× physical as vCPU
+	VirtCPURule           string `json:"virt_cpu_rule,omitempty"`           // reserve; no oversubscribe
+	SplunkParallelization string `json:"splunk_parallelization,omitempty"` // pipeline sets / index parallelization when spare CPU
 }
 
 // Design is the recommended architecture + settings narrative.

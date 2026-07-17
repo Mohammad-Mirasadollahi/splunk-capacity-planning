@@ -1,4 +1,4 @@
-# scpcalc — Logic and Formulas
+# SCPcalc — Logic and Formulas
 
 Maps to knowledge pack:
 
@@ -144,6 +144,13 @@ MaxRetentionDays ≈ AvailableSearchable / (Daily_OnDisk)     # if ingest known
 - SmartStore: local cache `0.5 × D × (30|90 if ES)`; remote `Remote_Store_GB ≈ D × R × Comp`.
 
 Hardware tiers per role: Reference hardware minimum / mid / high (and ES floors). See `internal/arch`.
+
+**CPU (official):**
+- Sizing basis = **physical cores** (`cpu_cores` / `cpu_physical_cores`).
+- With hyper-threading, assign **logical/vCPU = 2× physical** (`vcpu` / `cpu_logical_vcpu`) — matches Reference hardware and ES (16 physical / 32 vCPU).
+- Virtualization: **reserve** full CPU/RAM; **do not oversubscribe** the hypervisor (`virt_cpu_rule`).
+- Splunk pipeline / index parallelization: only when spare CPU above the role minimum (`splunk_parallelization`) — not the same as hypervisor oversubscription.
+- Pack docs: `docs/en/01-Infrastructure-Sizing.md` §3.8–3.9.
 
 ## 10. Warnings
 

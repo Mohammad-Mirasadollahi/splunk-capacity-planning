@@ -7,6 +7,46 @@ import { setConfText, syncVolStateFromGlobals } from "./conf-editor.js";
 import { renderAllCharts } from "./charts.js";
 import { closeWizard, showStep } from "./wizard.js";
 import { runPlan } from "./engine.js";
+import { t } from "./i18n.js";
+
+function applyTableFind(inputId, tbodyId, countId) {
+  const input = document.getElementById(inputId);
+  const tbody = document.getElementById(tbodyId);
+  const countEl = document.getElementById(countId);
+  if (!input || !tbody) return;
+  const q = (input.value || "").trim().toLowerCase();
+  let shown = 0;
+  let total = 0;
+  tbody.querySelectorAll("tr").forEach((tr) => {
+    total += 1;
+    const hay = (tr.dataset.find || tr.textContent || "").toLowerCase();
+    const match = !q || hay.includes(q);
+    tr.hidden = !match;
+    tr.classList.toggle("is-find-hit", Boolean(q && match));
+    if (match) shown += 1;
+  });
+  if (countEl) {
+    if (!q) {
+      countEl.hidden = true;
+      countEl.textContent = "";
+    } else {
+      countEl.hidden = false;
+      countEl.textContent = t("table_find_count").replace("{n}", String(shown)).replace("{t}", String(total));
+    }
+  }
+}
+
+export function bindResultTableFind() {
+  const wire = (inputId, tbodyId, countId) => {
+    const input = document.getElementById(inputId);
+    if (!input || input.dataset.bound === "1") return;
+    input.dataset.bound = "1";
+    input.addEventListener("input", () => applyTableFind(inputId, tbodyId, countId));
+    input.addEventListener("search", () => applyTableFind(inputId, tbodyId, countId));
+  };
+  wire("res-find", "res-body", "res-find-count");
+  wire("ix-find", "ix-body", "ix-find-count");
+}
 
 export async function runCalculate() {
   const err = document.getElementById("err");
@@ -89,17 +129,32 @@ export async function runCalculate() {
     if (resBody) {
       resBody.innerHTML = (d.resources || [])
         .map((r) => {
-          const cpu = r.cpu_cores ? `${r.cpu_cores}c / ${r.vcpu} vCPU` : "—";
+          const phys = r.cpu_physical_cores || r.cpu_cores || 0;
+          const logi = r.cpu_logical_vcpu || r.vcpu || 0;
+          const cpuPhys = phys ? `${phys} physical @ ≥2 GHz` : "—";
+          const cpuLog = logi ? `${logi} logical / vCPU (HT 2×)` : "—";
           const ram = r.ram_gb ? `${r.ram_gb} GB` : "—";
           const disk = r.disk_gb_hint ? `≈${Math.round(r.disk_gb_hint)} GB` : "—";
-          return `<tr title="${escapeAttr(r.notes || "")}">
+          const net = r.network || "—";
+          const virt = r.virt_cpu_rule || (phys ? "Reserve full CPU/RAM — no oversubscribe" : "—");
+          const para = r.splunk_parallelization || "—";
+          const notes = r.notes || (r.iops_hint ? `IOPS: ${r.iops_hint}` : "—");
+          const find = [r.role, r.count, r.tier, cpuPhys, cpuLog, ram, r.storage_type, disk, net, virt, para, notes, r.iops_hint, "physical", "logical", "vCPU"]
+            .filter(Boolean)
+            .join(" ");
+          return `<tr data-find="${escapeAttr(find)}" title="${escapeAttr([r.cpu_logical_rule, r.virt_cpu_rule, r.splunk_parallelization, r.notes].filter(Boolean).join(" | "))}">
             <td>${escapeAttr(r.role)}</td>
             <td>${r.count}</td>
             <td>${escapeAttr(r.tier)}</td>
-            <td>${cpu}</td>
+            <td><strong>${escapeAttr(cpuPhys)}</strong></td>
+            <td>${escapeAttr(cpuLog)}</td>
             <td>${ram}</td>
             <td>${escapeAttr(r.storage_type || "")}</td>
             <td>${disk}</td>
+            <td>${escapeAttr(net)}</td>
+            <td class="cell-notes">${escapeAttr(virt)}</td>
+            <td class="cell-notes">${escapeAttr(para)}</td>
+            <td class="cell-notes">${escapeAttr(notes)}</td>
           </tr>`;
         })
         .join("");
@@ -108,21 +163,49 @@ export async function runCalculate() {
     if (ixBody) {
       ixBody.innerHTML = (data.indexes || [])
         .map((ix) => {
+          const frozenDays =
+            ix.frozen_time_period_in_secs != null
+              ? Math.round(Number(ix.frozen_time_period_in_secs) / 86400)
+              : "—";
           const sum = ix.summary_index_name
-            ? `${ix.summary_index_name}<br><small>${ix.summary_daily_raw_gb} GB/d → ${ix.summary_max_total_data_size_mb} MB</small>`
+            ? `${ix.summary_index_name} · ${ix.summary_daily_raw_gb} GB/d · ${ix.summary_max_total_data_size_mb} MB`
             : "—";
-          return `<tr>
+          const label = ix.label || ix.key || "—";
+          const find = [
+            ix.index_name,
+            label,
+            ix.event_bytes,
+            ix.daily_raw_gb,
+            ix.daily_on_disk_gb,
+            ix.searchable_tb,
+            ix.max_total_data_size_mb,
+            ix.home_path_max_data_size_mb,
+            ix.max_data_size,
+            frozenDays,
+            sum,
+          ]
+            .filter((x) => x != null && x !== "")
+            .join(" ");
+          return `<tr data-find="${escapeAttr(find)}">
             <td>${escapeAttr(ix.index_name)}</td>
+            <td>${escapeAttr(label)}</td>
+            <td>${ix.event_bytes ?? "—"}</td>
             <td>${ix.daily_raw_gb}</td>
             <td>${ix.daily_on_disk_gb}</td>
             <td>${ix.searchable_tb}</td>
             <td>${ix.max_total_data_size_mb}</td>
             <td>${ix.home_path_max_data_size_mb}</td>
-            <td>${sum}</td>
+            <td>${escapeAttr(ix.max_data_size || "—")}</td>
+            <td>${frozenDays}</td>
+            <td>${escapeAttr(sum)}</td>
           </tr>`;
         })
         .join("");
     }
+
+    bindResultTableFind();
+    applyTableFind("res-find", "res-body", "res-find-count");
+    applyTableFind("ix-find", "ix-body", "ix-find-count");
 
     state.lastConf = data.indexes_conf || "";
     state.lastConfGenerated = state.lastConf;

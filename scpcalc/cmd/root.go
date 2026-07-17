@@ -16,7 +16,7 @@ func Execute() int {
 	}
 	switch os.Args[1] {
 	case "version", "-v", "--version":
-		fmt.Printf("scpcalc %s\n", Version)
+		fmt.Printf("SCPcalc %s\n", Version)
 		return 0
 	case "help", "-h", "--help":
 		printUsage()

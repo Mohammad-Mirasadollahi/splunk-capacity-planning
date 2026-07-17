@@ -1,4 +1,4 @@
-/* scpcalc styles — entry point; modules live in css/ */
+/* SCPcalc styles — entry point; modules live in css/ */
 
 @import url("css/01-base.css");
 @import url("css/02-atmosphere.css");

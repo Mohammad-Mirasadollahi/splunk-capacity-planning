@@ -69,6 +69,8 @@
   - [3.5 نوع Storage به ازای نقش (خلاصه Infrastructure)](#35-نوع-storage-به-ازای-نقش-خلاصه-infrastructure)
   - [3.6 محدودیت Latency در Cluster](#36-محدودیت-latency-در-cluster)
   - [3.7 Virtualization و Cloud](#37-virtualization-و-cloud)
+  - [3.8 Physical در برابر Logical (vCPU) — نگاشت رسمی](#38-physical-در-برابر-logical-vcpu--نگاشت-رسمی)
+  - [3.9 موازی‌سازی Virtualization در برابر موازی‌سازی Splunk](#39-موازی‌سازی-virtualization-در-برابر-موازی‌سازی-splunk)
 - [4) جدول رسمی تعداد Search Head و Indexer (Performance Recommendations)](#4-جدول-رسمی-تعداد-search-head-و-indexer-performance-recommendations)
   - [4.1 Daily Indexing Volume × Total Users](#41-daily-indexing-volume-total-users)
   - [4.2 روش محاسبه عملی از روی جدول](#42-روش-محاسبه-عملی-از-روی-جدول)
@@ -287,6 +289,52 @@
 
 **ارجاع:**  
 [Reference hardware → Virtualized Infrastructures / Self-managed Splunk Enterprise in the cloud](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware)
+
+### 3.8 Physical در برابر Logical (vCPU) — نگاشت رسمی
+
+> **واحد برنامه‌ریزی = physical CPU cores.** هسته‌های منطقی / vCPU جدا فهرست می‌شوند و معمولاً با hyper-threading برابر **۲ × physical** هستند.
+
+| اصطلاح | معنی در مستندات Splunk | چیزی که باید تأمین کنید |
+|---|---|---|
+| **Physical CPU cores** | هسته‌های واقعی سوکت (بدون شمارش دوبل HT) | **مبنای سایزینگ** (مثلاً SH حداقل **۱۶ physical**، indexer حداقل **۱۲ physical**، ES SH/IDX **۱۶ physical**) |
+| **Logical / vCPU** | threadهای OS/hypervisor؛ با HT ≈ **۲ × physical** | همین تعداد vCPU را به VM بدهید (مثلاً ES **۳۲ vCPU** برای **۱۶ physical**) |
+| **Cloud vCPU** | سهم تعریف‌شده توسط vendor | ممکن است **کمتر** از یک physical کامل باشد — فرض نکنید ۱ cloud vCPU = ۱ physical |
+
+**نمونه‌های رسمی جفت‌شده:**
+
+| نقش | Physical | Logical / vCPU | منبع |
+|---|---|---|---|
+| Combined / S1 حداقل | 12 | 24 | [Reference hardware](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware) |
+| Search head حداقل | 16 | 32 | Reference hardware |
+| Indexer حداقل | 12 | 24 | Reference hardware |
+| Indexer mid-range | 24 | 48 | Reference hardware |
+| Indexer high-performance | 48 | 96 | Reference hardware |
+| ES search head / indexer (production) | **16 physical CPU cores** | **32 vCPU** | [حداقل مشخصات ES 8.5](https://help.splunk.com/en/splunk-enterprise-security-8/install/8.5/planning/minimum-specifications-for-a-production-deployment) |
+| ITSI search head | 16 الزامی (۲۴+ توصیه‌شده) | 32 الزامی (۴۸+ توصیه‌شده) | [ITSI 5.0 Plan](https://help.splunk.com/en/splunk-it-service-intelligence/splunk-it-service-intelligence/install-and-upgrade/5.0/planning/plan-your-itsi-deployment) |
+
+**قاعده این پک و ماشین‌حساب:**  
+با HT روشن: `vCPU_to_assign = 2 × physical_cores`. اگر HT خاموش است، همچنان باید تعداد **physical** را تأمین کنید؛ نمی‌توانید الزام ۱۶ physical را با ۱۶ thread روی ۸ هسته physical برآورده کنید.
+
+### 3.9 موازی‌سازی Virtualization در برابر موازی‌سازی Splunk
+
+این دو **متفاوت‌اند** — قاطی نکنید.
+
+| موضوع | مجاز؟ | راهنمای رسمی |
+|---|---|---|
+| **Oversubscription CPU هایپروایزر** (اشتراک همان هسته‌های physical بین چند VM) | **خیر** برای production | برای هر guest کل CPU و RAM را **reserve** کنید؛ oversubscribe نکنید. راهنمای مجازی‌سازی ES: CPU/RAM معادل bare-metal + reserve. |
+| **Hyper-threading** (thread منطقی روی هر physical) | **بله (انتظار می‌رود)** | جداول Reference و ES هم physical و هم ۲× vCPU را می‌دهند. با HT، ستون **vCPU** را به VM بدهید. |
+| **موازی‌سازی نرم‌افزاری Splunk** (pipeline sets / index parallelization / batch-mode search) | **بله، وقتی CPU اضافه دارید** | HF/indexer: چند pipeline set وقتی منابع آزاد است ([Reference hardware](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware)). ITSI: اگر CPU ایندکسر از حداقل **بیشتر** شد، می‌توانید parallelization را برای use caseهای خاص روشن کنید ([ITSI Plan](https://help.splunk.com/en/splunk-it-service-intelligence/splunk-it-service-intelligence/install-and-upgrade/5.0/planning/plan-your-itsi-deployment)). |
+| **هم‌زمانی search** | هسته برنامه‌ریزی کنید | هر search فعال تا **۱ CPU core** مصرف می‌کند (Reference hardware → search head). |
+
+**چک‌لیست عملی:**
+
+1. ابتدا **physical cores** را از جدول نقش (یا کف ES/ITSI) بگیرید.  
+2. روی VM با HT: `vCPU = 2 × physical` و آن ظرفیت را **reserve** کنید — بدون oversubscribe.  
+3. فقط وقتی guest بالاتر از حداقل هسته اضافه دارد، تنظیمات **pipeline / parallelization** اسپلانک را روشن کنید.  
+4. هرگز با oversubscribe هایپروایزر «ظرفیت» نسازید.
+
+**ارجاعها:**  
+[Reference hardware](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware) · [ES 8.5 minimum specifications](https://help.splunk.com/en/splunk-enterprise-security-8/install/8.5/planning/minimum-specifications-for-a-production-deployment) · [ES 8.5 performance reference (virtualized)](https://help.splunk.com/en/splunk-enterprise-security-8/install/8.5/planning/performance-reference-for-splunk-enterprise-security) · [ITSI 5.0 Plan](https://help.splunk.com/en/splunk-it-service-intelligence/splunk-it-service-intelligence/install-and-upgrade/5.0/planning/plan-your-itsi-deployment)
 
 ---
 

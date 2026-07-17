@@ -45,6 +45,10 @@ export function setLang(next) {
     const k = el.getAttribute("data-i18n-html");
     if (dict[k]) el.innerHTML = dict[k];
   });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+    const k = el.getAttribute("data-i18n-placeholder");
+    if (dict[k]) el.setAttribute("placeholder", dict[k]);
+  });
   onAfterSetLang?.(l);
 }
 

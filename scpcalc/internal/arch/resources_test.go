@@ -18,6 +18,18 @@ func TestRecommendResourcesHasIndexer(t *testing.T) {
 	for _, L := range res {
 		if L.Role == "Indexer" && L.Count == 4 && L.CPUCores >= 12 {
 			foundIDX = true
+			if L.CPUPhysicalCores != L.CPUCores || L.CPULogicalVCPU != L.VCPU {
+				t.Fatalf("CPU guidance not filled: %+v", L)
+			}
+			if L.CPUBasis != "physical_cores" {
+				t.Fatalf("cpu_basis=%q", L.CPUBasis)
+			}
+			if L.VirtCPURule == "" || L.SplunkParallelization == "" {
+				t.Fatalf("missing virt/parallel notes: %+v", L)
+			}
+			if L.VCPU != L.CPUCores*2 {
+				t.Fatalf("expected logical=2×physical, phys=%d vcpu=%d", L.CPUCores, L.VCPU)
+			}
 		}
 	}
 	if !foundIDX {

@@ -40,7 +40,7 @@ func runServe(args []string) int {
 
 	cfg := config.LoadServe(cliAddr, cliHost, cliPort)
 	addr := cfg.AddrString()
-	fmt.Printf("scpcalc %s listening on http://%s\n", Version, addr)
+	fmt.Printf("SCPcalc %s listening on http://%s\n", Version, addr)
 	if err := server.ListenAndServe(addr, Version); err != nil {
 		fmt.Fprintf(os.Stderr, "serve error: %v\n", err)
 		return 1

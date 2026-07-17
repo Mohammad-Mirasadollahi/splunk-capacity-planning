@@ -64,6 +64,8 @@
   - [3.5 Storage Type by Role (Infrastructure Summary)](#35-storage-type-by-role-infrastructure-summary)
   - [3.6 Latency Limits in Clusters](#36-latency-limits-in-clusters)
   - [3.7 Virtualization and Cloud](#37-virtualization-and-cloud)
+  - [3.8 Physical cores vs logical cores (vCPU) — official mapping](#38-physical-cores-vs-logical-cores-vcpu--official-mapping)
+  - [3.9 Virtualization parallelization vs Splunk parallelization](#39-virtualization-parallelization-vs-splunk-parallelization)
 - [4) Official Search Head and Indexer Counts (Performance Recommendations)](#4-official-search-head-and-indexer-counts-performance-recommendations)
   - [4.1 Daily Indexing Volume × Total Users](#41-daily-indexing-volume--total-users)
   - [4.2 Practical Calculation Using the Table](#42-practical-calculation-using-the-table)
@@ -288,6 +290,52 @@ Official latency impact on cluster index time (1 TB) and recovery:
 
 **Source:**  
 [Reference hardware → Virtualized Infrastructures / Self-managed Splunk Enterprise in the cloud](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware)
+
+### 3.8 Physical cores vs logical cores (vCPU) — official mapping
+
+> **Planning unit = physical CPU cores.** Logical cores / vCPUs are listed separately and usually equal **2× physical** when hyper-threading (HT) is enabled.
+
+| Term | Meaning in Splunk docs | What you must provision |
+|---|---|---|
+| **Physical CPU cores** | Real CPU cores on the socket (no HT counted twice) | This is the **sizing basis** (e.g. SH minimum **16 physical**, indexer minimum **12 physical**, ES SH/IDX **16 physical**) |
+| **Logical / vCPU** | OS/hypervisor threads; with HT ≈ **2 × physical** | Assign this many vCPUs to the VM (e.g. ES **32 vCPU** for **16 physical**) |
+| **Cloud vCPU** | Vendor-defined share of a core | May be **less** than one full physical core — do **not** assume 1 cloud vCPU = 1 physical core |
+
+**Official paired examples (same row = same machine class):**
+
+| Role | Physical | Logical / vCPU | Source |
+|---|---|---|---|
+| Combined / S1 minimum | 12 | 24 | [Reference hardware](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware) |
+| Search head minimum | 16 | 32 | Reference hardware |
+| Indexer minimum | 12 | 24 | Reference hardware |
+| Indexer mid-range | 24 | 48 | Reference hardware |
+| Indexer high-performance | 48 | 96 | Reference hardware |
+| ES search head / indexer (production) | **16 physical CPU cores** | **32 vCPU** | [ES 8.5 minimum specifications](https://help.splunk.com/en/splunk-enterprise-security-8/install/8.5/planning/minimum-specifications-for-a-production-deployment) |
+| ITSI search head | 16 required (24+ recommended) | 32 required (48+ recommended) | [ITSI 5.0 Plan](https://help.splunk.com/en/splunk-it-service-intelligence/splunk-it-service-intelligence/install-and-upgrade/5.0/planning/plan-your-itsi-deployment) |
+
+**Rule of thumb used by this pack and calculator:**  
+`vCPU_to_assign = 2 × physical_cores` when HT is on (matches Splunk’s paired tables). If HT is off, you still need the **physical** count; you cannot “meet” a 16-physical requirement with 16 HT threads on 8 physical cores.
+
+### 3.9 Virtualization parallelization vs Splunk parallelization
+
+These are **different** — do not confuse them.
+
+| Topic | Allowed? | Official guidance |
+|---|---|---|
+| **Hypervisor CPU oversubscription** (sharing the same physical cores across VMs / “CPU parallelization” of guests) | **No** for production Splunk | Reserve the full CPU and RAM for each guest; do not oversubscribe. ES virtualization guidance: equivalent CPU/RAM to bare metal, reserve resources. |
+| **Hyper-threading (logical threads on each physical core)** | **Yes (expected)** | Reference and ES tables publish physical **and** 2× vCPU. With HT enabled, assign the **vCPU** column to the VM. |
+| **Splunk software parallelization** (index **pipeline sets**, index parallelization, batch-mode / parallel search) | **Yes, when spare CPU remains** | Heavy Forwarder / indexers: multiple pipeline sets when resources allow ([Reference hardware](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware) → manage pipeline sets for index parallelization). ITSI: if indexer CPUs **exceed** the minimum, you may enable parallelization settings for specific use cases ([ITSI Plan](https://help.splunk.com/en/splunk-it-service-intelligence/splunk-it-service-intelligence/install-and-upgrade/5.0/planning/plan-your-itsi-deployment)). |
+| **Search concurrency** | Plan cores | Each active search can consume up to **1 CPU core** (Reference hardware → search head). |
+
+**Practical checklist:**
+
+1. Size **physical cores** from the role table (or ES/ITSI floor).  
+2. On VMs with HT: set guest **vCPU = 2 × physical**; **pin/reserve** that capacity — no oversubscribe.  
+3. Only after the guest has spare cores above the minimum, enable Splunk **pipeline / parallelization** settings.  
+4. Never “create” capacity by oversubscribing the hypervisor.
+
+**Sources:**  
+[Reference hardware](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware) · [ES 8.5 minimum specifications](https://help.splunk.com/en/splunk-enterprise-security-8/install/8.5/planning/minimum-specifications-for-a-production-deployment) · [ES 8.5 performance reference (virtualized environments)](https://help.splunk.com/en/splunk-enterprise-security-8/install/8.5/planning/performance-reference-for-splunk-enterprise-security) · [ITSI 5.0 Plan — hardware / parallelization](https://help.splunk.com/en/splunk-it-service-intelligence/splunk-it-service-intelligence/install-and-upgrade/5.0/planning/plan-your-itsi-deployment)
 
 ---
 

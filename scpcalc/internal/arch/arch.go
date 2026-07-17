@@ -53,6 +53,37 @@ func pickIndexerTier(dailyGB float64, nidx int, hasES, hasITSI bool) hwTier {
 	}
 }
 
+// applyCPUGuidance fills official Physical vs Logical (vCPU), virtualization, and Splunk parallelization notes.
+func applyCPUGuidance(L *model.LayerSpec, roleKind string) {
+	if L.CPUCores <= 0 {
+		return
+	}
+	L.CPUPhysicalCores = L.CPUCores
+	L.CPULogicalVCPU = L.VCPU
+	L.CPUBasis = "physical_cores"
+	L.CPULogicalRule = "Official specs list physical cores AND vCPU. With hyper-threading on, assign logical/vCPU = 2× physical (ES: 16 physical → 32 vCPU). Do not assume one cloud vCPU equals one full physical core."
+	L.VirtCPURule = "Virtualization: reserve full CPU+RAM for this guest — do NOT oversubscribe. Shared storage must cover concurrent IOPS for all peers. VM indexers ~10–15% slower on ingest than bare metal."
+	switch roleKind {
+	case "indexer":
+		L.SplunkParallelization = "Splunk parallelization (pipeline sets / index parallelization): OK only when spare CPU above the tier minimum — not hypervisor oversubscription. Ref: Reference hardware pipeline sets; ITSI when indexer CPUs exceed minimum."
+	case "search":
+		L.SplunkParallelization = "Each active search ≤1 CPU core. Scale cores/RAM for concurrency; reserve the VM. Parallel/batch search needs spare capacity on SH and indexers."
+	default:
+		L.SplunkParallelization = "Reserve guest CPU first. Enable Splunk pipeline/parallel options only if cores exceed the role minimum — never via hypervisor oversubscription."
+	}
+}
+
+func hwLayer(role string, count int, tier hwTier, roleKind, storage, net, iops, notes string, disk float64) model.LayerSpec {
+	L := model.LayerSpec{
+		Role: role, Count: count, Tier: tier.name,
+		CPUCores: tier.cores, VCPU: tier.vcpu, RAMGB: tier.ram,
+		StorageType: storage, DiskGBHint: disk,
+		Network: net, IOPSHint: iops, Notes: notes,
+	}
+	applyCPUGuidance(&L, roleKind)
+	return L
+}
+
 // RecommendResources builds per-layer hardware guidance (Reference hardware).
 func RecommendResources(p model.PlanInput, d model.Design, dailyGB float64) []model.LayerSpec {
 	net := "≥1 GbE (prefer 10 GbE between SH↔IDX at scale)"
@@ -60,13 +91,13 @@ func RecommendResources(p model.PlanInput, d model.Design, dailyGB float64) []mo
 
 	if d.CombinedInstance {
 		disk := round1(d.HotNeedGB + d.ColdNeedGB + d.SummariesNeedGB + 100)
-		out = append(out, model.LayerSpec{
-			Role: "Combined instance (SH+IDX)", Count: 1, Tier: tierCombined.name,
-			CPUCores: tierCombined.cores, VCPU: tierCombined.vcpu, RAMGB: tierCombined.ram,
-			StorageType: "SSD for hot/warm+OS; cold optional HDD", DiskGBHint: disk,
-			Network: "1 GbE NIC (+ optional mgmt NIC)", IOPSHint: "Install vol ≥800 sustained IOPS",
-			Notes: "Only for very small / lab; move to distributed when concurrency or volume grows",
-		})
+		out = append(out, hwLayer(
+			"Combined instance (SH+IDX)", 1, tierCombined, "indexer",
+			"SSD for hot/warm+OS; cold optional HDD",
+			"1 GbE NIC (+ optional mgmt NIC)", "Install vol ≥800 sustained IOPS",
+			"Only for very small / lab; move to distributed when concurrency or volume grows",
+			disk,
+		))
 		return out
 	}
 
@@ -78,48 +109,43 @@ func RecommendResources(p model.PlanInput, d model.Design, dailyGB float64) []mo
 	// Platform / ES / ITSI search tiers — never double-count.
 	switch {
 	case d.HasES && d.HasITSI:
-		out = append(out, model.LayerSpec{
-			Role: "ES search head / SHC", Count: maxInt(d.NSHES, 1), Tier: tierSHES.name,
-			CPUCores: tierSHES.cores, VCPU: tierSHES.vcpu, RAMGB: tierSHES.ram,
-			StorageType: "SSD (preferred) or HDD ≥800 IOPS", DiskGBHint: 300,
-			Network: net, IOPSHint: "≥800 sustained IOPS",
-			Notes: "Dedicated ES SH/SHC; CIM-compatible apps only; do not colocate with ITSI",
-		})
-		out = append(out, model.LayerSpec{
-			Role: "ITSI search head / SHC", Count: maxInt(d.NSHITSI, 1), Tier: tierSHITSI.name,
-			CPUCores: tierSHITSI.cores, VCPU: tierSHITSI.vcpu, RAMGB: tierSHITSI.ram,
-			StorageType: "SSD; ≥30 GB free in $SPLUNK_HOME", DiskGBHint: 300,
-			Network: net, IOPSHint: "≥800 sustained IOPS",
-			Notes: "Separate tier from ES; KPI load may require more SH — validate with ITSI tables",
-		})
+		out = append(out, hwLayer(
+			"ES search head / SHC", maxInt(d.NSHES, 1), tierSHES, "search",
+			"SSD (preferred) or HDD ≥800 IOPS", net, "≥800 sustained IOPS",
+			"Dedicated ES SH/SHC; CIM-compatible apps only; do not colocate with ITSI. Floor: 16 physical / 32 vCPU / 32 GB RAM.",
+			300,
+		))
+		out = append(out, hwLayer(
+			"ITSI search head / SHC", maxInt(d.NSHITSI, 1), tierSHITSI, "search",
+			"SSD; ≥30 GB free in $SPLUNK_HOME", net, "≥800 sustained IOPS",
+			"Separate tier from ES; KPI load may require more SH — validate with ITSI tables. Prefer 24+ physical cores when shared/heavy.",
+			300,
+		))
 	case d.HasES:
-		out = append(out, model.LayerSpec{
-			Role: "ES search head / SHC", Count: maxInt(d.NSH, 1), Tier: tierSHES.name,
-			CPUCores: tierSHES.cores, VCPU: tierSHES.vcpu, RAMGB: tierSHES.ram,
-			StorageType: "SSD (preferred) or HDD ≥800 IOPS", DiskGBHint: 300,
-			Network: net, IOPSHint: "≥800 sustained IOPS",
-			Notes: "ES production min 16 physical cores / 32 GB / 32 vCPU; dedicated SH/SHC",
-		})
+		out = append(out, hwLayer(
+			"ES search head / SHC", maxInt(d.NSH, 1), tierSHES, "search",
+			"SSD (preferred) or HDD ≥800 IOPS", net, "≥800 sustained IOPS",
+			"ES production min 16 physical CPU cores / 32 GB RAM / 32 vCPU; dedicated SH/SHC",
+			300,
+		))
 	case d.HasITSI:
-		out = append(out, model.LayerSpec{
-			Role: "ITSI search head / SHC", Count: maxInt(d.NSH, 1), Tier: tierSHITSI.name,
-			CPUCores: tierSHITSI.cores, VCPU: tierSHITSI.vcpu, RAMGB: tierSHITSI.ram,
-			StorageType: "SSD; ≥30 GB free in $SPLUNK_HOME", DiskGBHint: 300,
-			Network: net, IOPSHint: "≥800 sustained IOPS",
-			Notes: "ITSI dedicated SH; KPI/entity tables not fully automated in this calculator",
-		})
+		out = append(out, hwLayer(
+			"ITSI search head / SHC", maxInt(d.NSH, 1), tierSHITSI, "search",
+			"SSD; ≥30 GB free in $SPLUNK_HOME", net, "≥800 sustained IOPS",
+			"ITSI dedicated SH; 16 physical required (24+ recommended) or 32 vCPU @ ≥2 GHz; KPI/entity tables not fully automated here",
+			300,
+		))
 	default:
 		sh := tierSHMin
 		if dailyGB >= 600 || p.ConcurrentUsers >= 16 {
 			sh = hwTier{"mid-range SH", 16, 32, 32}
 		}
-		out = append(out, model.LayerSpec{
-			Role: "Search head", Count: maxInt(d.NSH, 1), Tier: sh.name,
-			CPUCores: sh.cores, VCPU: sh.vcpu, RAMGB: sh.ram,
-			StorageType: "SSD (preferred) or HDD ≥800 IOPS", DiskGBHint: 300,
-			Network: net, IOPSHint: "≥800 sustained IOPS on install/search volume",
-			Notes: "Each active search ≤1 CPU core; HDD ≥800 IOPS or prefer SSD; min 300 GB dedicated",
-		})
+		out = append(out, hwLayer(
+			"Search head", maxInt(d.NSH, 1), sh, "search",
+			"SSD (preferred) or HDD ≥800 IOPS", net, "≥800 sustained IOPS on install/search volume",
+			"Each active search ≤1 physical CPU core equivalent; HDD ≥800 IOPS or prefer SSD; min 300 GB dedicated",
+			300,
+		))
 	}
 
 	idx := pickIndexerTier(dailyGB, d.NIDX, d.HasES, d.HasITSI)
@@ -131,31 +157,30 @@ func RecommendResources(p model.PlanInput, d model.Design, dailyGB float64) []mo
 		diskPer = round1(d.LocalCachePerIDXGB + sumPer + 100)
 		iops = "Local cache on NVMe/SSD; remote latency matters for warm fetches; target 10 Gbps/indexer to object store"
 	}
-	out = append(out, model.LayerSpec{
-		Role: "Indexer", Count: nidx, Tier: idx.name,
-		CPUCores: idx.cores, VCPU: idx.vcpu, RAMGB: idx.ram,
-		StorageType: stor, DiskGBHint: diskPer,
-		Network: net, IOPSHint: iops,
-		Notes: fmt.Sprintf("Per peer ≈ hot %.0f + cold %.0f + summaries %.0f GB (before OS/headroom). Keep ≥5 GB free or indexing stops.", hotPer, coldPer, sumPer),
-	})
+	idxNotes := fmt.Sprintf("Per peer ≈ hot %.0f + cold %.0f + summaries %.0f GB (before OS/headroom). Keep ≥5 GB free or indexing stops.", hotPer, coldPer, sumPer)
+	if d.HasES {
+		idxNotes += " ES indexer floor also 16 physical / 32 vCPU / 32 GB — this tier meets or exceeds that."
+	}
+	out = append(out, hwLayer(
+		"Indexer", nidx, idx, "indexer",
+		stor, net, iops, idxNotes, diskPer,
+	))
 
 	if d.ClusterManager {
-		out = append(out, model.LayerSpec{
-			Role: "Cluster manager", Count: 1, Tier: tierMgmt.name,
-			CPUCores: tierMgmt.cores, VCPU: tierMgmt.vcpu, RAMGB: tierMgmt.ram,
-			StorageType: "Local SSD/HDD for $SPLUNK_HOME", DiskGBHint: 100,
-			Network: "≤100 ms latency to indexer peers", IOPSHint: "≥800 IOPS install volume",
-			Notes: "Start from single-instance class; scale with cluster size. Do not put customer data here.",
-		})
+		out = append(out, hwLayer(
+			"Cluster manager", 1, tierMgmt, "mgmt",
+			"Local SSD/HDD for $SPLUNK_HOME", "≤100 ms latency to indexer peers", "≥800 IOPS install volume",
+			"Start from single-instance class; scale with cluster size. Do not put customer data here.",
+			100,
+		))
 	}
 	if d.SHCDeployer {
-		out = append(out, model.LayerSpec{
-			Role: "SHC deployer", Count: 1, Tier: tierMgmt.name,
-			CPUCores: tierMgmt.cores, VCPU: tierMgmt.vcpu, RAMGB: tierMgmt.ram,
-			StorageType: "Local disk for apps/bundle", DiskGBHint: 100,
-			Network: "≤200 ms latency within SHC", IOPSHint: "≥800 IOPS",
-			Notes: "Deploys apps/config to SHC members; not a search peer",
-		})
+		out = append(out, hwLayer(
+			"SHC deployer", 1, tierMgmt, "mgmt",
+			"Local disk for apps/bundle", "≤200 ms latency within SHC", "≥800 IOPS",
+			"Deploys apps/config to SHC members; not a search peer",
+			100,
+		))
 	}
 	if p.WantDMA() {
 		out = append(out, model.LayerSpec{
@@ -190,12 +215,29 @@ func RecommendResources(p model.PlanInput, d model.Design, dailyGB float64) []mo
 func renderResources(layers []model.LayerSpec) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, "RECOMMENDED RESOURCES PER LAYER (Reference hardware — guideline)\n")
-	fmt.Fprintf(&b, "CPU must support AVX/SSE4.2/AES-NI. Reserve full resources on VMs (IDX ~10–15%% slower on VM ingest).\n\n")
+	fmt.Fprintf(&b, "CPU planning unit = PHYSICAL cores. Logical/vCPU is typically 2× with hyper-threading.\n")
+	fmt.Fprintf(&b, "Virtualization: RESERVE full CPU/RAM — do NOT oversubscribe. Splunk parallelization ≠ hypervisor sharing.\n")
+	fmt.Fprintf(&b, "CPU must support AVX/SSE4.2/AES-NI. VM indexers ~10–15%% slower on ingest than bare metal.\n\n")
 	for _, L := range layers {
 		fmt.Fprintf(&b, "[%s] × %d  | tier: %s\n", L.Role, L.Count, L.Tier)
 		if L.CPUCores > 0 {
-			fmt.Fprintf(&b, "  CPU: %d physical cores / %d vCPU @ ≥2 GHz\n", L.CPUCores, L.VCPU)
+			phys := L.CPUPhysicalCores
+			if phys <= 0 {
+				phys = L.CPUCores
+			}
+			logi := L.CPULogicalVCPU
+			if logi <= 0 {
+				logi = L.VCPU
+			}
+			fmt.Fprintf(&b, "  CPU PHYSICAL (required): %d cores @ ≥2 GHz  ← sizing basis\n", phys)
+			fmt.Fprintf(&b, "  CPU LOGICAL / vCPU:       %d  (with HT: 2× physical; assign this many vCPUs to the VM)\n", logi)
 			fmt.Fprintf(&b, "  RAM: %d GB\n", L.RAMGB)
+			if L.VirtCPURule != "" {
+				fmt.Fprintf(&b, "  Virtualization: %s\n", L.VirtCPURule)
+			}
+			if L.SplunkParallelization != "" {
+				fmt.Fprintf(&b, "  Splunk parallelization: %s\n", L.SplunkParallelization)
+			}
 		}
 		fmt.Fprintf(&b, "  Storage: %s", L.StorageType)
 		if L.DiskGBHint > 0 {

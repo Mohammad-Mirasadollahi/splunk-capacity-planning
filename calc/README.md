@@ -1,4 +1,4 @@
-# scpcalc static Web UI (GitHub Pages)
+# SCPcalc static Web UI (GitHub Pages)
 
 This directory is **generated** — WASM/binaries are **not** committed (keeps the git repo small).
 

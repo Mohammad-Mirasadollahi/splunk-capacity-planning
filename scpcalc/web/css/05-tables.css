@@ -229,6 +229,63 @@
   color: var(--muted);
 }
 
+.table-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  margin: 0 0 0.75rem;
+}
+
+.table-find {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.65rem;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.table-find input[type="search"] {
+  min-width: min(18rem, 70vw);
+  padding: 0.4rem 0.65rem;
+  border-radius: 0.55rem;
+  border: 1px solid var(--line);
+  background: rgba(8, 22, 30, 0.55);
+  color: var(--ink);
+  font: inherit;
+}
+
+.table-find input[type="search"]:focus {
+  outline: none;
+  border-color: rgba(63, 224, 197, 0.55);
+  box-shadow: 0 0 0 2px rgba(63, 224, 197, 0.15);
+}
+
+.table-find-count {
+  color: var(--accent);
+  font-size: 0.82rem;
+}
+
+.result-table tr.is-find-hit td {
+  background: rgba(63, 224, 197, 0.08);
+}
+
+.result-table .cell-notes {
+  max-width: 16rem;
+  white-space: normal;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+#ix-table {
+  min-width: 980px;
+}
+
+#res-table {
+  min-width: 1180px;
+}
+
 .hero-panel {
   padding: 1.5rem 1.45rem 1.6rem;
   margin-bottom: 1.1rem;

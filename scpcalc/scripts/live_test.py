@@ -430,7 +430,7 @@ def main() -> int:
     # ── CLI feature matrix ─────────────────────────────────────────────
     print("\n=== CLI ===")
     code, out, err = run_cli(["version"])
-    ok("cli.version", code == 0 and "scpcalc" in out, out.strip())
+    ok("cli.version", code == 0 and "SCPcalc" in out, out.strip())
 
     code, out, err = run_cli(
         [
@@ -830,6 +830,10 @@ def main() -> int:
             ('data-tab="design"', "ui.tab.design"),
             ("id=\"metrics\"", "ui.metrics"),
             ("type=\"module\"", "ui.es_module"),
+            ("id=\"res-find\"", "ui.table.res_find"),
+            ("id=\"ix-find\"", "ui.table.ix_find"),
+            ("data-i18n=\"res_network\"", "ui.table.res_network"),
+            ("data-i18n=\"ix_event_bytes\"", "ui.table.ix_event_bytes"),
         ]:
             ok(name, needle in html)
 
@@ -845,6 +849,7 @@ def main() -> int:
             "/js/wizard.js",
             "/js/i18n.js",
             "/js/charts.js",
+            "/js/share-url.js",
             "/vendor/chart.umd.min.js",
         ]
         for path in assets:
@@ -869,11 +874,28 @@ def main() -> int:
         _, eng = http_bytes("/js/engine.js")
         ej = eng.decode("utf-8", errors="replace")
         ok("ui.engine.wasm_path", "scpcalc.wasm" in ej and "scpcalcPlan" in ej)
+        _, charts_js = http_bytes("/js/charts.js")
+        cj = charts_js.decode("utf-8", errors="replace")
+        ok("ui.charts.hide_single", "chartIsUseful" in cj and "meaningful >= 2" in cj)
+
+        _, share_js = http_bytes("/js/share-url.js")
+        sj = share_js.decode("utf-8", errors="replace")
+        ok("ui.share.url_hash", "scp1." in sj and "encodeSnapshotHash" in sj and "decodeSnapshotHash" in sj)
+
+        _, app_js = http_bytes("/app.js")
+        aj = app_js.decode("utf-8", errors="replace")
+        ok("ui.share.wired", "share-url.js" in aj and "tryLoadFromShareURL" in aj and "btn-share-url" in aj)
+        ok("ui.share.button", 'id="btn-share-url"' in html and 'id="btn-share-url-out"' in html)
         # results.js should surface node plan
         _, results_js = http_bytes("/js/results.js")
         rj = results_js.decode("utf-8", errors="replace")
         ok("ui.results.node_plan", "node_plan_text" in rj)
         ok("ui.results.n_sh", "N_SH" in rj)
+        ok("ui.results.table_find", "applyTableFind" in rj and "data-find" in rj)
+        ok("ui.results.ix_columns", "frozen_time_period_in_secs" in rj and "event_bytes" in rj)
+        ok("ui.results.res_columns", "network" in rj and "cell-notes" in rj)
+        ok("ui.results.cpu_physical", "cpu_physical_cores" in rj and "physical" in rj)
+        ok("ui.results.cpu_virt", "virt_cpu_rule" in rj and "splunk_parallelization" in rj)
 
         _, plan_form_b = http_bytes("/js/plan-form.js")
         pf = plan_form_b.decode("utf-8", errors="replace")

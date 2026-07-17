@@ -153,6 +153,9 @@
 | ترجیح **block-level** به file-level برای indexing | System requirements → NFS |
 | FS ایندکس لینوکس: ext3/ext4/btrfs/XFS (+ NFS با caveat) | System requirements → Supported file systems |
 | ES: SH/IDX ≥ **16 physical cores / 32 GB / 32 vCPU** | حداقل مشخصات ES 8.5 |
+| مبنای سایزینگ CPU = **physical cores**؛ با HT به VM **۲× vCPU** بدهید | جداول جفت Reference hardware + حداقل ES (16 physical / 32 vCPU) |
+| هایپروایزر: CPU/RAM را **reserve** کنید؛ **oversubscribe نکنید** | Virtualization در Reference hardware + ES performance reference |
+| موازی‌سازی Splunk (pipeline) فقط با **CPU اضافه بالاتر از حداقل** | Reference hardware pipeline sets؛ یادداشت parallelization در ITSI Plan |
 | جدول مقیاس ES با ستون **detections** | Considerations for scaling ES 8.5 |
 | ES: ترجیح thick؛ تست IOPS همزمان روی همه indexerها | Performance reference ES 8.5 |
 | حداقل سخت‌افزار ITSI؛ جداول مثال KPI؛ KV ≥ **۳۰ GB** آزاد | ITSI 5.0 Plan |

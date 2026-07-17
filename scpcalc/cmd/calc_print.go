@@ -103,12 +103,15 @@ func printPlanHuman(res model.PlanResult) {
 		if len(d.Resources) > 0 {
 			fmt.Println("----- resource layers -----")
 			for _, L := range d.Resources {
-				fmt.Printf("  %-28s  count=%-3d  tier=%s  CPU=%dc/%dvCPU  RAM=%dGB",
+				fmt.Printf("  %-28s  count=%-3d  tier=%s  PHYSICAL=%dc  LOGICAL/vCPU=%d  RAM=%dGB",
 					L.Role, L.Count, L.Tier, L.CPUCores, L.VCPU, L.RAMGB)
 				if L.DiskGBHint > 0 {
 					fmt.Printf("  disk≈%.0fGB", L.DiskGBHint)
 				}
 				fmt.Println()
+				if L.CPUCores > 0 {
+					fmt.Printf("      virt: reserve full CPU/RAM (no oversubscribe)  |  Splunk parallelization: only with spare cores above minimum\n")
+				}
 			}
 		}
 		if d.SettingsText != "" {

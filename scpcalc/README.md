@@ -1,4 +1,4 @@
-# scpcalc
+# SCPcalc
 
 Portable **Splunk Capacity Planning** calculator — **CLI + local Web UI** in one Go binary, plus a **browser WASM** engine for static hosting (GitHub Pages).
 

@@ -149,6 +149,9 @@
 | Prefer **block-level** storage over file-level for indexing | System requirements → NFS |
 | Linux index FS: ext3/ext4/btrfs/XFS (+ NFS with caveats) | System requirements → Supported file systems |
 | ES: SH/IDX ≥ **16 physical cores / 32 GB / 32 vCPU** | ES 8.5 minimum specifications |
+| CPU sizing basis = **physical cores**; with HT assign **2× vCPU** | Reference hardware paired tables + ES min specs (16 physical / 32 vCPU) |
+| Hypervisor: **reserve** CPU/RAM; **do not oversubscribe** | Reference hardware virtualization + ES performance reference |
+| Splunk pipeline/parallelization only with **spare CPU above minimum** | Reference hardware pipeline sets; ITSI Plan parallelization note |
 | ES scaling table uses **detections** (not correlation-search label) | ES 8.5 considerations for scaling |
 | ES: thick preferred; concurrent IOPS test on all indexers | ES 8.5 Performance reference |
 | ITSI HW minima; KPI sizing example tables; KV ≥ **30 GB** free | ITSI 5.0 Plan |

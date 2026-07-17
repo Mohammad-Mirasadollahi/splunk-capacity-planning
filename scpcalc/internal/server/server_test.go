@@ -83,7 +83,7 @@ func TestStaticIndex(t *testing.T) {
 		t.Fatalf("status=%d", rr.Code)
 	}
 	body := rr.Body.String()
-	if !strings.Contains(body, "scpcalc") || !strings.Contains(body, "atmosphere") {
+	if !strings.Contains(strings.ToLower(body), "scpcalc") || !strings.Contains(body, "atmosphere") {
 		t.Fatalf("index.html unexpected: %s", body[:min(200, len(body))])
 	}
 }

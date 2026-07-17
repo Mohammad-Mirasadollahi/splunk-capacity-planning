@@ -1,5 +1,5 @@
 /**
- * scpcalc web UI entry — wires modular packages under ./js/
+ * SCPcalc web UI entry — wires modular packages under ./js/
  */
 import { state, SAVE_KEY, STEPS, reduceMotion } from "./js/state.js";
 import { I18N, lang, setI18nHooks, bindLangSwitcher, t } from "./js/i18n.js";
@@ -11,9 +11,15 @@ import { bindPlanFormChrome, snapshot, applySnapshot, fillReview } from "./js/pl
 import { bindConfEditor, getConfText, copyConf } from "./js/conf-editor.js";
 import { renderAllCharts } from "./js/charts.js";
 import { bindWizard, openWizard, closeWizard, showStep } from "./js/wizard.js";
-import { runCalculate } from "./js/results.js";
+import { runCalculate, bindResultTableFind } from "./js/results.js";
 import { downloadText } from "./js/util.js";
 import { initEngine, fetchPresets, engineMode } from "./js/engine.js";
+import {
+  applyShareHashToLocation,
+  copyText,
+  decodeSnapshotHash,
+  hasShareHash,
+} from "./js/share-url.js";
 
 function flashSave(msg) {
   const saveMsg = document.getElementById("save-msg");
@@ -35,6 +41,32 @@ function bindAtmosphere() {
     },
     { passive: true }
   );
+}
+
+async function copyShareURL() {
+  try {
+    const url = await applyShareHashToLocation(snapshot());
+    await copyText(url);
+    flashSave(t("share_copied"));
+  } catch (ex) {
+    const msg = String(ex.message || ex);
+    flashSave(msg.includes("too large") ? t("share_too_large") : msg);
+  }
+}
+
+async function tryLoadFromShareURL() {
+  if (!hasShareHash()) return false;
+  try {
+    const data = await decodeSnapshotHash(location.hash);
+    if (!data) return false;
+    applySnapshot(data);
+    flashSave(t("share_loaded"));
+    openWizard(typeof state.step === "number" ? state.step : 0);
+    return true;
+  } catch (ex) {
+    flashSave(t("share_invalid") + " " + String(ex.message || ex));
+    return false;
+  }
 }
 
 function bindPersistence() {
@@ -72,6 +104,13 @@ function bindPersistence() {
     URL.revokeObjectURL(a.href);
   });
 
+  document.getElementById("btn-share-url")?.addEventListener("click", () => {
+    void copyShareURL();
+  });
+  document.getElementById("btn-share-url-out")?.addEventListener("click", () => {
+    void copyShareURL();
+  });
+
   document.getElementById("file-import")?.addEventListener("change", async (e) => {
     const f = e.target.files?.[0];
     if (!f) return;
@@ -95,6 +134,11 @@ function bindPersistence() {
   document.getElementById("btn-copy-conf-home")?.addEventListener("click", async () => {
     await copyConf();
     flashSave(t("copied"));
+  });
+
+  window.addEventListener("hashchange", () => {
+    if (!hasShareHash()) return;
+    void tryLoadFromShareURL();
   });
 }
 
@@ -122,6 +166,7 @@ async function boot() {
     badge.textContent = engineMode() === "wasm" ? "engine: browser (WASM)" : "engine: local API";
     badge.hidden = false;
   }
+  await tryLoadFromShareURL();
 }
 
 // —— bootstrap ——
@@ -148,6 +193,7 @@ bindWizard();
 bindConfEditor();
 bindPersistence();
 bindCalculate();
+bindResultTableFind();
 
 boot().catch((ex) => {
   flashSave("Failed to load presets: " + (ex.message || ex));

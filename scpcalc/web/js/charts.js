@@ -16,6 +16,17 @@ const CHART_DEFS = [
   { id: "resources", titleKey: "chart_resources", defaultType: "bar" },
 ];
 
+/** A chart is only useful when it compares at least two meaningful values. */
+function chartIsUseful(labels, values) {
+  if (!labels?.length || !values?.length) return false;
+  let meaningful = 0;
+  for (let i = 0; i < labels.length; i++) {
+    const v = Number(values[i]);
+    if (Number.isFinite(v) && v > 0) meaningful += 1;
+  }
+  return meaningful >= 2;
+}
+
 function buildChartDatasets(data) {
   const d = data.design || {};
   const indexes = data.indexes || [];
@@ -72,8 +83,8 @@ function paintOne(canvasId, chartId, type, labels, values) {
   destroyChart(canvasId);
   if (!labels.length) return;
   const circular = type === "pie" || type === "doughnut" || type === "polarArea";
+  const isLine = type === "line";
   const bg = labels.map((_, i) => COLORS[i % COLORS.length]);
-  const border = circular ? "#0a1a22" : bg;
   chartInstances[canvasId] = new Chart(canvas, {
     type,
     data: {
@@ -83,13 +94,16 @@ function paintOne(canvasId, chartId, type, labels, values) {
           label: t(CHART_DEFS.find((c) => c.id === chartId)?.titleKey || chartId),
           data: values,
           backgroundColor: circular ? bg : bg.map((c) => c + "cc"),
-          borderColor: border,
-          borderWidth: circular ? 2 : 1.5,
+          borderColor: isLine ? COLORS[0] : bg.map(() => "transparent"),
+          borderWidth: isLine ? 2 : 0,
+          hoverBorderWidth: 0,
           tension: 0.35,
-          fill: type === "line",
-          pointRadius: type === "line" ? 3 : 0,
-          pointHoverRadius: type === "line" ? 5 : 0,
-          pointBorderWidth: 1,
+          fill: isLine,
+          pointRadius: isLine ? 3 : 0,
+          pointHoverRadius: isLine ? 5 : 0,
+          pointBackgroundColor: isLine ? bg : undefined,
+          pointBorderColor: isLine ? bg.map(() => "transparent") : undefined,
+          pointBorderWidth: 0,
         },
       ],
     },
@@ -98,7 +112,6 @@ function paintOne(canvasId, chartId, type, labels, values) {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          // Cartesian charts already label categories on the axis; show series icons only for circular charts.
           display: circular,
           position: "bottom",
           align: "center",
@@ -119,12 +132,11 @@ function paintOne(canvasId, chartId, type, labels, values) {
                 const fill = Array.isArray(ds.backgroundColor)
                   ? ds.backgroundColor[i]
                   : ds.backgroundColor;
-                const stroke = Array.isArray(ds.borderColor) ? ds.borderColor[i] : ds.borderColor;
                 return {
                   text: String(text),
                   fillStyle: fill,
-                  strokeStyle: stroke || fill,
-                  lineWidth: 1,
+                  strokeStyle: fill,
+                  lineWidth: 0,
                   hidden: false,
                   index: i,
                   datasetIndex: 0,
@@ -141,11 +153,13 @@ function paintOne(canvasId, chartId, type, labels, values) {
             x: {
               ticks: { color: "#9eb8c4", maxRotation: 45, minRotation: 0, font: { size: 10 } },
               grid: { color: "rgba(255,255,255,0.06)" },
+              border: { display: false },
             },
             y: {
               beginAtZero: true,
               ticks: { color: "#9eb8c4", font: { size: 10 } },
               grid: { color: "rgba(255,255,255,0.06)" },
+              border: { display: false },
             },
           },
     },
@@ -155,12 +169,14 @@ function paintOne(canvasId, chartId, type, labels, values) {
 export function ensureChartCards() {
   const host = document.getElementById("charts-inline");
   if (!host || host.dataset.ready === "1") return;
-  host.innerHTML = CHART_DEFS.map((def) => {
-    const type = chartTypes[def.id] || def.defaultType;
-    const opts = CHART_TYPE_OPTS.map(
-      (o) => `<option value="${o}" ${o === type ? "selected" : ""}>${o}</option>`
-    ).join("");
-    return `<article class="chart-card" data-chart="${def.id}">
+  host.innerHTML =
+    `<p class="charts-empty hint" id="charts-empty" hidden data-i18n="charts_none">${t("charts_none")}</p>` +
+    CHART_DEFS.map((def) => {
+      const type = chartTypes[def.id] || def.defaultType;
+      const opts = CHART_TYPE_OPTS.map(
+        (o) => `<option value="${o}" ${o === type ? "selected" : ""}>${o}</option>`
+      ).join("");
+      return `<article class="chart-card" data-chart="${def.id}">
           <div class="chart-card-head">
             <h4 data-i18n="${def.titleKey}">${t(def.titleKey)}</h4>
             <label class="chart-type-label">
@@ -172,7 +188,7 @@ export function ensureChartCards() {
             <canvas id="chart-charts-inline-${def.id}"></canvas>
           </div>
         </article>`;
-  }).join("");
+    }).join("");
   host.dataset.ready = "1";
   host.querySelectorAll("[data-chart-type]").forEach((sel) => {
     sel.addEventListener("change", () => {
@@ -187,11 +203,24 @@ export function renderAllCharts(data) {
   if (!data) return;
   ensureChartCards();
   setLang(lang());
+  const host = document.getElementById("charts-inline");
+  const emptyEl = document.getElementById("charts-empty");
   const packs = buildChartDatasets(data);
+  let shown = 0;
   CHART_DEFS.forEach((def) => {
     const pack = packs[def.id] || { labels: [], values: [] };
+    const canvasId = `chart-charts-inline-${def.id}`;
+    const card = host?.querySelector(`[data-chart="${def.id}"]`);
+    const useful = chartIsUseful(pack.labels, pack.values);
+    if (card) card.hidden = !useful;
+    if (!useful) {
+      destroyChart(canvasId);
+      return;
+    }
+    shown += 1;
     const type = chartTypes[def.id] || def.defaultType;
     chartTypes[def.id] = type;
-    paintOne(`chart-charts-inline-${def.id}`, def.id, type, pack.labels, pack.values);
+    paintOne(canvasId, def.id, type, pack.labels, pack.values);
   });
+  if (emptyEl) emptyEl.hidden = shown > 0;
 }

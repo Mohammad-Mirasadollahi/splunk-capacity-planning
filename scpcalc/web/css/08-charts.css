@@ -25,11 +25,16 @@
   margin: 0.35rem 1.25rem 0.85rem;
 }
 
+.charts-empty {
+  grid-column: 1 / -1;
+  margin: 0.25rem 0 0.5rem;
+}
+
 .chart-card {
   padding: 0.85rem 0.9rem 0.75rem;
   border-radius: 0.9rem;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: none;
 }
 
 .chart-card-head {
@@ -57,13 +62,42 @@
 }
 
 .chart-type-label select {
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 0.45rem;
-  background: rgba(0, 0, 0, 0.35);
+  appearance: none;
+  -webkit-appearance: none;
+  min-width: 6.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.55rem;
+  background-color: rgba(0, 0, 0, 0.28);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239eb8c4' d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.45rem center;
+  background-size: 0.65rem;
   color: var(--ink);
+  color-scheme: dark;
   font: inherit;
   font-size: 0.78rem;
-  padding: 0.25rem 0.4rem;
+  line-height: 1.25;
+  padding: 0.38rem 1.65rem 0.38rem 0.55rem;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease), background-color 0.25s var(--ease);
+}
+
+.chart-type-label select:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  background-color: rgba(0, 0, 0, 0.34);
+}
+
+.chart-type-label select:focus,
+.chart-type-label select:focus-visible {
+  border-color: rgba(63, 224, 197, 0.65);
+  box-shadow: 0 0 0 3px rgba(63, 224, 197, 0.18);
+  background-color: rgba(8, 28, 34, 0.55);
+}
+
+.chart-type-label select option {
+  background: var(--bg1);
+  color: var(--ink);
 }
 
 .chart-canvas-wrap {
@@ -74,6 +108,7 @@
 .chart-canvas-wrap canvas {
   max-width: 100% !important;
   max-height: 100% !important;
+  outline: none;
 }
 
 .charts-grid-modal .chart-canvas-wrap {

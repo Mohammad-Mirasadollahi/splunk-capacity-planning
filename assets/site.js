@@ -64,9 +64,9 @@
       readme: "README",
       footer: "زبان پیش‌فرض: انگلیسی. ترجیح در این مرورگر ذخیره می‌شود.",
       credit_html:
-        'طراحی: <strong>محمد میراسداللهی (Mohammad Mirasadollahi)</strong> · <a href="https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning" target="_blank" rel="noopener noreferrer">GitHub</a>',
+        'طراحی: <strong>محمد میراسدالهی (Mohammad Mirasadollahi)</strong> · <a href="https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning" target="_blank" rel="noopener noreferrer">GitHub</a>',
       footer_html:
-        'طراحی: <strong>محمد میراسداللهی (Mohammad Mirasadollahi)</strong> · <a href="https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning" target="_blank" rel="noopener noreferrer">github.com/Mohammad-Mirasadollahi/splunk-capacity-planning</a>',
+        'طراحی: <strong>محمد میراسدالهی (Mohammad Mirasadollahi)</strong> · <a href="https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning" target="_blank" rel="noopener noreferrer">github.com/Mohammad-Mirasadollahi/splunk-capacity-planning</a>',
     },
   };
 

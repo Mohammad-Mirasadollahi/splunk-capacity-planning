@@ -11,7 +11,7 @@ python3 tools/check_en_fa_sync.py
 python3 tools/add_lang_switcher.py   # if you added a new paired file
 ```
 
-## Calculator (`scpcalc/`)
+## Calculator (`scpcalc/` → brand **SCPcalc**)
 
 ```bash
 cd scpcalc

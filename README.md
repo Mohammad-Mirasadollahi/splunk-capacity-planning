@@ -1,6 +1,6 @@
 # Splunk Capacity Planning
 
-Official Splunk **Capacity Planning** guidance (Infrastructure + Storage), extracted into bilingual docs for GitHub — plus a portable **CLI + Web** calculator (`scpcalc`).
+Official Splunk **Capacity Planning** guidance (Infrastructure + Storage), extracted into bilingual docs for GitHub — plus a portable **CLI + Web** calculator (**SCPcalc**).
 
 **Designed by [Mohammad Mirasadollahi](https://github.com/Mohammad-Mirasadollahi)** · **GitHub:** [Mohammad-Mirasadollahi/splunk-capacity-planning](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning)
 
@@ -8,7 +8,7 @@ Named after Splunk’s Capacity Planning Manual — see [Introduction to capacit
 
 **License:** [MIT](LICENSE)
 
-## Calculator (`scpcalc`)
+## Calculator (SCPcalc)
 
 Portable single binary (Go): **CLI + local Web UI**, same engine — also runs **in the browser via WebAssembly** (no server needed for GitHub Pages).
 
@@ -95,7 +95,7 @@ splunk-capacity-planning/
 
 1. Settings → Pages → source: **GitHub Actions** (workflow [`scpcalc-pages.yml`](.github/workflows/scpcalc-pages.yml)), or deploy from branch `/` if you publish a built site locally.  
 2. Language defaults to **English**; use **فارسی** to switch.  
-3. Docs render via `view.html`. The calculator is also on Pages at **`/calc/`** (browser WASM; large `.wasm` built in CI, not committed). For LAN demos use `scpcalc serve` from a Release binary.
+3. Docs render via `view.html`. The calculator is also on Pages at **`/calc/`** (browser WASM; large `.wasm` built in CI, not committed). For LAN demos use `scpcalc serve` (SCPcalc binary) from a Release.
 
 ## Contributing
 

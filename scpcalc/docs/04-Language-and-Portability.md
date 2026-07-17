@@ -1,4 +1,4 @@
-# scpcalc — Language and Portability
+# SCPcalc — Language and Portability
 
 ## 1. Language choice: Go 1.22+
 

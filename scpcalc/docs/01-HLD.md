@@ -1,4 +1,4 @@
-# scpcalc — High-Level Design (HLD)
+# SCPcalc — High-Level Design (HLD)
 
 ## 1. Goals
 
