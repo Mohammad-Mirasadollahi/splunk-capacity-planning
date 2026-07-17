@@ -2,6 +2,10 @@
 
 All notable changes to this repository are documented here.
 
+## 0.1.4 — 2026-07-17
+
+- SHC 1-or-≥3 + Manager/Deployer, cluster Yes/No prompts, wizard Back beside Next, Persian RTL arrows, and issue templates
+
 ## 0.1.3 — 2026-07-17
 
 - Align CLI Release and GHCR with wizard UX (Daily/EPS volume mode, full Review preview) and hardened Pages/CI deploy
