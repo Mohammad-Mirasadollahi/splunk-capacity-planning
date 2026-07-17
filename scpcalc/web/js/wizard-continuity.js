@@ -3,7 +3,6 @@ import {
   formatDailyGB,
   formatEPS,
   numOr0,
-  resolveEPS,
   resolveEventBytes,
   totalEPSFromDailyGB,
 } from "./volume-convert.js";
@@ -15,16 +14,15 @@ export function markSummaryRetentionEdited() {
   summaryRetentionLinked = false;
 }
 
-export function estimateEnabledDailyGB(rows, mode) {
+export function estimateEnabledDailyGB(rows, _mode) {
   let sum = 0;
   for (const r of rows || []) {
     if (!r.enabled) continue;
-    if (mode === "eps") {
-      const { eps } = resolveEPS(r, rows);
-      sum += dailyGBFromEPS(eps, resolveEventBytes(r, rows));
-    } else {
-      sum += numOr0(r.daily_gb);
+    let daily = numOr0(r.daily_gb);
+    if (!(daily > 0) && numOr0(r.eps) > 0) {
+      daily = dailyGBFromEPS(r.eps, resolveEventBytes(r, rows));
     }
+    sum += daily;
   }
   return sum;
 }
@@ -82,7 +80,7 @@ function buildContextHTML(step) {
   if (step >= 3) {
     const srcSum = estimateEnabledDailyGB(enabled, mode);
     const src = [
-      t("ctx_vol_mode").replace("{m}", mode === "eps" ? "EPS" : "Daily GB"),
+      t("ctx_vol_mode"),
       t("ctx_sources_on").replace("{n}", String(enabled.length)),
     ];
     if (srcSum > 0) src.push(t("ctx_sources_sum").replace("{n}", formatDailyGB(srcSum)));

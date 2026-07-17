@@ -3,7 +3,7 @@ import { num } from "./util.js";
 import { t, localizeFlow } from "./i18n.js";
 import { refreshOpenTip } from "./tips-ui.js";
 import { normalizeSnapshotRows, refreshTotalCounterpart, renderRows } from "./sources.js";
-import { convertRowsForMode, resolveEPS, resolveEventBytes, dailyGBFromEPS, formatDailyGB, numOr0 } from "./volume-convert.js";
+import { dailyGBFromEPS, formatDailyGB, numOr0, resolveEventBytes, epsFromDailyGB } from "./volume-convert.js";
 
 /** Mark checkbox chips on/off and show/hide fields with data-depends-on="<checkbox id>". */
 export function syncToggleUI() {
@@ -104,45 +104,24 @@ export function syncColdVolumePreview() {
   out.textContent = t("cold_vol_auto").replace("{days}", String(coldDays));
 }
 
-export function syncVolumeInputMode(mode, { convert = false } = {}) {
-  const prev = state.volumeInputMode === "eps" ? "eps" : "daily_gb";
-  const next = mode === "eps" ? "eps" : "daily_gb";
-  state.volumeInputMode = next;
-  const table = document.getElementById("src-table");
-  if (table) {
-    table.classList.toggle("src-table--vol-gb", next === "daily_gb");
-    table.classList.toggle("src-table--vol-eps", next === "eps");
-  }
-  document.querySelectorAll('input[name="volume_input_mode"]').forEach((el) => {
-    el.checked = el.value === next;
-    const chip = el.closest(".mode-chip");
-    if (chip) {
-      chip.classList.toggle("is-on", el.checked);
-      chip.classList.toggle("is-off", !el.checked);
-    }
-  });
+export function syncVolumeInputMode(_mode, { convert: _convert = false } = {}) {
+  // Dual GB = EPS inputs are always shown; planning uses Daily GB.
+  state.volumeInputMode = "daily_gb";
   const volHead = document.getElementById("col-vol-label");
   if (volHead) {
-    volHead.setAttribute("data-i18n", next === "eps" ? "col_eps" : "col_daily_gb");
-    volHead.setAttribute("data-tip", next === "eps" ? "eps" : "daily_gb");
-    volHead.textContent = t(next === "eps" ? "col_eps" : "col_daily_gb");
+    volHead.setAttribute("data-i18n", "col_vol_pair");
+    volHead.setAttribute("data-tip", "daily_gb");
+    volHead.textContent = t("col_vol_pair");
   }
-  const note = document.getElementById("vol-mode-exclusive-note");
-  if (note) note.hidden = false;
-  // Event size is always needed for the live Daily↔EPS counterpart.
   document.querySelectorAll(".src-col-event-bytes").forEach((el) => {
     el.hidden = false;
   });
-  if (convert && prev !== next) {
-    convertRowsForMode(state.rows, next);
-  }
   renderRows();
   refreshTotalCounterpart();
 }
 
 export function readVolumeInputMode() {
-  const checked = document.querySelector('input[name="volume_input_mode"]:checked');
-  return checked?.value === "eps" ? "eps" : "daily_gb";
+  return "daily_gb";
 }
 
 export function collectGlobals() {
@@ -268,27 +247,25 @@ export function applySnapshot(data) {
 
 export function buildPlanBody() {
   const g = collectGlobals();
-  const mode = readVolumeInputMode();
-  syncVolumeInputMode(mode);
+  syncVolumeInputMode("daily_gb");
   const sources = state.rows
     .filter((r) => r.enabled)
     .map((r) => {
       const bytes = resolveEventBytes(r, state.rows);
+      // Prefer explicit Daily GB; if only EPS is set, derive GB. Engine plans from volume.
+      let daily = numOr0(r.daily_gb);
+      let eps = numOr0(r.eps);
+      if (!(daily > 0) && eps > 0) daily = dailyGBFromEPS(eps, bytes);
+      if (!(eps > 0) && daily > 0) eps = epsFromDailyGB(daily, bytes);
       const row = {
         key: r.key,
         label: r.label,
         index_name: String(r.index_name || "").trim(),
-        event_bytes: bytes,
-        daily_gb: 0,
-        eps: 0,
+        event_bytes: bytes > 0 ? bytes : 500,
+        daily_gb: daily,
+        eps: eps,
         enable_summary: !!r.enable_summary,
       };
-      if (mode === "daily_gb") {
-        row.daily_gb = Number(r.daily_gb) || 0;
-      } else {
-        row.eps = resolveEPS(r, state.rows).eps;
-        if (!(row.event_bytes > 0)) row.event_bytes = 500;
-      }
       const ret = Number(r.retention_days);
       if (ret > 0) row.retention_days = ret;
       const hw = Number(r.hot_warm_days);
@@ -306,14 +283,12 @@ export function fillReview() {
   if (!reviewBox) return;
   const g = collectGlobals();
   const enabled = state.rows.filter((r) => r.enabled);
-  const mode = readVolumeInputMode();
   let srcSum = 0;
   enabled.forEach((r) => {
-    if (mode === "eps") {
-      srcSum += dailyGBFromEPS(resolveEPS(r, state.rows).eps, resolveEventBytes(r, state.rows));
-    } else {
-      srcSum += numOr0(r.daily_gb);
-    }
+    const bytes = resolveEventBytes(r, state.rows);
+    let daily = numOr0(r.daily_gb);
+    if (!(daily > 0) && numOr0(r.eps) > 0) daily = dailyGBFromEPS(r.eps, bytes);
+    srcSum += daily;
   });
   const lines = [
     `— From topology —`,
@@ -332,14 +307,11 @@ export function fillReview() {
     );
   }
   lines.push(`— From sources —`);
-  lines.push(`volume input: ${mode} (raw/pre-indexed) | enabled=${enabled.length} | Σ sources ≈ ${formatDailyGB(srcSum)} GB/day`);
+  lines.push(`volume input: GB/day = EPS (calc uses Daily GB) | enabled=${enabled.length} | Σ sources ≈ ${formatDailyGB(srcSum)} GB/day`);
   enabled.forEach((r) => {
     const ret = Number(r.retention_days) > 0 ? `${r.retention_days}d` : `global ${g.retention_days}d`;
     const hw = Number(r.hot_warm_days) > 0 ? `${r.hot_warm_days}d` : `global ${g.hot_warm_days}d`;
-    const vol =
-      mode === "eps"
-        ? `EPS ${r.eps || resolveEPS(r, state.rows).eps || 0}`
-        : `${r.daily_gb || 0} GB/d`;
+    const vol = `${r.daily_gb || 0} GB/d = ${r.eps || 0} EPS`;
     lines.push(
       `  - ${r.label} → index=${r.index_name} | ${vol} | event_bytes=${r.event_bytes} | ret=${ret} | hw=${hw}${r.enable_summary ? " | +summary" : ""}`
     );
@@ -372,9 +344,5 @@ export function bindPlanFormChrome() {
     el.addEventListener("change", syncColdVolumePreview);
   });
   syncColdVolumePreview();
-
-  document.querySelectorAll('input[name="volume_input_mode"]').forEach((el) => {
-    el.addEventListener("change", () => syncVolumeInputMode(readVolumeInputMode(), { convert: true }));
-  });
-  syncVolumeInputMode(state.volumeInputMode || "daily_gb");
+  syncVolumeInputMode("daily_gb");
 }

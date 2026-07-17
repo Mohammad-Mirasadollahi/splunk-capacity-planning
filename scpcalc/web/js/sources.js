@@ -2,11 +2,13 @@ import { state } from "./state.js";
 import { escapeAttr } from "./util.js";
 import { t } from "./i18n.js";
 import {
-  fillMissingEPSFromAverage,
+  averageEventBytes,
+  dailyGBFromEPS,
+  epsFromDailyGB,
   formatDailyGB,
   formatEPS,
-  rowCounterpart,
-  totalEPSFromDailyGB,
+  numOr0,
+  resolveEventBytes,
 } from "./volume-convert.js";
 
 export function blankCustom() {
@@ -45,51 +47,68 @@ export function rowFromPreset(p) {
   };
 }
 
-function counterpartHTML(row, mode) {
-  const c = rowCounterpart(row, state.rows, mode);
-  if (!(c.value > 0)) {
-    return `<span class="vol-counterpart is-empty">${escapeAttr(t("vol_counterpart_empty"))}</span>`;
-  }
-  if (c.kind === "eps") {
-    const label = t("vol_counterpart_eps").replace("{n}", formatEPS(c.value));
-    return `<span class="vol-counterpart" title="${escapeAttr(t("vol_counterpart_eps_title"))}">${escapeAttr(label)}</span>`;
-  }
-  const key = c.fromAvg ? "vol_counterpart_gb_avg" : "vol_counterpart_gb";
-  const label = t(key).replace("{n}", formatDailyGB(c.value));
-  const title = c.fromAvg ? t("vol_counterpart_gb_avg_title") : t("vol_counterpart_gb_title");
-  return `<span class="vol-counterpart${c.fromAvg ? " is-avg" : ""}" title="${escapeAttr(title)}">${escapeAttr(label)}</span>`;
+function roundVol(n, kind) {
+  if (!(n > 0)) return "";
+  if (kind === "eps") return Math.round(n * 1000) / 1000;
+  return Math.round(n * 1000) / 1000;
 }
 
-function volumeCell(r, on, mode) {
-  if (mode === "eps") {
-    return `<div class="vol-cell">
-      <input type="number" data-f="eps" min="0" step="any" value="${r.eps}" placeholder="EPS" ${on ? "" : "disabled"}>
-      ${counterpartHTML(r, mode)}
-    </div>`;
+/** Keep daily_gb and eps linked for one source row. */
+export function syncRowVolumePair(row, rows, edited) {
+  const bytes = resolveEventBytes(row, rows);
+  if (edited === "daily_gb") {
+    const gb = numOr0(row.daily_gb);
+    row.eps = gb > 0 ? roundVol(epsFromDailyGB(gb, bytes), "eps") : "";
+  } else if (edited === "eps") {
+    const eps = numOr0(row.eps);
+    row.daily_gb = eps > 0 ? roundVol(dailyGBFromEPS(eps, bytes), "gb") : "";
+  } else if (edited === "event_bytes") {
+    const gb = numOr0(row.daily_gb);
+    const eps = numOr0(row.eps);
+    if (gb > 0) row.eps = roundVol(epsFromDailyGB(gb, bytes), "eps");
+    else if (eps > 0) row.daily_gb = roundVol(dailyGBFromEPS(eps, bytes), "gb");
   }
-  return `<div class="vol-cell">
-    <input type="number" data-f="daily_gb" min="0" step="any" value="${r.daily_gb}" placeholder="GB/day" ${on ? "" : "disabled"}>
-    ${counterpartHTML(r, mode)}
+}
+
+function volumeCell(r, on) {
+  return `<div class="vol-pair" role="group" aria-label="GB/day equals EPS">
+    <input type="number" data-f="daily_gb" class="vol-gb" min="0" step="any" value="${escapeAttr(String(r.daily_gb ?? ""))}" placeholder="GB/day" ${on ? "" : "disabled"} aria-label="Daily GB">
+    <span class="vol-eq" aria-hidden="true">=</span>
+    <input type="number" data-f="eps" class="vol-eps" min="0" step="any" value="${escapeAttr(String(r.eps ?? ""))}" placeholder="EPS" ${on ? "" : "disabled"} aria-label="EPS">
   </div>`;
 }
 
-export function refreshTotalCounterpart() {
-  const el = document.getElementById("total-daily-counterpart");
-  const input = document.querySelector('input[name="total_daily_gb"]');
-  if (!el || !input) return;
-  const eps = totalEPSFromDailyGB(input.value, state.rows);
-  if (!(eps > 0)) {
-    el.textContent = t("vol_counterpart_empty");
-    el.classList.add("is-empty");
-    el.removeAttribute("title");
-    return;
-  }
-  el.classList.remove("is-empty");
-  el.textContent = t("vol_counterpart_eps").replace("{n}", formatEPS(eps));
-  el.title = t("vol_total_counterpart_title");
+function updatePairInputs(tr, row) {
+  const gb = tr.querySelector('input[data-f="daily_gb"]');
+  const eps = tr.querySelector('input[data-f="eps"]');
+  if (gb && document.activeElement !== gb) gb.value = row.daily_gb === "" || row.daily_gb == null ? "" : row.daily_gb;
+  if (eps && document.activeElement !== eps) eps.value = row.eps === "" || row.eps == null ? "" : row.eps;
 }
 
-function volumeRowHTML(r, i, mode) {
+export function refreshTotalCounterpart() {
+  syncTotalVolumePair(null);
+}
+
+/** Sync total_daily_gb ↔ total_daily_eps using average event size from sources. */
+export function syncTotalVolumePair(edited) {
+  const gbEl = document.getElementById("total_daily_gb") || document.querySelector('input[name="total_daily_gb"]');
+  const epsEl = document.getElementById("total_daily_eps");
+  if (!gbEl || !epsEl) return;
+  const bytes = averageEventBytes(state.rows, { enabledOnly: true });
+  if (edited === "eps") {
+    const eps = numOr0(epsEl.value);
+    const gb = eps > 0 ? roundVol(dailyGBFromEPS(eps, bytes), "gb") : "";
+    gbEl.value = gb === "" ? "" : gb;
+  } else if (edited === "gb" || edited == null) {
+    const gb = numOr0(gbEl.value);
+    const eps = gb > 0 ? roundVol(epsFromDailyGB(gb, bytes), "eps") : "";
+    if (edited === "gb" || document.activeElement !== epsEl) {
+      epsEl.value = eps === "" ? "" : eps;
+    }
+  }
+}
+
+function volumeRowHTML(r, i) {
   const title = r.notes ? ` title="${escapeAttr(r.notes)}"` : "";
   const on = !!r.enabled;
   return `<tr data-i="${i}" class="${on ? "src-row-on" : "src-row-off"}">
@@ -97,7 +116,7 @@ function volumeRowHTML(r, i, mode) {
     <td${title}><input type="text" data-f="label" value="${escapeAttr(r.label)}" ${on ? "" : "disabled"}></td>
     <td><input type="text" data-f="index_name" value="${escapeAttr(r.index_name)}" ${on ? "" : "disabled"}></td>
     <td class="src-col-event-bytes"><input type="number" data-f="event_bytes" min="1" step="1" value="${r.event_bytes}" ${on ? "" : "disabled"}></td>
-    <td class="src-col-vol">${volumeCell(r, on, mode)}</td>
+    <td class="src-col-vol">${volumeCell(r, on)}</td>
     <td><button type="button" class="btn-x" data-rm="${i}" aria-label="Remove">×</button></td>
   </tr>`;
 }
@@ -124,11 +143,15 @@ export function renderRows() {
   const srcBody = document.getElementById("src-body");
   const retBody = document.getElementById("src-ret-body");
   if (!srcBody && !retBody) return;
-  const mode = state.volumeInputMode === "eps" ? "eps" : "daily_gb";
-  if (mode === "eps") fillMissingEPSFromAverage(state.rows);
+
+  // Ensure linked pairs are consistent before paint (prefer GB as planning source of truth).
+  state.rows.forEach((r) => {
+    if (numOr0(r.daily_gb) > 0) syncRowVolumePair(r, state.rows, "daily_gb");
+    else if (numOr0(r.eps) > 0) syncRowVolumePair(r, state.rows, "eps");
+  });
 
   if (srcBody) {
-    srcBody.innerHTML = state.rows.map((r, i) => volumeRowHTML(r, i, mode)).join("");
+    srcBody.innerHTML = state.rows.map((r, i) => volumeRowHTML(r, i)).join("");
   }
   if (retBody) {
     retBody.innerHTML = state.rows.map((r, i) => retentionRowHTML(r, i)).join("");
@@ -151,7 +174,11 @@ function bindTableBody(srcBody) {
       else refreshTotalCounterpart();
     } else {
       state.rows[i][f] = e.target.value;
-      if (f === "daily_gb" || f === "eps" || f === "event_bytes" || f === "label" || f === "index_name") {
+      if (f === "daily_gb" || f === "eps" || f === "event_bytes") {
+        syncRowVolumePair(state.rows[i], state.rows, f);
+        updatePairInputs(tr, state.rows[i]);
+        refreshTotalCounterpart();
+      } else if (f === "label" || f === "index_name") {
         renderRows();
       }
     }
@@ -164,17 +191,10 @@ function bindTableBody(srcBody) {
     if (!f || !state.rows[i] || e.target.type === "checkbox") return;
     state.rows[i][f] = e.target.value;
     if (f === "daily_gb" || f === "eps" || f === "event_bytes") {
-      const mode = state.volumeInputMode === "eps" ? "eps" : "daily_gb";
-      const cell = tr.querySelector(".vol-cell");
-      const tip = cell?.querySelector(".vol-counterpart");
-      if (tip) {
-        const wrap = document.createElement("div");
-        wrap.innerHTML = counterpartHTML(state.rows[i], mode);
-        tip.replaceWith(wrap.firstElementChild);
-      }
+      syncRowVolumePair(state.rows[i], state.rows, f);
+      updatePairInputs(tr, state.rows[i]);
       refreshTotalCounterpart();
     } else if (f === "label" || f === "index_name") {
-      // Keep the paired table in sync without full remount of the active input.
       const other =
         srcBody.id === "src-body"
           ? document.querySelector(`#src-ret-body tr[data-i="${i}"] input[data-f="${f}"]`)
@@ -190,22 +210,33 @@ function bindTableBody(srcBody) {
   });
 }
 
+function bindTotalVolumePair() {
+  const gbEl = document.getElementById("total_daily_gb") || document.querySelector('input[name="total_daily_gb"]');
+  const epsEl = document.getElementById("total_daily_eps");
+  if (!gbEl || gbEl.dataset.volPairBound === "1") return;
+  gbEl.dataset.volPairBound = "1";
+  const onGb = () => syncTotalVolumePair("gb");
+  const onEps = () => syncTotalVolumePair("eps");
+  gbEl.addEventListener("input", onGb);
+  gbEl.addEventListener("change", onGb);
+  epsEl?.addEventListener("input", onEps);
+  epsEl?.addEventListener("change", onEps);
+  syncTotalVolumePair("gb");
+}
+
 export function bindSourcesTable() {
   bindTableBody(document.getElementById("src-body"));
   bindTableBody(document.getElementById("src-ret-body"));
+  bindTotalVolumePair();
 
   document.getElementById("btn-add")?.addEventListener("click", () => {
     state.rows.push(blankCustom());
     renderRows();
   });
-
-  document.querySelector('input[name="total_daily_gb"]')?.addEventListener("input", () => {
-    refreshTotalCounterpart();
-  });
 }
 
 export function normalizeSnapshotRows(rows) {
-  return rows.map((r) => ({
+  const list = (rows || []).map((r) => ({
     key: r.key || "custom",
     label: r.label || r.index_name || "Custom",
     index_name: r.index_name || "custom",
@@ -220,4 +251,9 @@ export function normalizeSnapshotRows(rows) {
     enabled: r.enabled !== false,
     notes: r.notes || "",
   }));
+  list.forEach((row) => {
+    if (numOr0(row.daily_gb) > 0) syncRowVolumePair(row, list, "daily_gb");
+    else if (numOr0(row.eps) > 0) syncRowVolumePair(row, list, "eps");
+  });
+  return list;
 }

@@ -59,14 +59,18 @@
             <p class="hint" id="vol-mode-hint" data-i18n="tab_volumes_hint">Optional extras: a single daily total and/or how much disk you already have. Combine with source rows as you like.</p>
             <div id="total-box" class="subpanel">
               <h4 data-i18n="total_title">Total daily volume</h4>
-              <div class="grid">
-                <label class="field">
-                  <span class="field-copy"><span class="field-label tip-mark" data-tip="total_daily_gb" data-i18n="lbl_total_daily">Total daily ingest (GB/day)</span><span class="field-hint" data-i18n="hint_total_daily">If sources are also filled, they scale to this total</span></span>
-                  <input name="total_daily_gb" type="number" step="any" min="0" value="500" placeholder="e.g. 500" data-i18n-placeholder="ph_total_daily">
-                  <span id="total-daily-counterpart" class="vol-counterpart" aria-live="polite"></span>
+              <div class="vol-pair-block" role="group" aria-label="Total daily GB equals EPS">
+                <label class="field vol-pair-side">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="total_daily_gb" data-i18n="lbl_total_daily">Total daily ingest (GB/day)</span><span class="field-hint" data-i18n="hint_total_daily">Raw/license volume before compression — not on-disk size. If sources are also filled, they scale to this total</span></span>
+                  <input name="total_daily_gb" id="total_daily_gb" type="number" step="any" min="0" value="500" placeholder="e.g. 500" data-i18n-placeholder="ph_total_daily">
+                </label>
+                <span class="vol-eq vol-eq-lg" aria-hidden="true">=</span>
+                <label class="field vol-pair-side">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="eps" data-i18n="lbl_total_eps">Total daily EPS</span><span class="field-hint" data-i18n="hint_total_eps">Linked to GB/day via average event size of your sources</span></span>
+                  <input id="total_daily_eps" type="number" step="any" min="0" value="" placeholder="e.g. 8000" data-i18n-placeholder="ph_total_eps" inputmode="decimal">
                 </label>
               </div>
-              <p class="hint" data-i18n="total_hint">Leave blank if you only use per-source volumes below.</p>
+              <p class="hint" data-i18n="total_hint">Leave both blank if you only use per-source volumes below. Edit either box — the other updates automatically. Calculate always uses Daily GB.</p>
             </div>
             <div id="capacity-box" class="subpanel">
               <h4 data-i18n="cap_title">Disk you already have (GB)</h4>

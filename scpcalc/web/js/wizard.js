@@ -3,8 +3,17 @@ import { openModal, closeModal } from "./modal.js";
 import { fillReview } from "./plan-form.js";
 import { bindWizardContinuity, refreshWizardContext } from "./wizard-continuity.js";
 import { loadReviewPreview } from "./review-panel.js";
+import { t } from "./i18n.js";
 
 const wizardModal = () => document.getElementById("wizard-modal");
+
+function syncWizardBackLabel() {
+  const btnBack = document.getElementById("btn-wiz-back");
+  if (!btnBack) return;
+  btnBack.setAttribute("data-i18n", "back");
+  btnBack.textContent = t("back");
+  btnBack.title = state.step === 0 ? t("cancel") : t("back");
+}
 
 export function showStep(n) {
   state.step = Math.max(0, Math.min(STEPS - 1, n));
@@ -22,7 +31,11 @@ export function showStep(n) {
     li.classList.toggle("is-active", i === state.step);
     li.classList.toggle("is-done", i < state.step);
   });
-  if (btnBack) btnBack.disabled = state.step === 0;
+  // Back is always visible and clickable.
+  if (btnBack) {
+    btnBack.hidden = false;
+    btnBack.disabled = false;
+  }
   const last = state.step === STEPS - 1;
   if (btnNext) btnNext.hidden = last;
   if (btnCalc) btnCalc.hidden = !last;
@@ -31,6 +44,7 @@ export function showStep(n) {
     fillReview();
     void loadReviewPreview();
   }
+  syncWizardBackLabel();
 }
 
 export function openWizard(atStep) {
@@ -51,11 +65,14 @@ export function bindWizard() {
     el.addEventListener("click", closeWizard);
   });
 
-  document.getElementById("btn-wiz-back")?.addEventListener("click", () => showStep(state.step - 1));
+  document.getElementById("btn-wiz-back")?.addEventListener("click", () => {
+    if (state.step === 0) closeWizard();
+    else showStep(state.step - 1);
+  });
   document.getElementById("btn-wiz-next")?.addEventListener("click", () => showStep(state.step + 1));
   document.querySelectorAll("#wizard-steps li").forEach((li) => {
     li.addEventListener("click", () => showStep(Number(li.dataset.step)));
   });
 }
 
-export { reduceMotion };
+export { reduceMotion, syncWizardBackLabel };

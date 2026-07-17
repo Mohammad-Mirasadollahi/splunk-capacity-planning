@@ -5,19 +5,18 @@ import { state } from "./state.js";
 import { t, localizeFlow } from "./i18n.js";
 import { escapeAttr } from "./util.js";
 import {
-  buildPlanBody,
-  collectGlobals,
-  fillReview,
-  readVolumeInputMode,
-} from "./plan-form.js";
-import {
   dailyGBFromEPS,
   formatDailyGB,
   formatEPS,
   numOr0,
-  resolveEPS,
   resolveEventBytes,
+  epsFromDailyGB,
 } from "./volume-convert.js";
+import {
+  buildPlanBody,
+  collectGlobals,
+  fillReview,
+} from "./plan-form.js";
 import { runPlan } from "./engine.js";
 import { renderAllCharts } from "./charts.js";
 
@@ -39,22 +38,17 @@ export function fillReviewSummary() {
   const host = document.getElementById("review-summary");
   if (!host) return;
   const g = collectGlobals();
-  const mode = readVolumeInputMode();
   const enabled = state.rows.filter((r) => r.enabled);
   let srcSum = 0;
   const srcRows = enabled
     .map((r) => {
-      let vol;
-      if (mode === "eps") {
-        const eps = resolveEPS(r, state.rows).eps;
-        const gb = dailyGBFromEPS(eps, resolveEventBytes(r, state.rows));
-        srcSum += gb;
-        vol = `EPS ${formatEPS(eps)} (≈ ${formatDailyGB(gb)} GB/d)`;
-      } else {
-        const gb = numOr0(r.daily_gb);
-        srcSum += gb;
-        vol = `${formatDailyGB(gb)} GB/d`;
-      }
+      const bytes = resolveEventBytes(r, state.rows);
+      let gb = numOr0(r.daily_gb);
+      let eps = numOr0(r.eps);
+      if (!(gb > 0) && eps > 0) gb = dailyGBFromEPS(eps, bytes);
+      if (!(eps > 0) && gb > 0) eps = epsFromDailyGB(gb, bytes);
+      srcSum += gb;
+      const vol = `${formatDailyGB(gb)} GB/d = ${formatEPS(eps)} EPS`;
       const ret = Number(r.retention_days) > 0 ? `${r.retention_days}d` : `${g.retention_days}d (global)`;
       const hw = Number(r.hot_warm_days) > 0 ? `${r.hot_warm_days}d` : `${g.hot_warm_days}d (global)`;
       return `<tr>
@@ -89,7 +83,7 @@ export function fillReviewSummary() {
     </section>
     <section class="review-block">
       <h4 data-i18n="ctx_from_sources">${t("ctx_from_sources")}</h4>
-      <p class="hint">${t("ctx_vol_mode").replace("{m}", mode === "eps" ? "EPS" : "Daily GB")} · ${t("ctx_sources_on").replace("{n}", String(enabled.length))} · Σ ≈ ${formatDailyGB(srcSum)} GB/day${
+      <p class="hint">${t("ctx_vol_mode")} · ${t("ctx_sources_on").replace("{n}", String(enabled.length))} · Σ ≈ ${formatDailyGB(srcSum)} GB/day${
         g.total_daily_gb > 0 ? ` · ${t("ctx_scale_note").replace("{t}", formatDailyGB(g.total_daily_gb))}` : ""
       }</p>
       <div class="table-wrap">
@@ -98,7 +92,7 @@ export function fillReviewSummary() {
             <tr>
               <th>${t("col_source")}</th>
               <th>${t("col_index")}</th>
-              <th>${t("col_daily_gb")}</th>
+              <th>${t("col_vol_pair")}</th>
               <th>${t("col_event_bytes")}</th>
               <th>${t("col_ret")}</th>
               <th>${t("col_hw")}</th>

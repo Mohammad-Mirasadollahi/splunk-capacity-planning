@@ -11,7 +11,7 @@ import { applyDemoSourceDefaults, demoGlobals } from "./js/defaults.js";
 import { bindPlanFormChrome, snapshot, applySnapshot, applyGlobals, fillReview, syncArchiveFields, syncColdVolumePreview } from "./js/plan-form.js";
 import { bindConfEditor, getConfText, copyConf } from "./js/conf-editor.js";
 import { renderAllCharts } from "./js/charts.js";
-import { bindWizard, openWizard, closeWizard, showStep } from "./js/wizard.js";
+import { bindWizard, openWizard, closeWizard, showStep, syncWizardBackLabel } from "./js/wizard.js";
 import { runCalculate, bindResultTableFind } from "./js/results.js";
 import { downloadText } from "./js/util.js";
 import { initEngine, fetchPresets, engineMode } from "./js/engine.js";
@@ -205,6 +205,7 @@ setI18nHooks({
     bindTips(document);
     syncArchiveFields();
     syncColdVolumePreview();
+    syncWizardBackLabel();
     refreshOpenTip();
     renderRows();
     if (state.step === STEPS - 1) fillReview();
