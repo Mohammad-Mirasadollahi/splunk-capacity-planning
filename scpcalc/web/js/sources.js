@@ -1,6 +1,7 @@
 import { state } from "./state.js";
 import { escapeAttr } from "./util.js";
 import { t } from "./i18n.js";
+import { bindTips } from "./tips-ui.js";
 import {
   averageEventBytes,
   dailyGBFromEPS,
@@ -109,11 +110,11 @@ export function syncTotalVolumePair(edited) {
 }
 
 function volumeRowHTML(r, i) {
-  const title = r.notes ? ` title="${escapeAttr(r.notes)}"` : "";
+  const title = r.notes ? ` data-soft-tip="${escapeAttr(r.notes)}" data-soft-tip-title="${escapeAttr(r.label || r.index_name || "Source")}"` : "";
   const on = !!r.enabled;
-  return `<tr data-i="${i}" class="${on ? "src-row-on" : "src-row-off"}">
+  return `<tr data-i="${i}" class="${on ? "src-row-on" : "src-row-off"}"${title}>
     <td><input type="checkbox" data-f="enabled" class="src-toggle" ${on ? "checked" : ""} aria-label="Use source"></td>
-    <td${title}><input type="text" data-f="label" value="${escapeAttr(r.label)}" ${on ? "" : "disabled"}></td>
+    <td><input type="text" data-f="label" value="${escapeAttr(r.label)}" ${on ? "" : "disabled"}></td>
     <td><input type="text" data-f="index_name" value="${escapeAttr(r.index_name)}" ${on ? "" : "disabled"}></td>
     <td class="src-col-event-bytes"><input type="number" data-f="event_bytes" min="1" step="1" value="${r.event_bytes}" ${on ? "" : "disabled"}></td>
     <td class="src-col-vol">${volumeCell(r, on)}</td>
@@ -152,6 +153,7 @@ export function renderRows() {
 
   if (srcBody) {
     srcBody.innerHTML = state.rows.map((r, i) => volumeRowHTML(r, i)).join("");
+    bindTips(srcBody);
   }
   if (retBody) {
     retBody.innerHTML = state.rows.map((r, i) => retentionRowHTML(r, i)).join("");

@@ -6,6 +6,11 @@ import {
   resolveEventBytes,
   totalEPSFromDailyGB,
 } from "./volume-convert.js";
+import { state } from "./state.js";
+import { t } from "./i18n.js";
+import { collectGlobals, readVolumeInputMode, fillReview } from "./plan-form.js";
+import { renderRows, refreshTotalCounterpart } from "./sources.js";
+import { setSoftTip } from "./tips-ui.js";
 
 /** When true, summary_retention_days tracks retention_days. */
 let summaryRetentionLinked = true;
@@ -107,11 +112,11 @@ export function applyInheritedSourcePlaceholders() {
   const g = collectGlobals();
   document.querySelectorAll('#src-ret-body input[data-f="retention_days"]').forEach((el) => {
     el.placeholder = String(g.retention_days || 90);
-    el.title = t("ctx_inherit_ret").replace("{n}", String(g.retention_days || 90));
+    setSoftTip(el, t("ctx_inherit_ret").replace("{n}", String(g.retention_days || 90)));
   });
   document.querySelectorAll('#src-ret-body input[data-f="hot_warm_days"]').forEach((el) => {
     el.placeholder = String(g.hot_warm_days || 30);
-    el.title = t("ctx_inherit_hw").replace("{n}", String(g.hot_warm_days || 30));
+    setSoftTip(el, t("ctx_inherit_hw").replace("{n}", String(g.hot_warm_days || 30)));
   });
 }
 

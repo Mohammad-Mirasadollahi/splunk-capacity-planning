@@ -66,14 +66,39 @@ function renderTipHTML(tip) {
   const impactBlock = tip.impact
     ? `<p class="tip-impact"><span>${isFa ? "اگر عوض شود" : "If you change this"}</span> ${tipText(tip.impact)}</p>`
     : "";
+  const formulaBlock = tip.formula
+    ? `<pre class="tip-formula">${tipText(tip.formula)}</pre>`
+    : "";
+  const titleBlock = tip.title ? `<strong class="tip-title">${tipText(tip.title)}</strong>` : "";
+  const bodyBlock = tip.body ? `<p class="tip-body">${tipText(tip.body)}</p>` : "";
+  const linksBlock = links ? `<div class="tip-links">${links}</div>` : "";
   return `<div class="tip-inner">
-      <strong class="tip-title">${tipText(tip.title || "")}</strong>
-      <p class="tip-body">${tipText(tip.body || "")}</p>
-      <pre class="tip-formula">${tipText(tip.formula || "")}</pre>
+      ${titleBlock}
+      ${bodyBlock}
+      ${formulaBlock}
       ${exampleBlock}
       ${impactBlock}
-      <div class="tip-links">${links}</div>
+      ${linksBlock}
     </div>`;
+}
+
+/** Plain-text / pipe-separated soft tip (replaces native browser title tooltips). */
+function renderSoftTipHTML(text, heading) {
+  const raw = String(text || "").trim();
+  if (!raw && !heading) return "";
+  const parts = raw
+    .split(/\s*\|\s*|\n+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const headingBlock = heading ? `<strong class="tip-title">${tipText(heading)}</strong>` : "";
+  if (parts.length <= 1 && !heading) {
+    return `<div class="tip-inner tip-inner--soft"><p class="tip-body">${tipText(raw)}</p></div>`;
+  }
+  if (parts.length <= 1) {
+    return `<div class="tip-inner tip-inner--soft">${headingBlock}<p class="tip-body">${tipText(parts[0] || raw)}</p></div>`;
+  }
+  const items = parts.map((p) => `<li>${tipText(p)}</li>`).join("");
+  return `<div class="tip-inner tip-inner--soft">${headingBlock}<ul class="tip-soft-list">${items}</ul></div>`;
 }
 
 function positionTip(anchor) {
@@ -93,12 +118,22 @@ function positionTip(anchor) {
 }
 
 function showTip(anchor) {
+  if (!tipPop || !anchor) return;
+  const soft = anchor.getAttribute("data-soft-tip");
   const key = anchor.getAttribute("data-tip");
-  const tip = enrichTip(key, tipCatalog()[key]);
-  if (!tip || !tipPop) return;
+  let html = "";
+  if (soft) {
+    tipPop.classList.add("is-soft");
+    html = renderSoftTipHTML(soft, anchor.getAttribute("data-soft-tip-title") || "");
+  } else if (key) {
+    tipPop.classList.remove("is-soft");
+    const tip = enrichTip(key, tipCatalog()[key]);
+    html = renderTipHTML(tip);
+  }
+  if (!html) return;
   clearTimeout(tipHideTimer);
   tipAnchor = anchor;
-  tipPop.innerHTML = renderTipHTML(tip);
+  tipPop.innerHTML = html;
   positionTip(anchor);
 }
 
@@ -110,16 +145,26 @@ function scheduleHideTip() {
   }, 220);
 }
 
+function wireTipEl(el) {
+  if (el.dataset.tipBound === "1") return;
+  el.dataset.tipBound = "1";
+  el.classList.add("tip-mark");
+  // Kill native browser tooltips that clash with dark UI.
+  if (el.hasAttribute("title") && !el.getAttribute("data-soft-tip")) {
+    el.setAttribute("data-soft-tip", el.getAttribute("title") || "");
+    el.removeAttribute("title");
+  } else if (el.hasAttribute("title")) {
+    el.removeAttribute("title");
+  }
+  el.addEventListener("mouseenter", () => showTip(el));
+  el.addEventListener("mouseleave", scheduleHideTip);
+  el.addEventListener("focus", () => showTip(el));
+  el.addEventListener("blur", scheduleHideTip);
+}
+
 export function bindTips(root) {
-  (root || document).querySelectorAll("[data-tip]").forEach((el) => {
-    if (el.dataset.tipBound === "1") return;
-    el.dataset.tipBound = "1";
-    el.classList.add("tip-mark");
-    el.addEventListener("mouseenter", () => showTip(el));
-    el.addEventListener("mouseleave", scheduleHideTip);
-    el.addEventListener("focus", () => showTip(el));
-    el.addEventListener("blur", scheduleHideTip);
-  });
+  const scope = root || document;
+  scope.querySelectorAll("[data-tip], [data-soft-tip]").forEach(wireTipEl);
 }
 
 export function initTips() {
@@ -137,4 +182,22 @@ export function initTips() {
 
 export function refreshOpenTip() {
   if (tipAnchor && tipPop && !tipPop.hidden) showTip(tipAnchor);
+}
+
+/** Set a soft tip on an element (replaces native title). */
+export function setSoftTip(el, text, title) {
+  if (!el) return;
+  const body = String(text || "").trim();
+  if (!body) {
+    el.removeAttribute("data-soft-tip");
+    el.removeAttribute("data-soft-tip-title");
+    el.removeAttribute("title");
+    return;
+  }
+  el.setAttribute("data-soft-tip", body);
+  if (title) el.setAttribute("data-soft-tip-title", String(title));
+  else el.removeAttribute("data-soft-tip-title");
+  el.removeAttribute("title");
+  el.dataset.tipBound = "";
+  wireTipEl(el);
 }

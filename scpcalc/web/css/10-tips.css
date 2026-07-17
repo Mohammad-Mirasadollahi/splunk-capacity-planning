@@ -33,14 +33,56 @@
   backdrop-filter: blur(12px);
   color: var(--ink);
   pointer-events: auto;
+  animation: tipIn 0.16s var(--ease);
+}
+
+.tip-pop.is-soft {
+  width: min(420px, calc(100vw - 20px));
 }
 
 .tip-pop[hidden] { display: none !important; }
+
+@keyframes tipIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 .tip-inner {
   padding: 0.85rem 0.95rem 0.9rem;
   direction: ltr;
   text-align: left;
+}
+
+.tip-inner--soft {
+  padding: 0.8rem 0.9rem 0.85rem;
+}
+
+.tip-soft-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.tip-soft-list li {
+  position: relative;
+  padding-inline-start: 0.85rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: #d5e4eb;
+}
+
+.tip-soft-list li::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0.55em;
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 999px;
+  background: var(--accent);
+  opacity: 0.85;
 }
 
 body[data-lang="fa"] .tip-inner {
@@ -67,6 +109,17 @@ body[data-lang="fa"] .tip-links {
   font-size: 0.82rem;
   line-height: 1.5;
   color: #d5e4eb;
+}
+
+.tip-inner--soft .tip-body:last-child {
+  margin-bottom: 0;
+}
+
+tr[data-soft-tip],
+td[data-soft-tip],
+th[data-soft-tip],
+[data-soft-tip].tip-mark {
+  cursor: help;
 }
 
 .tip-formula {

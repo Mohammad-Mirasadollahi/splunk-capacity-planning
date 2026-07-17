@@ -1,9 +1,10 @@
-import { state, STEPS, reduceMotion } from "./state.js";
+import { t } from "./i18n.js";
+import { setSoftTip } from "./tips-ui.js";
 import { openModal, closeModal } from "./modal.js";
 import { fillReview } from "./plan-form.js";
 import { bindWizardContinuity, refreshWizardContext } from "./wizard-continuity.js";
 import { loadReviewPreview } from "./review-panel.js";
-import { t } from "./i18n.js";
+import { state, STEPS, reduceMotion } from "./state.js";
 
 const wizardModal = () => document.getElementById("wizard-modal");
 
@@ -12,7 +13,7 @@ function syncWizardBackLabel() {
   if (!btnBack) return;
   btnBack.setAttribute("data-i18n", "back");
   btnBack.textContent = t("back");
-  btnBack.title = state.step === 0 ? t("cancel") : t("back");
+  setSoftTip(btnBack, state.step === 0 ? t("cancel") : t("back"));
 }
 
 export function showStep(n) {

@@ -167,7 +167,17 @@ function renderPlanResult(data) {
         ]
           .filter(Boolean)
           .join(" ");
-        return `<tr data-find="${escapeAttr(find)}" title="${escapeAttr([r.cpu_logical_rule, r.virt_cpu_rule, r.splunk_parallelization, r.iops_hint, r.raid_hint, r.notes].filter(Boolean).join(" | "))}">
+        const softTip = [
+          r.cpu_logical_rule,
+          r.virt_cpu_rule,
+          r.splunk_parallelization,
+          r.iops_hint,
+          r.raid_hint,
+          r.notes,
+        ]
+          .filter(Boolean)
+          .join(" | ");
+        return `<tr data-find="${escapeAttr(find)}"${softTip ? ` data-soft-tip="${escapeAttr(softTip)}" data-soft-tip-title="${escapeAttr(r.role || "Layer")}"` : ""}>
             <td>${escapeAttr(r.role)}</td>
             <td>${r.count}</td>
             <td>${escapeAttr(r.tier)}</td>
@@ -185,6 +195,7 @@ function renderPlanResult(data) {
           </tr>`;
       })
       .join("");
+    bindTips(resBody);
   }
 
   if (ixBody) {
