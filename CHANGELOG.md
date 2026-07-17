@@ -4,7 +4,19 @@ All notable changes to this repository are documented here.
 
 ## 0.2.0 — 2026-07-17
 
-- Capacity UX 0.2: time↔disk retention, labeled Nodes (Peer), fullscreen/copy panels, chart totals, dynamic indexes.conf header, hide Back on wizard step 1
+### SCPcalc (calculator)
+
+- **Retention time ↔ disk** — Policy mode: plan by hot+cold days or by searchable hot/cold GB; the other side converts via daily on-disk × days × headroom (same dual-edit pattern as GB/day = EPS). Total searchable days and total disk shown; Archive on freeze remains policy-only.
+- **Nodes inventory** — Resources expands roles into labeled nodes (Indexer → **Peer** `peer-01`…, Search Head, CM, Deployer, …) with select, search, and full specs for the selection.
+- **Fullscreen + Copy** — Design, Resources, Settings, Nodes, and Per-index panels.
+- **Charts** — Storage and Retention cards show layer **totals**.
+- **indexes.conf header** — Author Mohammad Mirasadollahi, GitHub/docs/calc links, and a dynamic plan snapshot from wizard settings.
+- **Wizard** — Back hidden on Topology (step 1); Cancel closes.
+
+### Docs / site
+
+- Bilingual README + `scpcalc/README.md` updated for the 0.2 UX.
+- GitHub Pages `/calc/` rebuilds via CI (WASM); Release binaries + **GHCR** package `ghcr.io/mohammad-mirasadollahi/scpcalc`.
 
 ## 0.1.4 — 2026-07-17
 
