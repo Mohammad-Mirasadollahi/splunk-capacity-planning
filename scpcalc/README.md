@@ -32,6 +32,67 @@ Same engine for CLI, `serve`, and in-browser WASM: multi-index storage sizing, *
 
 ---
 
+## Prerequisites
+
+Install these **before** building or releasing. Versions below match CI (`go.mod` + GitHub Actions).
+
+### Build from source (`make build` / `make test` / `make pages-calc`)
+
+| Tool | Version | Why |
+|---|---|---|
+| **Go** | **1.22+** | Compile CLI, tests, and WASM (`GOOS=js GOARCH=wasm`) |
+| **Python 3** | 3.8+ | Assemble UI (`scripts/assemble_html.py`) and optional `make live-test` |
+| **Make** | GNU make | `Makefile` targets |
+| **Bash** | 4+ / any modern bash | `scripts/build_wasm.sh`, `sync_pages_calc.sh` |
+
+Quick check:
+
+```bash
+go version      # go1.22.x or newer
+python3 --version
+make --version
+bash --version
+```
+
+No CGO / C compiler needed (`CGO_ENABLED=0`). No Node.js required for the calculator UI.
+
+### Local release artifacts (`make release` / `make dist`)
+
+Everything in **Build from source**, plus:
+
+| Tool | Why |
+|---|---|
+| **gzip** | Compress WASM for Release downloads |
+| **sha256sum** or **shasum** | Write `SHA256SUMS` |
+
+### Publish a GitHub Release + GHCR package (`./tools/release.sh`)
+
+| Tool | Why |
+|---|---|
+| All **Build** prerequisites | Script runs `go test` before tagging |
+| **git** | Commit, annotated tag `scpcalc-vX.Y.Z`, push |
+| **Network + push access** | Push branch + tag to GitHub |
+| **GitHub Actions enabled** | Builds binaries/WASM (`scpcalc-release.yml`) and container (`scpcalc-package.yml`) |
+
+Optional but useful: [GitHub CLI](https://cli.github.com/) (`gh`) to watch workflows / download assets.
+
+You do **not** need Docker on your laptop to publish the package — CI builds and pushes `ghcr.io/mohammad-mirasadollahi/scpcalc`.
+
+### Local Docker image only (`make docker`)
+
+| Tool | Why |
+|---|---|
+| **Docker** | `docker build` (CI image uses Go 1.22 + Python in the Dockerfile) |
+| **Python 3** + **Make** | `make docker` runs `make html` first |
+
+### Docs-only tooling (repo root)
+
+| Tool | Why |
+|---|---|
+| **Python 3** | `tools/check_en_fa_sync.py`, `tools/add_lang_switcher.py`, `tools/sync_latest_docs.py` |
+
+---
+
 ## Install
 
 ### GitHub Releases
@@ -50,15 +111,17 @@ Published to **GitHub Container Registry** on each `scpcalc-v*` tag (and via Act
 docker pull ghcr.io/mohammad-mirasadollahi/scpcalc:latest
 docker run --rm -p 12345:12345 ghcr.io/mohammad-mirasadollahi/scpcalc:latest
 # CLI without UI:
-docker run --rm ghcr.io/mohammad-mirasadollahi/scpcalc:0.1.2 calc --plan - --json < examples/plan.sample.json
+docker run --rm ghcr.io/mohammad-mirasadollahi/scpcalc:latest calc --plan - --json < examples/plan.sample.json
 
-# Local image (optional):
+# Local image (optional — needs Docker; see Prerequisites):
 make docker
 ```
 
 If the package is private the first time, make it public: GitHub → **Packages** → `scpcalc` → Package settings → Change visibility.
 
 ### Build from source
+
+Requires the [Prerequisites](#prerequisites) above.
 
 ```bash
 cd scpcalc
@@ -70,9 +133,9 @@ make build
 
 ### Releases (binaries + WASM — not in git)
 
-Version file: [`VERSION`](VERSION) (currently `0.1.2`).
+Version file: [`VERSION`](VERSION).
 
-**One-click release** (from repo root) — product help asks *why*, then bumps version, CHANGELOG, commit, tag, and push:
+**One-click release** (from repo root) — install [Prerequisites](#prerequisites) first; product help asks *why*, then bumps version, CHANGELOG, commit, tag, and push:
 
 ```bash
 ./tools/release.sh
@@ -86,15 +149,13 @@ Manual equivalent:
 
 ```bash
 cd scpcalc
-make release              # → releases/scpcalc-v0.1.2/ (gitignored)
+make release              # → releases/scpcalc-v$(cat VERSION)/ (gitignored)
 # Publish on GitHub by tagging:
-git tag scpcalc-v0.1.2 && git push origin scpcalc-v0.1.2
+git tag scpcalc-v$(tr -d '[:space:]' < VERSION) && git push origin "scpcalc-v$(tr -d '[:space:]' < VERSION)"
 # Actions builds binaries + WASM and attaches them to the Release.
 ```
 
 Large files are **gitignored** (`*.wasm`, `calc/*` UI export, `releases/`). CI builds WASM for Pages (`/calc/`) and for each tagged Release.
-
-Requires a recent Go toolchain (see `go.mod`).
 
 ---
 
@@ -121,9 +182,9 @@ Open **http://127.0.0.1:12345** → Start wizard → Calculate → Overview / De
 1. **Base:** Splunk [Summary of performance recommendations](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Summaryofperformancerecommendations) — daily ingest **D** × concurrent SH users **U** → baseline `N_SH` / `N_IDX` (or one combined node for tiny labs).
 2. **Concurrent search volume:** [Reference hardware](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware) — each active search ≤ **1 CPU core**. Raise `N_SH` to `ceil(S / 16)` when peak concurrent searches **S** need more cores. [Dimensions](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/DimensionsofaSplunkEnterprisedeployment) also list **saved searches** as a sizing input.
 3. **Indexer cluster:** never stay combined; peers ≥ **RF**; + cluster manager.
-4. **SHC:** `N_SH` ≥ **3** + deployer.
+4. **SHC:** members = **1** (single-member interim) or **≥3** (HA) — never **2**; + deployer.
 5. **ES / ITSI:** indexer floors from doc tables / `≈ceil(D/100)` for ITSI.
-5. **Overrides:** `--n-idx` / `--n-sh` (or JSON `n_idx` / `n_sh`); `0` = auto. Values below floors warn; RF / SHC still hard-raise when clustering is on.
+6. **Overrides:** `--n-idx` / `--n-sh` (or JSON `n_idx` / `n_sh`); `0` = auto. Values below floors warn; RF / SHC rules still apply when clustering is on.
 
 CLI and Overview both print the step-by-step **NODE COUNTS** rationale.
 

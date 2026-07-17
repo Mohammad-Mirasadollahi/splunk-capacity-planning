@@ -72,9 +72,11 @@ FLAGS
   --no-commit                Only print/update files (advanced)
   -h, --help                 This help
 
-REQUIREMENTS
-  Clean or intentional git tree, push access to GitHub, and network for push.
-  CI workflow: .github/workflows/scpcalc-release.yml
+REQUIREMENTS (install before running)
+  Build/test:  Go 1.22+, Python 3, Make, Bash  (see scpcalc/README.md#prerequisites)
+  Publish:     git + push access to GitHub (CI builds Release binaries + GHCR; Docker optional)
+  Clean or intentional git tree, and network for push.
+  CI workflows: .github/workflows/scpcalc-release.yml · scpcalc-package.yml
 EOF
 }
 

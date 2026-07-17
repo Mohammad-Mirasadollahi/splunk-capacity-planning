@@ -38,7 +38,22 @@
 | طراحی | [`scpcalc/docs/`](scpcalc/docs/) |
 | دانلود | GitHub **Releases** (تگ `scpcalc-v*`) — ساخت با [`./tools/release.sh`](tools/release.sh) |
 | **GitHub Package** | کانتینر: [`ghcr.io/mohammad-mirasadollahi/scpcalc`](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning/pkgs/container/scpcalc) |
-| ساخت محلی | `cd scpcalc && make test && make wasm && make build` |
+| ساخت محلی | `cd scpcalc && make test && make wasm && make build` — [پیش‌نیازها](#پیشنیاز-build-و-release) |
+
+### پیش‌نیاز Build و Release
+
+جزئیات کامل: [`scpcalc/README.md` → Prerequisites](scpcalc/README.md#prerequisites).
+
+| هدف | نصب کنید |
+|---|---|
+| **Build / تست** | **Go 1.22+**، **Python 3**، **Make**، **Bash** |
+| **آرتیفکت محلی** (`make release`) | موارد بالا + **gzip** + **sha256sum** (یا `shasum`) |
+| **انتشار Release + GHCR** (`./tools/release.sh`) | موارد بالا + **git** و دسترسی push به GitHub (باینری و پکیج را CI می‌سازد — روی لپ‌تاپ Docker لازم نیست) |
+| **ایمیج Docker محلی** | **Docker** (+ Python/Make برای `make docker`) |
+
+```bash
+go version && python3 --version && make --version
+```
 
 ```bash
 # پکیج کانتینر (GitHub Packages / GHCR)

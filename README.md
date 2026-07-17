@@ -34,7 +34,22 @@ Estimates searchable storage / retention MB fields, recommends **N_SH / N_IDX** 
 | Design | [`scpcalc/docs/`](scpcalc/docs/) (HLD · LLD · Logic · Language) |
 | Download | GitHub **Releases** (tag `scpcalc-v*`) — create with [`./tools/release.sh`](tools/release.sh) |
 | **GitHub Package** | Container: [`ghcr.io/mohammad-mirasadollahi/scpcalc`](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning/pkgs/container/scpcalc) |
-| Local build | `cd scpcalc && make test && make wasm && make build` |
+| Local build | `cd scpcalc && make test && make wasm && make build` — see [Prerequisites](#build--release-prerequisites) |
+
+### Build & release prerequisites
+
+Full detail: [`scpcalc/README.md` → Prerequisites](scpcalc/README.md#prerequisites).
+
+| Goal | Install |
+|---|---|
+| **Build / test** | **Go 1.22+**, **Python 3**, **Make**, **Bash** |
+| **Local release zip** (`make release`) | Above + **gzip** + **sha256sum** (or `shasum`) |
+| **Publish Release + GHCR** (`./tools/release.sh`) | Above + **git**, push access to GitHub (CI builds binaries & package — Docker not required on your machine) |
+| **Local Docker image** | **Docker** (+ Python/Make for `make docker`) |
+
+```bash
+go version && python3 --version && make --version
+```
 
 ```bash
 cd scpcalc && make build

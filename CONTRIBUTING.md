@@ -1,5 +1,20 @@
 # Contributing
 
+## Prerequisites (build / release)
+
+Install before working on SCPcalc or cutting a release. Full table: [`scpcalc/README.md` → Prerequisites](scpcalc/README.md#prerequisites).
+
+| Goal | Need |
+|---|---|
+| Build / test | **Go 1.22+**, **Python 3**, **Make**, **Bash** |
+| `make release` | Above + **gzip** + **sha256sum** / `shasum` |
+| `./tools/release.sh` (publish) | Above + **git** + GitHub push access (CI publishes Release + GHCR) |
+| `make docker` | **Docker** |
+
+```bash
+go version && python3 --version && make --version
+```
+
 ## Questions, features & bugs (no code yet)
 
 Open a GitHub Issue with the right template — see the **Questions, features & bugs** section in [`README.md`](README.md) (فارسی: [`README.fa.md`](README.fa.md)):
