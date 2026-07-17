@@ -1,0 +1,84 @@
+        <section class="wiz-pane is-active" data-pane="0">
+          <h3 data-i18n="topology">Topology & apps</h3>
+          <div class="tab-bar tab-bar-sm" role="tablist" data-tabs="topo">
+            <button type="button" class="tab-btn is-active" role="tab" aria-selected="true" data-tab="topo-cluster" data-i18n="tab_cluster">Cluster</button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="topo-apps" data-i18n="tab_apps">Apps</button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="topo-adv" data-i18n="tab_advanced">Advanced</button>
+          </div>
+          <div class="tab-panel is-active" data-panel="topo-cluster" role="tabpanel">
+            <section class="form-section" aria-labelledby="sec-idx-cluster-title">
+              <header class="form-section-head">
+                <h4 id="sec-idx-cluster-title" data-i18n="sec_idx_cluster">Indexer cluster</h4>
+                <p class="hint" data-i18n="sec_idx_cluster_hint">Enable clustering for the indexer tier — set RF/SF and optional peer count override.</p>
+              </header>
+              <div class="grid">
+                <label class="field check glass-chip"><input name="indexer_cluster" type="checkbox" id="indexer_cluster"> <span class="tip-mark" data-tip="indexer_cluster" data-i18n="idx_cluster">Indexer cluster</span></label>
+                <label class="field" data-depends-on="indexer_cluster" hidden>
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="rf" data-i18n="lbl_rf">Replication factor</span><span class="field-hint" data-i18n="hint_rf">Raw data copies in the cluster</span></span>
+                  <input name="rf" id="rf" type="number" value="3" min="1">
+                </label>
+                <label class="field" data-depends-on="indexer_cluster" hidden>
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="sf" data-i18n="lbl_sf">Search factor</span><span class="field-hint" data-i18n="hint_sf">Searchable copies with TSIDX</span></span>
+                  <input name="sf" id="sf" type="number" value="2" min="1">
+                </label>
+                <label class="field">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="n_idx" data-i18n="lbl_n_idx">Number of indexers</span><span class="field-hint" data-i18n="hint_n_idx">Leave 0 to calculate automatically</span></span>
+                  <input name="n_idx" type="number" value="0" min="0" placeholder="0">
+                  <span class="auto-rec" id="auto-n-idx" hidden></span>
+                </label>
+              </div>
+            </section>
+            <section class="form-section" aria-labelledby="sec-shc-title">
+              <header class="form-section-head">
+                <h4 id="sec-shc-title" data-i18n="sec_shc">Search head cluster</h4>
+                <p class="hint" data-i18n="sec_shc_hint">Set concurrent users and searches — Splunk sizes Search Heads from users × daily volume, then raises SH count so total cores cover peak concurrent searches.</p>
+              </header>
+              <div class="grid">
+                <label class="field check glass-chip"><input name="search_head_cluster" type="checkbox" id="search_head_cluster"> <span class="tip-mark" data-tip="shc" data-i18n="shc">Search head cluster</span></label>
+                <label class="field">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="concurrent_users" data-i18n="lbl_users">Concurrent search users</span><span class="field-hint" data-i18n="hint_users">People searching at the same time (official SH×IDX table)</span></span>
+                  <input name="concurrent_users" type="number" value="8" min="1" required>
+                </label>
+                <label class="field">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="concurrent_searches" data-i18n="lbl_searches">Peak concurrent searches</span><span class="field-hint" data-i18n="hint_searches">Scheduled + ad-hoc jobs at peak (1 search ≈ 1 CPU core)</span></span>
+                  <input name="concurrent_searches" type="number" value="8" min="1" required>
+                </label>
+                <label class="field">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="saved_searches" data-i18n="lbl_saved">Saved / scheduled searches</span><span class="field-hint" data-i18n="hint_saved">Total enabled saved searches (Dimensions sizing input)</span></span>
+                  <input name="saved_searches" type="number" value="20" min="0" required>
+                </label>
+                <label class="field">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="n_sh" data-i18n="lbl_n_sh">Number of search heads</span><span class="field-hint" data-i18n="hint_n_sh">Leave 0 to calculate from users × volume × searches</span></span>
+                  <input name="n_sh" type="number" value="0" min="0" placeholder="0">
+                  <span class="auto-rec" id="auto-n-sh" hidden></span>
+                </label>
+              </div>
+            </section>
+          </div>
+          <div class="tab-panel" data-panel="topo-apps" role="tabpanel" hidden>
+            <p class="hint" data-i18n="tab_apps_hint">Turn on premium apps if you use them. DMA stores accelerated data-model summaries.</p>
+            <div class="grid">
+              <label class="field check glass-chip"><input name="has_es" type="checkbox" id="has_es"> <span class="tip-mark" data-tip="has_es" data-i18n="lbl_has_es">Enterprise Security (ES)</span></label>
+              <label class="field check glass-chip"><input name="has_itsi" type="checkbox" id="has_itsi"> <span class="tip-mark" data-tip="has_itsi" data-i18n="lbl_has_itsi">IT Service Intelligence (ITSI)</span></label>
+              <label class="field check glass-chip"><input name="enable_dma" type="checkbox" id="enable_dma"> <span class="tip-mark" data-tip="enable_dma" data-i18n="lbl_dma">Data model acceleration (DMA)</span></label>
+              <label class="field" data-depends-on="enable_dma" hidden>
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="dma_pct" data-i18n="lbl_dma_pct">DMA disk share</span><span class="field-hint" data-i18n="hint_dma_pct">Fraction of searchable data kept for DMA (e.g. 0.10 = 10%)</span></span>
+                <input name="dma_pct" type="number" step="0.01" min="0.01" max="1" value="0.10">
+              </label>
+            </div>
+          </div>
+          <div class="tab-panel" data-panel="topo-adv" role="tabpanel" hidden>
+            <p class="hint" data-i18n="tab_advanced_hint">SmartStore and your measured compression ratio (optional).</p>
+            <div class="grid">
+              <label class="field check glass-chip"><input name="smartstore" type="checkbox" id="smartstore"> <span class="tip-mark" data-tip="smartstore" data-i18n="lbl_smartstore">SmartStore (object storage)</span></label>
+              <label class="field" data-depends-on="smartstore" hidden>
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="remote_path" data-i18n="lbl_remote">Remote store path</span><span class="field-hint" data-i18n="hint_remote">S3 / GCS / blob path hint</span></span>
+                <input name="remote_path" type="text" value="" placeholder="s3://bucket/splunk" data-i18n-placeholder="ph_remote">
+              </label>
+              <label class="field">
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="compression" data-i18n="lbl_compression">Measured compression</span><span class="field-hint" data-i18n="hint_compression">Leave 0 for the default RF/SF model</span></span>
+                <input name="compression" type="number" step="0.01" min="0" max="2" value="0" placeholder="0" data-i18n-placeholder="ph_compression">
+              </label>
+            </div>
+          </div>
+        </section>

@@ -49,7 +49,7 @@ Daily_Raw_GB = daily_gb
 Daily_Raw_GB = EPS × 86400 × event_bytes / (1024³)
 ```
 
-If both are set and `daily_gb > 0`, **daily_gb wins**.
+If both are set and `daily_gb > 0`, **daily_gb wins** in the engine. The Web UI is stricter: pick **Daily GB** *or* **EPS** as the only primary column; the other unit is shown as a live estimate under each input (and blank EPS rows inherit the average EPS of filled sources).
 
 **`total_daily_gb`:** if only this is set, synthesize index `main`. If sources exist and total is set, scale source volumes so they sum to total.
 

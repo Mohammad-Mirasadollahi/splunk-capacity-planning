@@ -25,6 +25,8 @@ type NodePlan struct {
 	BaseNIDX         int
 	NSH              int
 	NIDX             int
+	AutoNSH          int // recommended before n_sh override
+	AutoNIDX         int // recommended before n_idx override
 	NSHES            int
 	NSHITSI          int
 	CombinedInstance bool
@@ -33,6 +35,7 @@ type NodePlan struct {
 	SHCoresPerNode   int // physical cores per SH used for concurrent-search floor
 	Steps            []string // human-readable derivation
 	Warnings         []string
+	Suggestions      []model.TopologySuggestion
 }
 
 // RecommendCounts looks up Summary of performance recommendations (guideline).
@@ -185,6 +188,7 @@ func ResolveNodeCounts(p model.PlanInput, dailyGB float64) NodePlan {
 	}
 
 	autoNSH, autoNIDX := plan.NSH, plan.NIDX
+	plan.AutoNSH, plan.AutoNIDX = autoNSH, autoNIDX
 
 	if p.NIdx > 0 {
 		if p.NIdx < autoNIDX {
@@ -238,7 +242,75 @@ func ResolveNodeCounts(p model.PlanInput, dailyGB float64) NodePlan {
 	} else {
 		plan.Steps = append(plan.Steps, fmt.Sprintf("Final: %d search head(s) + %d indexer(s)", plan.NSH, plan.NIDX))
 	}
+	plan.Steps = append(plan.Steps, fmt.Sprintf("Auto recommendation (before overrides): N_SH=%d, N_IDX=%d", plan.AutoNSH, plan.AutoNIDX))
+
+	appendTopologySuggestions(&plan, p, dailyGB, users, searches, saved)
 	return plan
+}
+
+func appendTopologySuggestions(plan *NodePlan, p model.PlanInput, dailyGB float64, users, searches, saved int) {
+	if !p.SearchHeadCluster {
+		var why []string
+		if users >= 12 {
+			why = append(why, fmt.Sprintf("concurrent users=%d (≥12)", users))
+		}
+		if saved >= 200 {
+			why = append(why, fmt.Sprintf("saved/scheduled searches=%d (≥200)", saved))
+		}
+		if searches > 16 {
+			why = append(why, fmt.Sprintf("peak concurrent searches=%d (>16 cores on one SH)", searches))
+		}
+		if plan.AutoNSH >= 2 {
+			why = append(why, fmt.Sprintf("auto N_SH=%d — HA/schedule distribution benefits from SHC", plan.AutoNSH))
+		}
+		if len(why) > 0 {
+			plan.Suggestions = append(plan.Suggestions, model.TopologySuggestion{
+				ID:     "enable_shc",
+				Title:  "Enable Search Head Cluster",
+				Reason: "Recommended because " + strings.Join(why, "; ") + ". SHC raises N_SH to ≥3 and adds a deployer.",
+				Enable: map[string]bool{"search_head_cluster": true},
+			})
+		}
+	}
+
+	if !p.IndexerCluster {
+		var why []string
+		if plan.AutoNIDX >= 3 {
+			why = append(why, fmt.Sprintf("auto N_IDX=%d (≥3 peers)", plan.AutoNIDX))
+		}
+		if dailyGB >= 100 {
+			why = append(why, fmt.Sprintf("daily ingest ≈%.0f GB/day", dailyGB))
+		}
+		if !plan.CombinedInstance && plan.AutoNIDX >= 2 {
+			why = append(why, "distributed indexers without clustering lack RF/SF HA")
+		}
+		if len(why) > 0 {
+			plan.Suggestions = append(plan.Suggestions, model.TopologySuggestion{
+				ID:     "enable_indexer_cluster",
+				Title:  "Enable Indexer cluster",
+				Reason: "Recommended because " + strings.Join(why, "; ") + ". Uses RF/SF (default 3/2), adds a cluster manager, and peers ≥ RF.",
+				Enable: map[string]bool{"indexer_cluster": true},
+			})
+		}
+	}
+
+	if !p.SmartStore && dailyGB >= 500 && p.RetentionDays >= 90 {
+		plan.Suggestions = append(plan.Suggestions, model.TopologySuggestion{
+			ID:     "enable_smartstore",
+			Title:  "Enable SmartStore",
+			Reason: fmt.Sprintf("Daily ingest ≈%.0f GB/day with %d-day retention — remote object store + local cache often fits better than full local cold retention.", dailyGB, p.RetentionDays),
+			Enable: map[string]bool{"smartstore": true},
+		})
+	}
+
+	if !p.ArchiveFrozen && p.RetentionDays >= 180 {
+		plan.Suggestions = append(plan.Suggestions, model.TopologySuggestion{
+			ID:     "enable_archive_frozen",
+			Title:  "Archive frozen buckets",
+			Reason: fmt.Sprintf("Retention is %d days — if compliance needs a copy after freeze, enable Archive frozen (otherwise Splunk deletes by default).", p.RetentionDays),
+			Enable: map[string]bool{"archive_frozen": true},
+		})
+	}
 }
 
 func formatBaseCounts(c Counts) string {
@@ -449,6 +521,7 @@ func BuildDesign(p model.PlanInput, out model.PlanResult) model.Design {
 
 	plan := ResolveNodeCounts(p, out.TotalDailyRawGB)
 	d.BaseNSH, d.BaseNIDX = plan.BaseNSH, plan.BaseNIDX
+	d.AutoNSH, d.AutoNIDX = plan.AutoNSH, plan.AutoNIDX
 	d.NSH, d.NIDX = plan.NSH, plan.NIDX
 	d.NSHES, d.NSHITSI = plan.NSHES, plan.NSHITSI
 	d.CombinedInstance = plan.CombinedInstance
@@ -457,6 +530,7 @@ func BuildDesign(p model.PlanInput, out model.PlanResult) model.Design {
 	d.SHCoresPerNode = plan.SHCoresPerNode
 	d.NodePlanText = FormatNodePlan(plan)
 	d.Warnings = append(d.Warnings, plan.Warnings...)
+	d.Suggestions = append(d.Suggestions, plan.Suggestions...)
 
 	if p.SmartStore {
 		d.CacheDays = 30

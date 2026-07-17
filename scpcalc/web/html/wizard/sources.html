@@ -1,0 +1,72 @@
+        <section class="wiz-pane" data-pane="2" hidden>
+          <h3 data-i18n="sources">Log sources / indexes</h3>
+          <section class="form-section" aria-labelledby="sec-vol-mode-title">
+            <header class="form-section-head">
+              <h4 id="sec-vol-mode-title" data-i18n="sec_vol_mode">How do you know your volume?</h4>
+              <p class="hint" data-i18n-html="sec_vol_mode_hint">Pick <strong>one</strong> way to enter volume: <strong>Daily GB</strong> <em>or</em> <strong>EPS</strong> — not both at once. Both mean <strong>raw / pre-indexed ingest</strong> (license-style), not compressed on-disk size. Under each number the other unit is estimated from average event size.</p>
+            </header>
+            <div class="mode-row" role="radiogroup" aria-labelledby="sec-vol-mode-title">
+              <label class="mode-chip">
+                <input type="radio" name="volume_input_mode" value="daily_gb" checked>
+                <span data-i18n="vol_mode_gb">Daily log volume (GB/day)</span>
+              </label>
+              <label class="mode-chip">
+                <input type="radio" name="volume_input_mode" value="eps">
+                <span data-i18n="vol_mode_eps">Events per second (EPS)</span>
+              </label>
+            </div>
+            <p id="vol-mode-exclusive-note" class="hint callout-note" data-i18n-html="sec_vol_mode_exclusive">Only the selected mode is editable. The other value appears in small text under each input (Daily↔EPS using event size). Sources without an EPS inherit the <strong>average EPS</strong> of sources that already have one.</p>
+            <p class="hint tip-mark" data-tip="eps" data-i18n="sec_vol_mode_eps_note">EPS = raw events arriving from the source (before Splunk compression). With average event size it becomes Daily raw GB; on-disk ≈ that × Comp.</p>
+          </section>
+
+          <section class="form-section" aria-labelledby="sec-log-sources-title">
+            <header class="form-section-head">
+              <h4 id="sec-log-sources-title" data-i18n="sec_log_sources">Log sources</h4>
+              <p class="hint" data-i18n="sources_hint">Turn on each source, enter volume in the mode you chose, and keep average event size accurate — the counterpart under each cell updates live.</p>
+            </header>
+            <div class="table-wrap">
+              <table class="src-table src-table--volume src-table--vol-gb" id="src-table">
+                <thead>
+                  <tr>
+                    <th data-i18n="col_use">Use</th>
+                    <th data-i18n="col_source">Source</th>
+                    <th data-i18n="col_index">Index name</th>
+                    <th class="src-col-event-bytes"><span class="tip-mark" data-tip="event_bytes" data-i18n="col_event_bytes">Avg event (bytes)</span></th>
+                    <th class="src-col-vol"><span class="tip-mark" data-tip="daily_gb" id="col-vol-label" data-i18n="col_daily_gb">Daily GB (raw)</span></th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="src-body"></tbody>
+              </table>
+            </div>
+            <div class="row-actions">
+              <button type="button" class="btn-ghost" id="btn-add" data-i18n="add_row">+ Add custom source</button>
+              <button type="button" class="btn-ghost" id="btn-save" data-i18n="save">Save</button>
+              <button type="button" class="btn-ghost" id="btn-export" data-i18n="export">Export .json</button>
+              <button type="button" class="btn-ghost" id="btn-export-url" data-i18n="export_url">Export URL</button>
+            </div>
+          </section>
+
+          <section class="form-section" aria-labelledby="sec-src-ret-title">
+            <header class="form-section-head">
+              <h4 id="sec-src-ret-title" data-i18n="sec_src_retention">Per-source retention &amp; summary</h4>
+              <p class="hint" data-i18n="src_ret_hint">Optional overrides per source. Leave blank to use the global retention from the Retention step. Summary adds an extra index on the summaries volume.</p>
+            </header>
+            <div class="table-wrap">
+              <table class="src-table src-table--retention" id="src-ret-table">
+                <thead>
+                  <tr>
+                    <th data-i18n="col_use">Use</th>
+                    <th data-i18n="col_source">Source</th>
+                    <th data-i18n="col_index">Index name</th>
+                    <th><span class="tip-mark" data-tip="retention_days" data-i18n="col_ret">Retention days</span></th>
+                    <th><span class="tip-mark" data-tip="hot_warm_days" data-i18n="col_hw">Hot/warm days</span></th>
+                    <th><span class="tip-mark" data-tip="enable_summary" data-i18n="col_summary">Summary</span></th>
+                    <th><span class="tip-mark" data-tip="summary_daily_gb" data-i18n="col_sum_gb">Summary GB/day</span></th>
+                  </tr>
+                </thead>
+                <tbody id="src-ret-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>

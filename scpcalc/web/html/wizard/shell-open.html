@@ -1,0 +1,23 @@
+  <!-- Wizard modal -->
+  <div class="modal-root" id="wizard-modal" hidden>
+    <div class="modal-backdrop" data-close-wizard></div>
+    <div class="modal glass wizard-modal" role="dialog" aria-modal="true" aria-labelledby="wizard-title">
+      <div class="panel-shine" aria-hidden="true"></div>
+      <header class="wizard-head">
+        <div>
+          <p class="eyebrow" data-i18n="wizard_eyebrow">Configuration wizard</p>
+          <h2 id="wizard-title" data-i18n="wizard_title">Capacity plan</h2>
+        </div>
+        <button type="button" class="btn-x modal-close" data-close-wizard aria-label="Close">×</button>
+      </header>
+
+      <ol class="wizard-steps" id="wizard-steps" aria-label="Steps">
+        <li data-step="0" class="is-active"><span>1</span><em data-i18n="step_topo">Topology</em></li>
+        <li data-step="1"><span>2</span><em data-i18n="step_ret">Retention</em></li>
+        <li data-step="2"><span>3</span><em data-i18n="step_src">Sources</em></li>
+        <li data-step="3"><span>4</span><em data-i18n="step_review">Review</em></li>
+      </ol>
+
+      <aside id="wizard-context" class="wizard-context callout-note" hidden aria-live="polite"></aside>
+
+      <form id="form" class="wizard-body">

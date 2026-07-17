@@ -115,6 +115,8 @@ type LayerSpec struct {
 	DiskGBHint   float64 `json:"disk_gb_hint,omitempty"`
 	Network      string  `json:"network"`
 	IOPSHint     string  `json:"iops_hint,omitempty"`
+	IOPSMin      int     `json:"iops_min,omitempty"` // planning floor for install / data volume when known
+	RAIDHint     string  `json:"raid_hint,omitempty"`
 	Notes        string  `json:"notes"`
 	// CPU guidance (Reference hardware + ES/ITSI): physical vs logical, virt, Splunk parallelization.
 	CPUPhysicalCores      int    `json:"cpu_physical_cores,omitempty"`
@@ -125,12 +127,22 @@ type LayerSpec struct {
 	SplunkParallelization string `json:"splunk_parallelization,omitempty"` // pipeline sets / index parallelization when spare CPU
 }
 
+// TopologySuggestion is an optional topology change the UI may ask the user to accept.
+type TopologySuggestion struct {
+	ID     string          `json:"id"`
+	Title  string          `json:"title"`
+	Reason string          `json:"reason"`
+	Enable map[string]bool `json:"enable"` // form checkbox names → true
+}
+
 // Design is the recommended architecture + settings narrative.
 type Design struct {
 	NSH                  int         `json:"n_sh"`
 	NSHES                int         `json:"n_sh_es,omitempty"`
 	NSHITSI              int         `json:"n_sh_itsi,omitempty"`
 	NIDX                 int         `json:"n_idx"`
+	AutoNSH              int         `json:"auto_n_sh,omitempty"`  // recommended before n_sh override
+	AutoNIDX             int         `json:"auto_n_idx,omitempty"` // recommended before n_idx override
 	BaseNSH              int         `json:"base_n_sh,omitempty"`  // from D×U table before cluster/app floors
 	BaseNIDX             int         `json:"base_n_idx,omitempty"` // from D×U table before floors
 	ConcurrentUsers      int         `json:"concurrent_users,omitempty"`
@@ -165,6 +177,7 @@ type Design struct {
 	MaxRetentionDays     int         `json:"max_retention_days_from_disk,omitempty"`
 	PerPeerMB            bool        `json:"per_peer_mb,omitempty"` // conf/index MB divided by N_IDX
 	Warnings             []string    `json:"warnings,omitempty"`
+	Suggestions          []TopologySuggestion `json:"suggestions,omitempty"`
 	Resources            []LayerSpec `json:"resources,omitempty"`
 	ResourcesText        string      `json:"resources_text,omitempty"`
 	StructureText        string      `json:"structure_text"`

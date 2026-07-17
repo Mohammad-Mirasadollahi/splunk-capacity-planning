@@ -1,6 +1,8 @@
 import { state, STEPS, reduceMotion } from "./state.js";
 import { openModal, closeModal } from "./modal.js";
 import { fillReview } from "./plan-form.js";
+import { bindWizardContinuity, refreshWizardContext } from "./wizard-continuity.js";
+import { loadReviewPreview } from "./review-panel.js";
 
 const wizardModal = () => document.getElementById("wizard-modal");
 
@@ -24,7 +26,11 @@ export function showStep(n) {
   const last = state.step === STEPS - 1;
   if (btnNext) btnNext.hidden = last;
   if (btnCalc) btnCalc.hidden = !last;
-  if (last) fillReview();
+  refreshWizardContext(state.step, { remountSources: state.step === 2 });
+  if (last) {
+    fillReview();
+    void loadReviewPreview();
+  }
 }
 
 export function openWizard(atStep) {
@@ -38,6 +44,7 @@ export function closeWizard() {
 }
 
 export function bindWizard() {
+  bindWizardContinuity();
   document.getElementById("btn-open-wizard")?.addEventListener("click", () => openWizard(0));
   document.getElementById("btn-reopen-wizard")?.addEventListener("click", () => openWizard(state.step));
   wizardModal()?.querySelectorAll("[data-close-wizard]").forEach((el) => {

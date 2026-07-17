@@ -1,0 +1,15 @@
+        <section class="wiz-pane wiz-pane--review" data-pane="3" hidden>
+          <h3 data-i18n="step_review">Review & calculate</h3>
+          <p class="hint" data-i18n="review_hint">Everything from earlier steps is summarized below, with a live preview (metrics + charts). Edit a previous step if needed, then Calculate.</p>
+          <p id="review-preview-status" class="hint review-preview-status" hidden></p>
+          <div id="review-summary" class="review-summary"></div>
+          <h4 class="review-subhead" data-i18n="review_metrics_title">Preview metrics</h4>
+          <div id="review-metrics" class="metrics review-metrics"></div>
+          <h4 class="review-subhead" data-i18n="review_charts_title">Preview charts</h4>
+          <div id="review-charts" class="charts-grid review-charts"></div>
+          <details class="review-details">
+            <summary data-i18n="review_raw_summary">Full text summary</summary>
+            <pre id="review-box" class="conf-block review-box"></pre>
+          </details>
+          <p id="err" class="err" hidden></p>
+        </section>

@@ -1,0 +1,36 @@
+{
+  "concurrent_users": 12,
+  "concurrent_searches": 12,
+  "saved_searches": 20,
+  "indexer_cluster": true,
+  "rf": 3,
+  "sf": 2,
+  "search_head_cluster": true,
+  "retention_days": 90,
+  "hot_warm_days": 30,
+  "headroom": 1.2,
+  "hot_path": "/hot",
+  "cold_path": "/cold",
+  "frozen_path": "/frozen",
+  "summaries_path": "/summaries",
+  "total_daily_gb": 500,
+  "available_hot_gb": 10000,
+  "available_cold_gb": 20000,
+  "available_summaries_gb": 2000,
+  "sources": [
+    {
+      "key": "windows",
+      "label": "Windows",
+      "index_name": "windows",
+      "daily_gb": 400,
+      "event_bytes": 1200
+    },
+    {
+      "key": "linux",
+      "label": "Linux",
+      "index_name": "linux",
+      "daily_gb": 100,
+      "event_bytes": 300
+    }
+  ]
+}

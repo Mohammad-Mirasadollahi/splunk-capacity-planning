@@ -1,0 +1,86 @@
+        <section class="wiz-pane" data-pane="1" hidden>
+          <h3 data-i18n="retention">Retention & paths</h3>
+          <div class="tab-bar tab-bar-sm" role="tablist" data-tabs="reten">
+            <button type="button" class="tab-btn is-active" role="tab" aria-selected="true" data-tab="ret-policy" data-i18n="tab_policy">Policy</button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="ret-paths" data-i18n="tab_paths">Paths</button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="ret-vol" data-i18n="tab_volumes">Volumes</button>
+          </div>
+          <div class="tab-panel is-active" data-panel="ret-policy" role="tabpanel">
+            <div class="grid">
+              <label class="field">
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="retention_days" data-i18n="lbl_retention">How long data stays searchable</span><span class="field-hint" data-i18n="hint_retention">Days until buckets freeze</span></span>
+                <input name="retention_days" type="number" value="90" min="1">
+              </label>
+              <label class="field">
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="hot_warm_days" data-i18n="lbl_hot_warm">Days on fast (hot/warm) disk</span><span class="field-hint" data-i18n="hint_hot_warm">Rest of retention moves to cold</span></span>
+                <input name="hot_warm_days" type="number" value="30" min="1">
+              </label>
+              <label class="field">
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="headroom" data-i18n="lbl_headroom">Safety margin</span><span class="field-hint" data-i18n="hint_headroom">e.g. 1.2 = keep 20% spare capacity</span></span>
+                <input name="headroom" type="number" step="0.05" value="1.2" min="1">
+              </label>
+              <label class="field check glass-chip"><input name="archive_frozen" type="checkbox" id="archive_frozen"> <span class="tip-mark" data-tip="archive_frozen" data-i18n="lbl_archive">Archive frozen buckets</span></label>
+              <label class="field" data-depends-on="archive_frozen" hidden>
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="frozen_path" data-i18n="lbl_frozen_path">Frozen / archive path</span><span class="field-hint" data-i18n="hint_frozen_path">Used when archive frozen is on</span></span>
+                <input name="frozen_path" id="frozen_path" type="text" value="/frozen">
+              </label>
+              <label class="field">
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="summary_pct" data-i18n="lbl_summary_pct">Summary index share</span><span class="field-hint" data-i18n="hint_summary_pct">Share of source volume written to summaries</span></span>
+                <input name="summary_pct" type="number" step="0.01" value="0.10" min="0.01" max="1">
+              </label>
+              <label class="field">
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="summary_retention_days" data-i18n="lbl_summary_ret">Summary retention (days)</span><span class="field-hint" data-i18n="hint_summary_ret">How long summary indexes stay searchable</span></span>
+                <input name="summary_retention_days" type="number" value="90" min="1">
+              </label>
+            </div>
+            <p class="hint" data-i18n="hint_archive_policy">Archive is a core retention choice: off = Splunk deletes at freeze; on = set the frozen/archive path that appears below.</p>
+          </div>
+          <div class="tab-panel" data-panel="ret-paths" role="tabpanel" hidden>
+            <div class="grid">
+              <label class="field">
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="hot_path" data-i18n="lbl_hot_path">Hot / warm disk path</span><span class="field-hint" data-i18n="hint_hot_path">Local SSD path for recent data</span></span>
+                <input name="hot_path" type="text" value="/hot">
+              </label>
+              <label class="field">
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="cold_path" data-i18n="lbl_cold_path">Cold disk path</span><span class="field-hint" data-i18n="hint_cold_path">Older searchable buckets</span></span>
+                <input name="cold_path" type="text" value="/cold">
+              </label>
+              <label class="field">
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="summaries_path" data-i18n="lbl_sum_path">Summaries / DMA path</span><span class="field-hint" data-i18n="hint_sum_path">Summary indexes and tstats data</span></span>
+                <input name="summaries_path" type="text" value="/summaries">
+              </label>
+            </div>
+          </div>
+          <div class="tab-panel" data-panel="ret-vol" role="tabpanel" hidden>
+            <p class="hint" id="vol-mode-hint" data-i18n="tab_volumes_hint">Optional extras: a single daily total and/or how much disk you already have. Combine with source rows as you like.</p>
+            <div id="total-box" class="subpanel">
+              <h4 data-i18n="total_title">Total daily volume</h4>
+              <div class="grid">
+                <label class="field">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="total_daily_gb" data-i18n="lbl_total_daily">Total daily ingest (GB/day)</span><span class="field-hint" data-i18n="hint_total_daily">If sources are also filled, they scale to this total</span></span>
+                  <input name="total_daily_gb" type="number" step="any" min="0" value="500" placeholder="e.g. 500" data-i18n-placeholder="ph_total_daily">
+                  <span id="total-daily-counterpart" class="vol-counterpart" aria-live="polite"></span>
+                </label>
+              </div>
+              <p class="hint" data-i18n="total_hint">Leave blank if you only use per-source volumes below.</p>
+            </div>
+            <div id="capacity-box" class="subpanel">
+              <h4 data-i18n="cap_title">Disk you already have (GB)</h4>
+              <div class="grid">
+                <label class="field">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="available_hot_gb" data-i18n="lbl_avail_hot">Available hot/warm disk</span><span class="field-hint" data-i18n="hint_avail_hot">Fast disk budget for recent data</span></span>
+                  <input name="available_hot_gb" type="number" step="any" min="0" value="10000" placeholder="e.g. 10000" data-i18n-placeholder="ph_avail_hot">
+                </label>
+                <label class="field">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="available_cold_gb" data-i18n="lbl_avail_cold">Available cold disk</span><span class="field-hint" data-i18n="hint_avail_cold">Slower disk for older searchable data</span></span>
+                  <input name="available_cold_gb" type="number" step="any" min="0" value="20000" placeholder="e.g. 20000" data-i18n-placeholder="ph_avail_cold">
+                </label>
+                <label class="field">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="available_summaries_gb" data-i18n="lbl_avail_sum">Available summaries disk</span><span class="field-hint" data-i18n="hint_avail_sum">Space for summary / DMA data</span></span>
+                  <input name="available_summaries_gb" type="number" step="any" min="0" value="2000" placeholder="e.g. 2000" data-i18n-placeholder="ph_avail_sum">
+                </label>
+              </div>
+              <p class="hint" data-i18n="cap_hint">Used to check fit and estimate the max daily volume your disks can hold.</p>
+            </div>
+          </div>
+        </section>

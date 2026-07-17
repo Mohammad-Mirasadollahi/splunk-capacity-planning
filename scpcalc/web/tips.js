@@ -2,10 +2,10 @@
 window.SCP_TIPS = {
   en: {
     mode_sources: {
-      title: "Per-source volume",
+      title: "Per-source volume (Daily XOR EPS)",
       formula: "Daily_Raw_GB(source) = daily_gb  OR  EPS × 86400 × event_bytes / 1024³",
-      body: "Enable each log family and enter daily license volume (preferred) or EPS with average event size. Totals sum across enabled rows. daily_gb wins if both are set. Combine freely with total_daily_gb and/or disk budgets on the Volumes tab.",
-      example: "Windows 80 GB/day + Linux 20 GB/day → Total raw = 100 GB/day.",
+      body: "Choose exactly one volume mode for the whole plan: Daily GB or EPS — not both as primary inputs. Under each number the UI shows the other unit (using event size). Sources without an EPS inherit the average EPS of sources that already have one. Combine freely with total_daily_gb and/or disk budgets on the Volumes tab.",
+      example: "Daily 1 GB/day with event_bytes=500 → ≈ 23.8 EPS under the box. In EPS mode, a blank source takes the average EPS of filled sources.",
       links: [
         { label: "Estimate your storage requirements", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Estimateyourstoragerequirements" },
       ],
@@ -322,26 +322,26 @@ window.SCP_TIPS = {
     event_bytes: {
       title: "event_bytes (average)",
       formula: "Daily_Raw_GB = EPS × 86400 × event_bytes / 1024³",
-      body: "Average raw event size in bytes for this source. Defaults are editable planning estimates — measure with | eval len=_raw in your env.",
-      example: "EPS=1000, event_bytes=500 → ≈ 1000×86400×500 / 1024³ ≈ 40.05 GB/day.",
+      body: "Average size of each raw event as it arrives (pre-indexed / license-style bytes) — not the compressed on-disk size. Defaults are editable planning estimates — measure with | eval len=_raw in your env. Splunk then stores ~15% rawdata + ~35% TSIDX ≈ 50% of this pre-indexed volume on disk (standalone).",
+      example: "EPS=1000, event_bytes=500 → ≈ 1000×86400×500 / 1024³ ≈ 40.05 GB/day raw ingest; on-disk ≈ 20 GB/day at Comp=0.5.",
       links: [
         { label: "Estimate storage (event method)", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Estimateyourstoragerequirements" },
       ],
     },
     daily_gb: {
-      title: "daily_gb",
-      formula: "Daily_Raw_GB = daily_gb   (wins over EPS path if > 0)",
-      body: "Daily ingest for this index/source in GB/day (license volume). Preferred when you know GB/day from monitoring console / license.",
-      example: "daily_gb=100 with RF=SF=1 → Daily_OnDisk ≈ 50 GB/day.",
+      title: "daily_gb (raw / license)",
+      formula: "Daily_Raw_GB = daily_gb;  EPS ≈ daily_gb × 1024³ / (86400 × event_bytes)",
+      body: "Primary when Volume mode = Daily GB. The small line under the input shows estimated EPS from this daily value and average event size. Do not also treat EPS as a second primary input in the same plan — switch mode instead. On-disk ≈ daily_gb × Comp.",
+      example: "daily_gb=1 with event_bytes=500 → ≈ 23.8 EPS under the box; on-disk ≈ 0.5 GB/day at Comp=0.5.",
       links: [
         { label: "Estimate your storage requirements", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Estimateyourstoragerequirements" },
       ],
     },
     eps: {
-      title: "EPS (events per second)",
+      title: "EPS (events per second, raw)",
       formula: "Daily_Raw_GB = EPS × 86400 × event_bytes / 1024³",
-      body: "Use with event_bytes when you do not yet know GB/day. Ignored when daily_gb > 0.",
-      example: "See event_bytes example (~40 GB/day at 1000 EPS × 500 B).",
+      body: "Primary when Volume mode = EPS. The small line under the input shows estimated Daily GB. Sources with no EPS use the average EPS of sources that already have one. Not a disk-occupancy rate.",
+      example: "1000 EPS × 500 B → ≈ 40.05 GB/day raw; a blank sibling source inherits the average EPS of filled rows.",
       links: [
         { label: "Estimate storage", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Estimateyourstoragerequirements" },
       ],
@@ -435,6 +435,18 @@ window.SCP_TIPS = {
         { label: "Performance recommendations", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Summaryofperformancerecommendations" },
         { label: "Reference hardware", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware" },
       ],
+    },
+    "Auto N_SH": {
+      title: "Auto N_SH",
+      formula: "Same as final N_SH before optional n_sh override",
+      body: "Automatic search-head count SCPcalc calculated for this plan. Leave Number of search heads = 0 to use this value.",
+      example: "Auto N_SH=3 with SHC on; if you set n_sh=2 the design may warn and still raise to 3 for SHC.",
+    },
+    "Auto N_IDX": {
+      title: "Auto N_IDX",
+      formula: "Same as final N_IDX before optional n_idx override",
+      body: "Automatic indexer/peer count from users×volume, clustering, ES/ITSI floors. Leave Number of indexers = 0 to use this value.",
+      example: "Auto N_IDX=4; set n_idx=6 if you want extra HA headroom.",
     },
     "N_IDX": {
       title: "N_IDX (design)",
@@ -533,12 +545,145 @@ window.SCP_TIPS = {
     },
   },
 };
+
+const SCP_TIP_IMPACTS = {
+  en: {
+    mode_sources: "Use Daily or EPS as the only primary mode. Raise the primary value → ingest/disk/nodes grow. The other unit under the box is an estimate only (not a second editable input).",
+    mode_total: "Raise total_daily_gb → the whole plan scales to a bigger day (more disk, usually more indexers). Lower it → smaller storage and lighter node counts. The small EPS under the field is estimated from average event size.",
+    mode_capacity: "Give more available disk → fit looks better and “max daily from disk” rises. Shrink the budget → you may see SHORT warnings and a lower max daily.",
+    indexer_cluster: "Turn ON → RF/SF matter, Comp becomes 0.15×RF+0.35×SF (usually more disk), and you get a cluster manager + peers ≥ RF. Turn OFF → standalone Comp≈0.5 and no cluster manager requirement.",
+    rf: "Raise RF → more rawdata copies → more disk and usually more indexer peers (at least RF). Lower RF → less disk, but weaker failure tolerance (SF cannot exceed RF).",
+    sf: "Raise SF → more searchable TSIDX copies → disk grows faster than raising RF alone. Lower SF → less disk for search copies, but fewer searchable replicas after a failure.",
+    shc: "Turn ON → N_SH is raised to at least 3 and a deployer is added; search load on indexers goes up. Turn OFF → SH count can stay at the table/search-core recommendation without the SHC floor.",
+    smartstore: "Turn ON → local disk becomes mainly cache (30 days, or 90 with ES) and remote object storage holds the bulk. Turn OFF → all searchable retention must fit on local hot/cold volumes.",
+    has_es: "Turn ON → dedicated ES SH/SHC, higher IDX floors, DMA guidance, and SmartStore cache 90 days if SmartStore is on. Turn OFF → those ES floors and extras drop out of the design.",
+    has_itsi: "Turn ON → ITSI gets its own SH and an indexer floor from daily volume (e.g. ceil(D/100)). Turn OFF → that ITSI-specific floor disappears.",
+    concurrent_users: "More concurrent users → the official users×volume table often recommends more search heads and indexers. Fewer users → baseline N_SH / N_IDX can drop.",
+    concurrent_searches: "Raise peak concurrent searches → N_SH rises so total SH cores cover them (about 1 search per core). Lower S → fewer SH may be enough if users×volume already covers it.",
+    saved_searches: "A much higher saved-search count → more schedule pressure and a warning to consider SHC (≥200). Lowering it mainly reduces that warning, not a hard node formula.",
+    n_idx: "Set above 0 → you force that many indexers (cluster still won’t go below RF). Leave 0 → SCPcalc picks the count; setting below a floor keeps your number but warns.",
+    n_sh: "Set above 0 → you force that many search heads (SHC still enforces ≥3). Leave 0 → count comes from users, volume, and concurrent searches.",
+    retention_days: "Longer retention → searchable storage grows almost linearly (and conf age caps rise). Shorter retention → less disk, data freezes/deletes sooner.",
+    hot_warm_days: "More hot/warm days → larger SSD/homePath budget; less stays on cold for the same retention. Fewer hot/warm days → smaller fast disk, more data ages to cold sooner.",
+    headroom: "Raise headroom (e.g. 1.0→1.2) → every size cap grows by that spare (plan more disk). Lower it → tighter packing and less safety before volumes fill.",
+    summary_pct: "Raise summary_pct → more summary ingest and more summaries-volume disk. Lower it → smaller summary indexes for sources that use the percent rule.",
+    summary_retention_days: "Longer summary retention → more disk on volume:summaries. Shorter → summary indexes shrink and age out sooner.",
+    hot_path: "Change the path → indexes.conf points homePath/hotwarm at the new filesystem location. Wrong/slow path (e.g. NFS for hot) → ingest and search risk, not just a label change.",
+    cold_path: "Change the path → cold buckets land on that volume. Slower media → colder searches get slower; path must exist and have enough space.",
+    frozen_path: "Only matters when Archive frozen is on: change it → coldToFrozenDir targets the new archive tree. Wrong path → freeze/archive fails when buckets retire.",
+    archive_frozen: "Turn ON → frozen buckets are archived to frozen_path instead of deleted. Turn OFF → Splunk’s default delete-on-freeze behavior (no coldToFrozenDir).",
+    enable_dma: "Turn ON → tstatsHomePath and DMA disk are reserved on summaries. Turn OFF → that DMA budget and tstats paths drop from the plan (ES often expects DMA on).",
+    dma_pct: "Raise dma_pct → larger DMA/summaries budget. Lower it → less reserved for acceleration (underestimate if real DMA is bigger).",
+    compression: "Set a measured C (e.g. 0.4) → all on-disk math uses that instead of 0.5 / RF-SF. Leave 0 → official default model. Higher C → more disk; lower C → less disk assumed.",
+    remote_path: "Change the path → SmartStore conf points at that bucket/prefix. Each cluster needs its own unique path or objects can collide.",
+    summary_daily_gb: "Set an explicit GB/day → summary volume uses that number (not summary_pct). Clear it → falls back to percent of the source.",
+    summaries_path: "Change the path → DMA/tstats and summary indexes use that fast volume. Putting it on cold HDD → acceleration and summary search suffer.",
+    total_daily_gb: "Raise D → storage and usually indexer (and sometimes SH) counts grow. Lower D → smaller disk plan and lighter node floors from volume.",
+    available_hot_gb: "Raise available hot → fewer SHORT warnings and higher max-daily-from-disk. Set below need → warning and conf caps volume to what you have.",
+    available_cold_gb: "Raise available cold → cold fit improves and reverse max-daily can rise. Set too low → SHORT on cold and tighter ingest ceiling.",
+    available_summaries_gb: "Raise summaries budget → DMA/summary fit improves. Set below need → warning and conf uses your smaller cap.",
+    event_bytes: "Larger average raw event → same EPS becomes more Daily raw GB (then more on-disk after Comp). Smaller events → less daily volume from the same EPS.",
+    daily_gb: "Raise this source’s raw daily GB → that index needs more disk after Comp; overall D rises so node counts may rise. Lower it → opposite. This is not “already compressed on disk”.",
+    eps: "Raise raw EPS (when daily_gb mode is off) → estimated Daily raw GB rises with event_bytes; on-disk ≈ that × Comp. Not a disk-occupancy rate.",
+    enable_summary: "Turn ON → an extra *_summary index and summaries disk are sized. Turn OFF → that summary stanza and its disk drop out.",
+    "Total daily raw GB/day": "This is the sum of your sources/total. If it goes up in the plan, everything downstream (disk, often N_IDX) grows with it.",
+    "Compression factor": "Higher Comp (e.g. after raising RF/SF) → more on-disk GB per day of raw. Lower Comp → less disk planned for the same raw ingest.",
+    "Total on-disk GB/day": "If this rises, retention multiplies into more searchable TB and hotter volume budgets. It moves when raw D or Comp changes.",
+    "Total searchable TB": "Longer retention or higher on-disk/day raises this; shorter retention or less daily on-disk lowers the searchable footprint.",
+    "Concurrent users": "Same lever as the users input: more users → often more SH/IDX from the table; fewer users → lighter baseline.",
+    "Peak concurrent searches": "Higher S in results means the design needed more SH cores; lower S relaxes the search-core floor on N_SH.",
+    "Saved / scheduled searches": "Very high counts flag schedule risk / SHC review; lowering mainly clears that pressure signal.",
+    "Table baseline (SH+IDX)": "This is the table-only starting point. Clustering, concurrent searches, ES/ITSI can only raise the final counts above it.",
+    "N_SH": "Final search-head count after all floors. It climbs if you raise users, peak searches, enable SHC, or turn on ES/ITSI rules.",
+    "N_IDX": "Final indexer count. It climbs with daily volume, RF, ES/ITSI floors, or your n_idx override (never below RF when clustered).",
+    "CPU physical": "Roles are sized in physical cores. Under-assigning physical cores vs the table → that role is undersized even if vCPU looks high.",
+    "CPU logical / vCPU": "Usually ~2× physical with HT. Changing the guest vCPU without matching physical reservation does not invent more real cores.",
+    Virtualization: "If the hypervisor oversubscribes CPU/RAM, real Splunk throughput drops even when the guest “has” the table’s vCPU count.",
+    "Splunk parallelization": "Enable only when the role already has spare CPU above the minimum; turning it on on a packed host makes contention worse.",
+    "hot need GB": "Grows when hot/warm days, daily on-disk, or headroom rise — that is the SSD you must buy/allocate.",
+    "cold need GB": "Grows when retention is long but hot/warm days are short (more data lives cold), or daily on-disk rises.",
+    "summaries need GB": "Grows with summary volume, DMA pct/retention, or enabling DMA/summary indexes.",
+    "SmartStore cache GB": "Grows with daily volume and cache days (30 → 90 when ES is on). That is local NVMe/SSD cache, not the full remote store.",
+    "Max daily from disk": "More available disk or shorter retention/headroom → higher max daily. Less disk or longer retention → lower ingest ceiling.",
+  },
+  fa: {
+    mode_sources: "فقط Daily یا EPS را به‌عنوان ورودی اصلی بگیرید. مقدار اصلی را بالا ببرید → حجم/دیسک/نود رشد می‌کند. عدد کوچک زیر کادر فقط تخمین واحد دیگر است (ورودی دوم نیست).",
+    mode_total: "total_daily_gb را بالا ببرید → کل پلن برای روز بزرگ‌تر اسکیل می‌شود (دیسک بیشتر، معمولاً ایندکسر بیشتر). کمش کنید → فضای دیسک و تعداد نود سبک‌تر می‌شود. EPS کوچک زیر فیلد از میانگین اندازهٔ رویداد تخمین زده می‌شود.",
+    mode_capacity: "دیسک موجود را بیشتر بدهید → تناسب بهتر و «سقف روزانه از روی دیسک» بالاتر می‌رود. بودجه را کم کنید → ممکن است هشدار SHORT و سقف روزانه پایین‌تر ببینید.",
+    indexer_cluster: "روشن کنید → RF/SF مهم می‌شوند، Comp معمولاً 0.15×RF+0.35×SF می‌شود (دیسک بیشتر)، مدیر کلاستر و peer≥RF لازم است. خاموش کنید → Comp≈0.5 و بدون الزام cluster manager.",
+    rf: "RF را بالا ببرید → کپی rawdata بیشتر → دیسک بیشتر و معمولاً peer بیشتر (حداقل برابر RF). پایین بیاورید → دیسک کمتر ولی تحمل خرابی ضعیف‌تر (SF نباید از RF بیشتر باشد).",
+    sf: "SF را بالا ببرید → کپی searchable/TSIDX بیشتر → دیسک سریع‌تر از فقط بالا بردن RF رشد می‌کند. پایین بیاورید → دیسک کمتر برای کپی جستجو، ولی replica searchable کمتر بعد از خرابی.",
+    shc: "روشن کنید → N_SH حداقل ۳ می‌شود و deployer اضافه می‌شود؛ بار سرچ روی ایندکسرها بالا می‌رود. خاموش کنید → تعداد SH می‌تواند بدون کف SHC بماند.",
+    smartstore: "روشن کنید → دیسک محلی عمدتاً کش می‌شود (۳۰ روز، با ES تا ۹۰) و بخش اصلی در object store است. خاموش کنید → کل retention قابل‌جستجو باید روی hot/cold محلی جا شود.",
+    has_es: "روشن کنید → SH/SHC اختصاصی ES، کف بالاتر IDX، راهنمای DMA، و با SmartStore کش ۹۰ روزه. خاموش کنید → این کف‌ها و اضافات از طراحی خارج می‌شوند.",
+    has_itsi: "روشن کنید → ITSI سرچ‌هد جدا و کف ایندکسر از حجم روزانه می‌گیرد (مثلاً ceil(D/100)). خاموش کنید → آن کف مخصوص ITSI حذف می‌شود.",
+    concurrent_users: "کاربران همزمان بیشتر → جدول رسمی معمولاً SH و IDX بیشتری پیشنهاد می‌دهد. کمتر → خط پایه N_SH/N_IDX می‌تواند پایین بیاید.",
+    concurrent_searches: "اوج سرچ همزمان را بالا ببرید → N_SH طوری زیاد می‌شود که مجموع هسته‌های SH کافی باشد (حدود ۱ سرچ = ۱ هسته). کمش کنید → اگر جدول کاربران×حجم کافی باشد SH کمتر کافی است.",
+    saved_searches: "تعداد خیلی بالاتر → فشار زمان‌بندی و هشدار بررسی SHC (حدود ≥۲۰۰). کم کردن بیشتر همان هشدار را کم می‌کند، نه یک فرمول سخت نود.",
+    n_idx: "بالای ۰ بگذارید → همان تعداد ایندکسر اجباری می‌شود (کلاستر همچنان زیر RF نمی‌رود). ۰ = خودکار؛ کمتر از کف → عدد شما می‌ماند ولی هشدار می‌آید.",
+    n_sh: "بالای ۰ بگذارید → تعداد سرچ‌هد اجباری می‌شود (با SHC همچنان ≥۳). ۰ = از کاربران، حجم و سرچ‌های همزمان محاسبه می‌شود.",
+    retention_days: "نگهداری طولانی‌تر → فضای searchable تقریباً خطی زیاد می‌شود. کوتاه‌تر → دیسک کمتر و داده زودتر freeze/حذف می‌شود.",
+    hot_warm_days: "روزهای hot/warm بیشتر → بودجه SSD/homePath بزرگ‌تر؛ برای همان retention کمتر روی cold می‌ماند. کمتر → دیسک سریع کوچک‌تر و داده زودتر به cold می‌رود.",
+    headroom: "headroom را بالا ببرید (مثلاً ۱.۰→۱.۲) → همه سقف‌های MB با همان حاشیه بزرگ می‌شوند. کمش کنید → چیدمان تنگ‌تر و حاشیه امن کمتر قبل از پر شدن volume.",
+    summary_pct: "درصد summary را بالا ببرید → ingest summary و دیسک volume:summaries بیشتر می‌شود. کمش کنید → ایندکس‌های summary برای منابعی که از درصد استفاده می‌کنند کوچک‌تر می‌شوند.",
+    summary_retention_days: "نگهداری summary طولانی‌تر → دیسک summaries بیشتر. کوتاه‌تر → ایندکس‌های summary زودتر کوچک/قدیمی می‌شوند.",
+    hot_path: "مسیر را عوض کنید → indexes.conf به محل جدید hot/warm اشاره می‌کند. مسیر اشتباه/کند (مثل NFS برای hot) → ریسک ingest و سرچ، نه فقط یک برچسب.",
+    cold_path: "مسیر را عوض کنید → باکت‌های cold روی آن volume می‌روند. رسانه کندتر → سرچ روی داده قدیمی‌تر کندتر می‌شود.",
+    frozen_path: "فقط وقتی Archive frozen روشن است مهم است: عوضش کنید → coldToFrozenDir به درخت آرشیو جدید می‌رود. مسیر غلط → هنگام retire باکت، آرشیو شکست می‌خورد.",
+    archive_frozen: "روشن کنید → باکت frozen به‌جای حذف در frozen_path آرشیو می‌شود. خاموش کنید → رفتار پیش‌فرض Splunk (حذف هنگام freeze).",
+    enable_dma: "روشن کنید → tstatsHomePath و بودجه DMA روی summaries رزرو می‌شود. خاموش کنید → آن بودجه و مسیرها از پلن می‌افتد (ES معمولاً DMA می‌خواهد).",
+    dma_pct: "dma_pct را بالا ببرید → بودجه DMA/summaries بزرگ‌تر. کمش کنید → رزرو کمتر برای شتاب‌دهی (اگر DMA واقعی بزرگ‌تر باشد کم‌برآورد می‌شوید).",
+    compression: "C اندازه‌گیری‌شده بگذارید (مثلاً ۰.۴) → همهٔ محاسبات دیسک از همان استفاده می‌کنند. ۰ = مدل رسمی. C بالاتر → دیسک بیشتر فرض می‌شود؛ پایین‌تر → کمتر.",
+    remote_path: "مسیر را عوض کنید → SmartStore به آن bucket/prefix می‌رود. هر کلاستر باید مسیر یکتا داشته باشد وگرنه objectها قاطی می‌شوند.",
+    summary_daily_gb: "GB/روز صریح بگذارید → حجم summary همان عدد می‌شود (نه summary_pct). خالی کنید → برمی‌گردد به درصد منبع.",
+    summaries_path: "مسیر را عوض کنید → DMA/tstats و summary روی آن volume سریع می‌روند. گذاشتن روی HDD cold → شتاب‌دهی و سرچ summary ضعیف می‌شود.",
+    total_daily_gb: "D را بالا ببرید → فضای ذخیره و معمولاً تعداد ایندکسر (گاهی SH) رشد می‌کند. کمش کنید → پلن دیسک و کف نودها سبک‌تر می‌شود.",
+    available_hot_gb: "hot موجود را بیشتر کنید → هشدار SHORT کمتر و سقف روزانه بالاتر. کمتر از نیاز بگذارید → هشدار و سقف volume روی همان مقدار شما.",
+    available_cold_gb: "cold موجود را بیشتر کنید → تناسب cold بهتر و سقف معکوس روزانه می‌تواند بالاتر برود. خیلی کم → SHORT روی cold.",
+    available_summaries_gb: "بودجه summaries را بیشتر کنید → تناسب DMA/summary بهتر. کمتر از نیاز → هشدار و سقف کوچک‌تر در conf.",
+    event_bytes: "میانگین رویداد خام بزرگ‌تر → همان EPS تبدیل به GB خام روزانه بیشتر می‌شود (بعد روی دیسک × Comp). کوچک‌تر → حجم کمتر.",
+    daily_gb: "GB خام روزانه این منبع را بالا ببرید → بعد از Comp دیسک بیشتر و D کل بالا می‌رود. این «حجم فشردهٔ روی دیسک» نیست.",
+    eps: "EPS خام را بالا ببرید → GB خام روزانه با event_bytes زیاد می‌شود؛ روی دیسک ≈ همان × Comp. نرخ اشغال دیسک نیست.",
+    enable_summary: "روشن کنید → ایندکس *_summary و دیسک summaries سایز می‌شود. خاموش کنید → آن stanza و دیسکش از پلن می‌افتد.",
+    "Total daily raw GB/day": "جمع منابع/کل است. اگر در پلن بالا برود، دیسک و معمولاً N_IDX هم بالا می‌رود.",
+    "Compression factor": "Comp بالاتر (مثلاً بعد از بالا بردن RF/SF) → برای هر روز raw، دیسک بیشتری لازم است. Comp پایین‌تر → دیسک کمتر فرض می‌شود.",
+    "Total on-disk GB/day": "اگر بالا برود، با retention به TB searchable و بودجه hot بیشتر تبدیل می‌شود. با تغییر D یا Comp جابه‌جا می‌شود.",
+    "Total searchable TB": "retention طولانی‌تر یا on-disk روزانه بیشتر → این عدد بالا می‌رود؛ retention کوتاه‌تر یا حجم کمتر → پایین می‌آید.",
+    "Concurrent users": "همان اهرم ورودی کاربران: کاربر بیشتر → معمولاً SH/IDX بیشتر از جدول؛ کمتر → خط پایه سبک‌تر.",
+    "Peak concurrent searches": "S بالاتر یعنی طراحی به هسته SH بیشتری نیاز داشته؛ S پایین‌تر کف سرچ‌-کور روی N_SH را شل می‌کند.",
+    "Saved / scheduled searches": "تعداد خیلی بالا ریسک زمان‌بندی / بررسی SHC را نشان می‌دهد؛ کم کردنش عمدتاً همان سیگنال را کم می‌کند.",
+    "Table baseline (SH+IDX)": "نقطه شروع فقط از جدول است. کلاستر، سرچ همزمان، ES/ITSI فقط می‌توانند تعداد نهایی را بالاتر ببرند.",
+    "N_SH": "تعداد نهایی سرچ‌هد بعد از همه کف‌ها. با کاربر بیشتر، سرچ همزمان بیشتر، SHC یا قوانین ES/ITSI بالا می‌رود.",
+    "N_IDX": "تعداد نهایی ایندکسر. با حجم روزانه، RF، کف ES/ITSI یا n_idx شما بالا می‌رود (در کلاستر هرگز زیر RF).",
+    "CPU physical": "نقش‌ها بر اساس هسته فیزیکی سایز می‌شوند. هسته فیزیکی کمتر از جدول → نقش undersize است حتی اگر vCPU زیاد به نظر برسد.",
+    "CPU logical / vCPU": "معمولاً حدود ۲× فیزیکی با HT. زیاد کردن vCPU مهمان بدون رزرو فیزیکی، هسته واقعی اضافه نمی‌کند.",
+    Virtualization: "اگر هایپروایزر CPU/RAM را oversubscribe کند، حتی با vCPU جدول، throughput واقعی Splunk پایین می‌آید.",
+    "Splunk parallelization": "فقط وقتی نقش از حداقل CPU spare دارد روشن کنید؛ روی میزبان پر، contention بدتر می‌شود.",
+    "hot need GB": "با روزهای hot/warm بیشتر، on-disk روزانه یا headroom بالاتر رشد می‌کند — همان SSDای که باید تهیه کنید.",
+    "cold need GB": "وقتی retention طولانی و hot/warm کوتاه است (داده بیشتر روی cold) یا on-disk روزانه بالا می‌رود، زیاد می‌شود.",
+    "summaries need GB": "با حجم summary، dma_pct/retention یا روشن کردن DMA/summary زیاد می‌شود.",
+    "SmartStore cache GB": "با حجم روزانه و روزهای کش رشد می‌کند (۳۰→۹۰ با ES). این کش محلی است، نه کل remote store.",
+    "Max daily from disk": "دیسک موجود بیشتر یا retention/headroom کوتاه‌تر → سقف روزانه بالاتر. دیسک کمتر یا retention طولانی‌تر → سقف ingest پایین‌تر.",
+  },
+};
+
+(function applyTipImpacts() {
+  ["en", "fa"].forEach((lang) => {
+    const tips = window.SCP_TIPS[lang];
+    const map = SCP_TIP_IMPACTS[lang] || {};
+    if (!tips) return;
+    Object.keys(map).forEach((k) => {
+      if (tips[k]) tips[k].impact = map[k];
+    });
+  });
+})();
+
 // Persian copies (same formulas/links; FA explanations)
 window.SCP_TIPS.fa = JSON.parse(JSON.stringify(window.SCP_TIPS.en));
 (function localizeFa() {
   const fa = window.SCP_TIPS.fa;
   const map = {
-    mode_sources: ["حجم هر منبع", "برای هر منبع daily_gb یا EPS بدهید. می‌توانید با total_daily_gb و بودجه دیسک در تب Volumes ترکیب کنید."],
+    mode_sources: ["حجم هر منبع (Daily یا EPS)", "فقط یکی را به‌عنوان ورودی اصلی انتخاب کنید. زیر هر عدد واحد دیگر تخمین زده می‌شود؛ منبع بدون EPS میانگین EPS بقیه را می‌گیرد."],
     mode_total: ["حجم کل روزانه", "اختیاری روی تب Volumes؛ با منابع اسکیل می‌شود یا ایندکس main ساخته می‌شود."],
     mode_capacity: ["دیسک موجود باکت‌ها", "بودجه hot/cold اختیاری؛ تناسب دیسک و سقف روزانه/retention — قابل ترکیب با منابع/total."],
     indexer_cluster: ["کلاستر ایندکسر", "روشن = RF/SF فعال و ضریب 0.15×RF+0.35×SF. خاموش = برنامه‌ریزی standalone با Comp≈0.5."],
@@ -572,9 +717,9 @@ window.SCP_TIPS.fa = JSON.parse(JSON.stringify(window.SCP_TIPS.en));
     available_hot_gb: ["available_hot_gb", "ظرفیت واقعی SSD hot؛ برای fit و سقف volume."],
     available_cold_gb: ["available_cold_gb", "بودجه دیسک cold."],
     available_summaries_gb: ["available_summaries_gb", "بودجه volume summaries."],
-    event_bytes: ["event_bytes", "میانگین بایت رویداد؛ با EPS برای تخمین GB/day."],
-    daily_gb: ["daily_gb", "حجم روزانه این منبع/ایندکس (ترجیحی)."],
-    eps: ["EPS", "رویداد بر ثانیه؛ همراه event_bytes."],
+    event_bytes: ["event_bytes", "میانگین بایت هر رویداد خام ورودی (قبل از فشرده‌سازی) — نه اندازه روی دیسک. با EPS → GB خام روزانه؛ روی دیسک ≈ همان × Comp (~۵۰٪)."],
+    daily_gb: ["daily_gb", "GB/روز حجم خام/لایسنس (pre-indexed) — نه حجم فشرده روی دیسک. روی دیسک ≈ daily_gb × Comp."],
+    eps: ["EPS", "رویداد بر ثانیهٔ داده خام ورودی. مستند Splunk از حجم pre-indexed شروع می‌کند بعد ~۵۰٪ برای دیسک. EPS یعنی «GB روی دیسک» نیست."],
     enable_summary: ["summary", "ساخت/سایز ایندکس summary جداگانه."],
   };
   Object.keys(map).forEach((k) => {
@@ -597,5 +742,9 @@ window.SCP_TIPS.fa = JSON.parse(JSON.stringify(window.SCP_TIPS.en));
     ["Max daily from disk", "حداکثر ingest روزانه که در دیسک شما جا می‌شود."],
   ].forEach(([k, body]) => {
     if (fa[k]) fa[k].body = body;
+  });
+  // Re-apply FA impacts after clone/localize so English impact text is not left behind
+  Object.keys(SCP_TIP_IMPACTS.fa).forEach((k) => {
+    if (fa[k]) fa[k].impact = SCP_TIP_IMPACTS.fa[k];
   });
 })();

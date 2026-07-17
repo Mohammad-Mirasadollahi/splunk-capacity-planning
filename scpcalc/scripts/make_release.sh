@@ -15,6 +15,7 @@ mkdir -p "$OUT"
 
 echo "==> Release $TAG → $OUT"
 export VERSION
+python3 "$ROOT/scripts/assemble_html.py"
 bash "$ROOT/scripts/build_wasm.sh"
 
 # Compress WASM for download size (keep raw for embed/serve).

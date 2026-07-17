@@ -227,6 +227,8 @@ cat plan.json | ./bin/scpcalc calc --plan - --json
 
 ### Sample `plan.json`
 
+See also [`examples/plan.sample.json`](examples/plan.sample.json).
+
 ```json
 {
   "concurrent_users": 12,
@@ -241,25 +243,32 @@ cat plan.json | ./bin/scpcalc calc --plan - --json
   "cold_path": "/cold",
   "frozen_path": "/frozen",
   "summaries_path": "/summaries",
+  "total_daily_gb": 500,
+  "available_hot_gb": 10000,
+  "available_cold_gb": 20000,
+  "available_summaries_gb": 2000,
   "sources": [
     {
-      "key": "win",
+      "key": "windows",
       "label": "Windows",
       "index_name": "windows",
-      "daily_gb": 50,
-      "event_bytes": 400
+      "daily_gb": 400,
+      "event_bytes": 1200
     },
     {
-      "key": "net",
-      "label": "Network",
-      "index_name": "network",
-      "eps": 2000,
-      "event_bytes": 800,
-      "enable_summary": true
+      "key": "linux",
+      "label": "Linux",
+      "index_name": "linux",
+      "daily_gb": 100,
+      "event_bytes": 300
     }
   ]
 }
 ```
+
+First-run Web UI seeds the same volume defaults (`total_daily_gb` 500, hot/cold/summaries disk budgets, Windows 400 + Linux 100 GB/day raw) so Calculate works before you edit anything.
+
+**Volume mode:** choose **Daily GB** *or* **EPS** (not both as primary inputs). Under each number the other unit is estimated from average event size; sources without an EPS inherit the average EPS of filled sources.
 
 ---
 
@@ -333,13 +342,15 @@ Priority: **CLI flags → OS env → `.env` → defaults**. Existing OS env vars
 
 ```bash
 make test          # go test ./...  (calc, arch, confgen, model, config, server, presets, cmd)
-make build         # → bin/scpcalc
+make html          # assemble web/html/ partials → web/index.html
+make build         # html + wasm → bin/scpcalc
 make live-test     # full CLI + HTTP API + UI asset feature matrix → live-test.json
 make dist          # cross-compile → dist/
 ```
 
 `make live-test` runs [`scripts/live_test.py`](scripts/live_test.py): builds assertions for node counts (SHC/RF/ES/ITSI), SmartStore, DMA, archive, capacity/total modes, `--plan`/`--conf-out`, `/api/v1/plan`, static modules, and plan-form fields.
 
+Edit the UI markup under `web/html/` (partials + `index.html.tmpl`); `make html` / `make build` regenerates `web/index.html` for embed and Pages.
 | Package | Focus |
 |---|---|
 | `cmd` | CLI `calc` / `serve` (full plan parity with UI) |

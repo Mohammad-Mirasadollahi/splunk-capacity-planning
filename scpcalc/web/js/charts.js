@@ -166,50 +166,63 @@ function paintOne(canvasId, chartId, type, labels, values) {
   });
 }
 
-export function ensureChartCards() {
-  const host = document.getElementById("charts-inline");
-  if (!host || host.dataset.ready === "1") return;
+export function ensureChartCards(hostId = "charts-inline", idPrefix = "charts-inline") {
+  const host = document.getElementById(hostId);
+  if (!host) return;
+  if (host.dataset.ready === "1" && host.dataset.prefix === idPrefix) return;
+  host.dataset.prefix = idPrefix;
   host.innerHTML =
-    `<p class="charts-empty hint" id="charts-empty" hidden data-i18n="charts_none">${t("charts_none")}</p>` +
+    `<p class="charts-empty hint" id="${idPrefix}-empty" hidden data-i18n="charts_none">${t("charts_none")}</p>` +
     CHART_DEFS.map((def) => {
       const type = chartTypes[def.id] || def.defaultType;
       const opts = CHART_TYPE_OPTS.map(
         (o) => `<option value="${o}" ${o === type ? "selected" : ""}>${o}</option>`
       ).join("");
+      const canvasId = `chart-${idPrefix}-${def.id}`;
       return `<article class="chart-card" data-chart="${def.id}">
           <div class="chart-card-head">
             <h4 data-i18n="${def.titleKey}">${t(def.titleKey)}</h4>
             <label class="chart-type-label">
               <span data-i18n="chart_type">${t("chart_type")}</span>
-              <select data-chart-type="${def.id}">${opts}</select>
+              <select data-chart-type="${def.id}" data-chart-host="${idPrefix}">${opts}</select>
             </label>
           </div>
           <div class="chart-canvas-wrap">
-            <canvas id="chart-charts-inline-${def.id}"></canvas>
+            <canvas id="${canvasId}"></canvas>
           </div>
         </article>`;
     }).join("");
   host.dataset.ready = "1";
   host.querySelectorAll("[data-chart-type]").forEach((sel) => {
+    if (sel.dataset.bound === "1") return;
+    sel.dataset.bound = "1";
     sel.addEventListener("change", () => {
       const id = sel.getAttribute("data-chart-type");
+      const prefix = sel.getAttribute("data-chart-host") || "charts-inline";
       chartTypes[id] = sel.value;
-      if (state.lastPlan) renderAllCharts(state.lastPlan);
+      if (state.lastPlan) renderAllCharts(state.lastPlan, { hostId, idPrefix: prefix });
+      if (state.reviewPreview) renderAllCharts(state.reviewPreview, { hostId: "review-charts", idPrefix: "review" });
     });
   });
 }
 
-export function renderAllCharts(data) {
+/**
+ * @param {object} data plan result
+ * @param {{ hostId?: string, idPrefix?: string }} [opts]
+ */
+export function renderAllCharts(data, opts = {}) {
   if (!data) return;
-  ensureChartCards();
+  const hostId = opts.hostId || "charts-inline";
+  const idPrefix = opts.idPrefix || "charts-inline";
+  ensureChartCards(hostId, idPrefix);
   setLang(lang());
-  const host = document.getElementById("charts-inline");
-  const emptyEl = document.getElementById("charts-empty");
+  const host = document.getElementById(hostId);
+  const emptyEl = document.getElementById(`${idPrefix}-empty`);
   const packs = buildChartDatasets(data);
   let shown = 0;
   CHART_DEFS.forEach((def) => {
     const pack = packs[def.id] || { labels: [], values: [] };
-    const canvasId = `chart-charts-inline-${def.id}`;
+    const canvasId = `chart-${idPrefix}-${def.id}`;
     const card = host?.querySelector(`[data-chart="${def.id}"]`);
     const useful = chartIsUseful(pack.labels, pack.values);
     if (card) card.hidden = !useful;

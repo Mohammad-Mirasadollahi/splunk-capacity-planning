@@ -19,7 +19,8 @@ scpcalc/
 │   ├── config/           # .env + serve address resolution
 │   └── server/           # HTTP mux + API
 ├── web/                  # SPA + Chart.js + tips.js + js/*.js + css/*.css (embedded)
-├── scripts/              # live_test / smoke helpers
+│   └── html/             # Modular HTML partials → assembled to index.html (`make html`)
+├── scripts/              # assemble_html / live_test / smoke helpers
 └── docs/                 # HLD / LLD / Logic / Language
 ```
 
@@ -137,7 +138,7 @@ See [`.env.example`](../.env.example).
 
 ## 7. Embedding
 
-`web` package embeds `index.html`, `app.css` (imports `css/*.css`), `app.js`, `tips.js`, `js/*.js` (ES modules), `wasm/scpcalc.wasm` + `wasm_exec.js`, `vendor/chart.umd.min.js`.  
+`web` package embeds assembled `index.html` (from `web/html/` via `make html`), `app.css` (imports `css/*.css`), `app.js`, `tips.js`, `js/*.js` (ES modules), `wasm/scpcalc.wasm` + `wasm_exec.js`, `vendor/chart.umd.min.js`.  
 UI prefers **in-browser Go WASM** (`js/engine.js`); falls back to `POST /api/v1/plan` when `serve` API is available.  
 Static Pages copy: `make pages-calc` → repo-root [`calc/`](../../calc/).
 UI entry is `app.js` (`type="module"`) which imports packages under `web/js/` (`i18n`, `sources`, `plan-form`, `share-url`, `conf-editor`, `charts`, `wizard`, `results`, …).  

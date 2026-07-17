@@ -1,0 +1,32 @@
+/* 12-wizard-context.css — Carry-forward banner between wizard steps */
+
+.wizard-context {
+  margin: 0 1.25rem 0.75rem;
+  flex-shrink: 0;
+}
+
+.wizard-context-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--accent, #3fe0c5);
+}
+
+.wizard-context-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.wizard-context-list strong {
+  color: var(--ink);
+  font-weight: 650;
+}

@@ -7,7 +7,7 @@ RELEASES_DIR := releases
 LDFLAGS := -X main.version=$(VERSION)
 GO ?= go
 
-.PHONY: test build dist clean live-test wasm pages-calc release
+.PHONY: test build dist clean live-test wasm html pages-calc release
 
 test:
 	$(GO) test ./...
@@ -15,15 +15,19 @@ test:
 live-test: build
 	python3 scripts/live_test.py
 
+# Assemble modular web/html/*.html → web/index.html (embedded + Pages).
+html:
+	python3 scripts/assemble_html.py
+
 # Always rebuild WASM before embedding into the binary (wasm is gitignored).
-build: wasm
+build: html wasm
 	mkdir -p $(BIN_DIR)
 	CGO_ENABLED=0 $(GO) build -ldflags "$(LDFLAGS)" -o $(BIN_DIR)/$(APP) .
 
 wasm:
 	GO=$(GO) VERSION=$(VERSION) bash scripts/build_wasm.sh
 
-pages-calc: wasm
+pages-calc: html wasm
 	bash scripts/sync_pages_calc.sh
 
 # Local versioned artifacts → releases/scpcalc-v$(VERSION)/ (gitignored; publish via tag)

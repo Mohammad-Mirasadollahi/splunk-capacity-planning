@@ -27,11 +27,7 @@ export function initTabBars() {
           b.setAttribute("aria-selected", on ? "true" : "false");
         });
         if (bar.dataset.tabs === "sources-cols") {
-          const table = document.getElementById("src-table");
-          if (table) {
-            table.classList.toggle("src-table--basic", id === "src-basic");
-            table.classList.toggle("src-table--advanced", id === "src-adv");
-          }
+          // Legacy: volume vs retention used to share one tab bar; now separate sections.
           return;
         }
         scope.querySelectorAll(":scope > .tab-panel").forEach((p) => {

@@ -2,10 +2,12 @@
 export const state = {
   rows: [],
   step: 0,
+  volumeInputMode: "daily_gb", // "daily_gb" | "eps" — both are raw/pre-indexed ingest
   lastConf: "",
   lastConfGenerated: "",
   lastDesignTxt: "",
   lastPlan: null,
+  reviewPreview: null,
   confFindPos: 0,
   volState: {
     hotName: "hotwarm",

@@ -229,7 +229,10 @@ h1 {
   padding: 0.75rem 0.95rem;
   cursor: pointer;
   min-height: 3.1rem;
-  transition: transform 0.25s var(--ease), border-color 0.25s var(--ease), background 0.25s var(--ease);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.04);
+  transition: transform 0.25s var(--ease), border-color 0.25s var(--ease), background 0.25s var(--ease), box-shadow 0.25s var(--ease), opacity 0.25s var(--ease);
 }
 
 .field.check .tip-mark,
@@ -246,12 +249,80 @@ h1 {
   background: rgba(63, 224, 197, 0.08);
 }
 
+.field.check.is-off {
+  opacity: 0.72;
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.14);
+}
+
+.field.check.is-off .tip-mark,
+.field.check.is-off span {
+  color: var(--muted);
+}
+
+.field.check.is-on {
+  opacity: 1;
+  border-color: rgba(63, 224, 197, 0.55);
+  background: linear-gradient(135deg, rgba(63, 224, 197, 0.18), rgba(90, 168, 255, 0.1));
+  box-shadow: 0 0 0 1px rgba(63, 224, 197, 0.12), 0 8px 22px rgba(63, 224, 197, 0.12);
+}
+
+.field.check.is-on .tip-mark,
+.field.check.is-on > span {
+  color: var(--ink);
+}
+
 .field.check input {
   accent-color: var(--accent);
   width: 1.05rem;
   height: 1.05rem;
   flex: 0 0 1.05rem;
   margin: 0;
+}
+
+.auto-rec {
+  display: inline-block;
+  margin-top: 0.25rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent-ink);
+  background: linear-gradient(135deg, var(--accent), #7ad7ff);
+  width: fit-content;
+}
+
+.auto-rec[hidden] { display: none !important; }
+
+.field[data-depends-on] {
+  animation: depIn 0.28s var(--ease);
+}
+
+.field[data-depends-on][hidden] {
+  display: none !important;
+}
+
+@keyframes depIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.mode-chip {
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), box-shadow 0.2s var(--ease), opacity 0.2s var(--ease);
+}
+
+.mode-chip.is-off {
+  opacity: 0.65;
+  border-style: dashed;
+}
+
+.mode-chip.is-on,
+.mode-chip:has(input:checked) {
+  border-color: rgba(63, 224, 197, 0.55);
+  background: rgba(63, 224, 197, 0.12);
+  box-shadow: 0 0 0 1px rgba(63, 224, 197, 0.12);
+  opacity: 1;
 }
 
 .mode-chip input {
@@ -268,6 +339,36 @@ h1 {
   height: 0.95rem;
   margin: 0;
   vertical-align: middle;
+}
+
+.src-table tr.src-row-off {
+  opacity: 0.48;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.src-table tr.src-row-off td {
+  filter: grayscale(0.25);
+}
+
+.src-table tr.src-row-on {
+  opacity: 1;
+  background: rgba(63, 224, 197, 0.04);
+}
+
+.src-table tr.src-row-on td:first-child {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.src-dep-placeholder {
+  color: var(--muted);
+  opacity: 0.55;
+  font-size: 0.85rem;
+}
+
+.src-table input[type="checkbox"].src-toggle {
+  width: 1.05rem;
+  height: 1.05rem;
+  cursor: pointer;
 }
 
 .cta {

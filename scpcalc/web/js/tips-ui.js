@@ -18,11 +18,19 @@ function renderTipHTML(tip) {
         `<a class="tip-doc" href="${L.url}" target="_blank" rel="noopener noreferrer">${escapeAttr(L.label)} ↗</a>`
     )
     .join("");
+  const isFa = lang() === "fa";
+  const exampleBlock = tip.example
+    ? `<p class="tip-example"><span>${isFa ? "مثال" : "Example"}</span> ${escapeAttr(tip.example)}</p>`
+    : "";
+  const impactBlock = tip.impact
+    ? `<p class="tip-impact"><span>${isFa ? "اگر عوض شود" : "If you change this"}</span> ${escapeAttr(tip.impact)}</p>`
+    : "";
   return `<div class="tip-inner">
       <strong class="tip-title">${escapeAttr(tip.title || "")}</strong>
       <p class="tip-body">${escapeAttr(tip.body || "")}</p>
       <pre class="tip-formula">${escapeAttr(tip.formula || "")}</pre>
-      <p class="tip-example"><span>${lang() === "fa" ? "مثال" : "Example"}</span> ${escapeAttr(tip.example || "")}</p>
+      ${exampleBlock}
+      ${impactBlock}
       <div class="tip-links">${links}</div>
     </div>`;
 }

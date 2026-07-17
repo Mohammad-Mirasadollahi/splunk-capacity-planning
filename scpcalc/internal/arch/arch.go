@@ -73,12 +73,12 @@ func applyCPUGuidance(L *model.LayerSpec, roleKind string) {
 	}
 }
 
-func hwLayer(role string, count int, tier hwTier, roleKind, storage, net, iops, notes string, disk float64) model.LayerSpec {
+func hwLayer(role string, count int, tier hwTier, roleKind, storage, net, iops, raid, notes string, disk float64, iopsMin int) model.LayerSpec {
 	L := model.LayerSpec{
 		Role: role, Count: count, Tier: tier.name,
 		CPUCores: tier.cores, VCPU: tier.vcpu, RAMGB: tier.ram,
 		StorageType: storage, DiskGBHint: disk,
-		Network: net, IOPSHint: iops, Notes: notes,
+		Network: net, IOPSHint: iops, IOPSMin: iopsMin, RAIDHint: raid, Notes: notes,
 	}
 	applyCPUGuidance(&L, roleKind)
 	return L
@@ -88,15 +88,21 @@ func hwLayer(role string, count int, tier hwTier, roleKind, storage, net, iops, 
 func RecommendResources(p model.PlanInput, d model.Design, dailyGB float64) []model.LayerSpec {
 	net := "≥1 GbE (prefer 10 GbE between SH↔IDX at scale)"
 	out := make([]model.LayerSpec, 0, 8)
+	raidOS := "RAID 1 (OS / $SPLUNK_HOME install)"
+	raidHot := "RAID 10 (or RAID 1) SSD for hot/warm + DMA"
+	raidCold := "RAID 5/6 or JBOD HDD/SAN for cold (not NFS for hot/warm)"
+	raidSH := "RAID 1 or RAID 10 SSD for SH local + install"
 
 	if d.CombinedInstance {
 		disk := round1(d.HotNeedGB + d.ColdNeedGB + d.SummariesNeedGB + 100)
 		out = append(out, hwLayer(
 			"Combined instance (SH+IDX)", 1, tierCombined, "indexer",
 			"SSD for hot/warm+OS; cold optional HDD",
-			"1 GbE NIC (+ optional mgmt NIC)", "Install vol ≥800 sustained IOPS",
+			"1 GbE NIC (+ optional mgmt NIC)",
+			"Install ≥800 sustained IOPS; data volume higher with concurrent search",
+			raidOS+"; "+raidHot+"; cold "+raidCold,
 			"Only for very small / lab; move to distributed when concurrency or volume grows",
-			disk,
+			disk, 800,
 		))
 		return out
 	}
@@ -111,29 +117,33 @@ func RecommendResources(p model.PlanInput, d model.Design, dailyGB float64) []mo
 	case d.HasES && d.HasITSI:
 		out = append(out, hwLayer(
 			"ES search head / SHC", maxInt(d.NSHES, 1), tierSHES, "search",
-			"SSD (preferred) or HDD ≥800 IOPS", net, "≥800 sustained IOPS",
+			"SSD (preferred) or HDD ≥800 IOPS", net, "≥800 sustained IOPS (install + search)",
+			raidSH,
 			"Dedicated ES SH/SHC; CIM-compatible apps only; do not colocate with ITSI. Floor: 16 physical / 32 vCPU / 32 GB RAM.",
-			300,
+			300, 800,
 		))
 		out = append(out, hwLayer(
 			"ITSI search head / SHC", maxInt(d.NSHITSI, 1), tierSHITSI, "search",
-			"SSD; ≥30 GB free in $SPLUNK_HOME", net, "≥800 sustained IOPS",
+			"SSD; ≥30 GB free in $SPLUNK_HOME", net, "≥800 sustained IOPS (install + search)",
+			raidSH,
 			"Separate tier from ES; KPI load may require more SH — validate with ITSI tables. Prefer 24+ physical cores when shared/heavy.",
-			300,
+			300, 800,
 		))
 	case d.HasES:
 		out = append(out, hwLayer(
 			"ES search head / SHC", maxInt(d.NSH, 1), tierSHES, "search",
-			"SSD (preferred) or HDD ≥800 IOPS", net, "≥800 sustained IOPS",
+			"SSD (preferred) or HDD ≥800 IOPS", net, "≥800 sustained IOPS (install + search)",
+			raidSH,
 			fmt.Sprintf("ES production min 16 physical CPU cores / 32 GB RAM / 32 vCPU; dedicated SH/SHC. Peak concurrent searches=%d (1 search ≤1 core); saved/detections≈%d — scale CPU/RAM for ad-hoc and detection load (ES §6.5).", p.ConcurrentSearches, p.SavedSearches),
-			300,
+			300, 800,
 		))
 	case d.HasITSI:
 		out = append(out, hwLayer(
 			"ITSI search head / SHC", maxInt(d.NSH, 1), tierSHITSI, "search",
-			"SSD; ≥30 GB free in $SPLUNK_HOME", net, "≥800 sustained IOPS",
+			"SSD; ≥30 GB free in $SPLUNK_HOME", net, "≥800 sustained IOPS (install + search)",
+			raidSH,
 			fmt.Sprintf("ITSI dedicated SH; 16 physical required (24+ recommended). Peak concurrent searches=%d; saved/KPI searches≈%d — KPI count ≠ search count; validate with ITSI tables.", p.ConcurrentSearches, p.SavedSearches),
-			300,
+			300, 800,
 		))
 	default:
 		sh := tierSHMin
@@ -146,43 +156,50 @@ func RecommendResources(p model.PlanInput, d model.Design, dailyGB float64) []mo
 		out = append(out, hwLayer(
 			"Search head", maxInt(d.NSH, 1), sh, "search",
 			"SSD (preferred) or HDD ≥800 IOPS", net, "≥800 sustained IOPS on install/search volume",
-			searchNote,
-			300,
+			raidSH, searchNote, 300, 800,
 		))
 	}
 
 	idx := pickIndexerTier(dailyGB, d.NIDX, d.HasES, d.HasITSI)
 	diskPer := hotPer + coldPer + sumPer + 50
 	stor := "Hot/warm+DMA: SSD; Cold: HDD/SAN; never hot/warm on NFS"
-	iops := fmt.Sprintf("Shared array example ≈4000 IOPS × %d indexers = %d concurrent IOPS", nidx, 4000*nidx)
+	iops := fmt.Sprintf("Install ≥800 IOPS/node; shared array example ≈4000 IOPS × %d indexers = %d concurrent IOPS", nidx, 4000*nidx)
+	iopsMin := 800
+	raidIDX := raidOS + "; " + raidHot + "; cold " + raidCold
 	if d.SmartStore {
 		stor = "SmartStore: NVMe/SSD local cache + remote object store; non-SmartStore indexes still need local SSD"
 		diskPer = round1(d.LocalCachePerIDXGB + sumPer + 100)
-		iops = "Local cache on NVMe/SSD; remote latency matters for warm fetches; target 10 Gbps/indexer to object store"
+		iops = "Local cache on NVMe/SSD (high random IOPS); remote latency matters; target 10 Gbps/indexer to object store; install ≥800 IOPS"
+		raidIDX = raidOS + "; local cache NVMe/SSD (RAID 10 or single NVMe with redundancy via cluster); remote = object store (no RAID)"
+		iopsMin = 4000
 	}
-	idxNotes := fmt.Sprintf("Per peer ≈ hot %.0f + cold %.0f + summaries %.0f GB (before OS/headroom). Keep ≥5 GB free or indexing stops.", hotPer, coldPer, sumPer)
+	idxNotes := fmt.Sprintf(
+		"CPU %d physical / %d vCPU / RAM %d GB per indexer. Per peer ≈ hot %.0f + cold %.0f + summaries %.0f GB (before OS/headroom). Keep ≥5 GB free or indexing stops.",
+		idx.cores, idx.vcpu, idx.ram, hotPer, coldPer, sumPer)
 	if d.HasES {
 		idxNotes += " ES indexer floor also 16 physical / 32 vCPU / 32 GB — this tier meets or exceeds that."
 	}
 	out = append(out, hwLayer(
 		"Indexer", nidx, idx, "indexer",
-		stor, net, iops, idxNotes, diskPer,
+		stor, net, iops, raidIDX, idxNotes, diskPer, iopsMin,
 	))
 
 	if d.ClusterManager {
 		out = append(out, hwLayer(
 			"Cluster manager", 1, tierMgmt, "mgmt",
 			"Local SSD/HDD for $SPLUNK_HOME", "≤100 ms latency to indexer peers", "≥800 IOPS install volume",
+			raidOS,
 			"Start from single-instance class; scale with cluster size. Do not put customer data here.",
-			100,
+			100, 800,
 		))
 	}
 	if d.SHCDeployer {
 		out = append(out, hwLayer(
 			"SHC deployer", 1, tierMgmt, "mgmt",
 			"Local disk for apps/bundle", "≤200 ms latency within SHC", "≥800 IOPS",
+			raidOS,
 			"Deploys apps/config to SHC members; not a search peer",
-			100,
+			100, 800,
 		))
 	}
 	if p.WantDMA() {
@@ -190,8 +207,9 @@ func RecommendResources(p model.PlanInput, d model.Design, dailyGB float64) []mo
 			Role: "DMA / summaries volume", Count: nidx, Tier: "storage layer",
 			CPUCores: 0, VCPU: 0, RAMGB: 0,
 			StorageType: "SSD/NVMe (not cold HDD)", DiskGBHint: sumPer,
-			Network: "local to indexer", IOPSHint: "High random IOPS — co-locate with hot/warm SSD class",
-			Notes: fmt.Sprintf("tstatsHomePath / DMA on volume:summaries; total summaries need ~%.1f GB across tier (estimate)", d.SummariesNeedGB),
+			Network: "local to indexer", IOPSHint: "High random IOPS — co-locate with hot/warm SSD class", IOPSMin: 4000,
+			RAIDHint: raidHot,
+			Notes:    fmt.Sprintf("tstatsHomePath / DMA on volume:summaries; total summaries need ~%.1f GB across tier (estimate)", d.SummariesNeedGB),
 		})
 	}
 	if d.SmartStore {
@@ -199,7 +217,9 @@ func RecommendResources(p model.PlanInput, d model.Design, dailyGB float64) []mo
 			Role: "SmartStore remote object store", Count: 1, Tier: "remote",
 			CPUCores: 0, VCPU: 0, RAMGB: 0,
 			StorageType: "S3-compatible object store", DiskGBHint: d.RemoteStoreGB,
-			Network: "10 Gbps/indexer recommended", Notes: fmt.Sprintf("Remote_Store ≈ D×R×Comp = %.1f GB; local cache ~%d days (%.1f GB total)", d.RemoteStoreGB, d.CacheDays, d.LocalCacheTotalGB),
+			Network: "10 Gbps/indexer recommended", IOPSHint: "Object store throughput/latency bound (not local RAID)",
+			RAIDHint: "N/A (object store erasure coding / provider durability)",
+			Notes:    fmt.Sprintf("Remote_Store ≈ D×R×Comp = %.1f GB; local cache ~%d days (%.1f GB total)", d.RemoteStoreGB, d.CacheDays, d.LocalCacheTotalGB),
 		})
 	}
 
@@ -208,7 +228,9 @@ func RecommendResources(p model.PlanInput, d model.Design, dailyGB float64) []mo
 			Role: "Frozen / archive", Count: 1, Tier: "archive",
 			CPUCores: 0, VCPU: 0, RAMGB: 0,
 			StorageType: "SAN / NAS / NFS / HDD / object", DiskGBHint: 0,
-			Network: "backup network OK", Notes: fmt.Sprintf("coldToFrozenDir path=%s — not for active search; thaw to restore", p.FrozenPath),
+			Network: "backup network OK", IOPSHint: "Sequential / archive class OK",
+			RAIDHint: "RAID 5/6 or object-store durability for long-term retention",
+			Notes:    fmt.Sprintf("coldToFrozenDir path=%s — not for active search; thaw to restore", p.FrozenPath),
 		})
 	}
 
@@ -251,7 +273,14 @@ func renderResources(layers []model.LayerSpec) string {
 			fmt.Fprintf(&b, "  Network: %s\n", L.Network)
 		}
 		if L.IOPSHint != "" {
-			fmt.Fprintf(&b, "  IOPS: %s\n", L.IOPSHint)
+			fmt.Fprintf(&b, "  IOPS: %s", L.IOPSHint)
+			if L.IOPSMin > 0 {
+				fmt.Fprintf(&b, "  (floor ≥%d)", L.IOPSMin)
+			}
+			fmt.Fprintf(&b, "\n")
+		}
+		if L.RAIDHint != "" {
+			fmt.Fprintf(&b, "  RAID: %s\n", L.RAIDHint)
 		}
 		if L.Notes != "" {
 			fmt.Fprintf(&b, "  Notes: %s\n", L.Notes)

@@ -53,8 +53,56 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Volume / retention source tables are separate sections (not sibling tabs). */
 .src-table--basic .src-col-adv { display: none !important; }
 .src-table--advanced .src-col-adv { display: table-cell; }
+
+.src-table--volume,
+.src-table--retention {
+  width: 100%;
+}
+
+.form-section + .form-section {
+  margin-top: 1.35rem;
+  padding-top: 1.1rem;
+  border-top: 0;
+}
+
+.vol-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 7.5rem;
+}
+
+.vol-counterpart {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--muted);
+  opacity: 0.92;
+}
+
+.vol-counterpart.is-avg {
+  color: #9ad7ff;
+}
+
+.vol-counterpart.is-empty {
+  opacity: 0.55;
+  font-style: italic;
+}
+
+.field > .vol-counterpart {
+  margin-top: 0.25rem;
+}
+
+.callout-note {
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(63, 224, 197, 0.28);
+  background: rgba(63, 224, 197, 0.08);
+}
 
 .results .conf-editor {
   min-height: 320px;

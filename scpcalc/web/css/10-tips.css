@@ -82,14 +82,24 @@ body[data-lang="fa"] .tip-links {
   color: #b8f5e8;
 }
 
-.tip-example {
+.tip-example,
+.tip-impact {
   margin: 0 0 0.55rem;
   font-size: 0.8rem;
   line-height: 1.45;
   color: var(--muted);
 }
 
-.tip-example span {
+.tip-impact {
+  padding: 0.45rem 0.55rem;
+  border-radius: 0.55rem;
+  background: rgba(63, 224, 197, 0.08);
+  border: 1px solid rgba(63, 224, 197, 0.18);
+  color: #d7f7ef;
+}
+
+.tip-example span,
+.tip-impact span {
   display: inline-block;
   margin-inline-end: 0.35rem;
   color: var(--warn);
@@ -97,6 +107,10 @@ body[data-lang="fa"] .tip-links {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+}
+
+.tip-impact span {
+  color: var(--accent);
 }
 
 .tip-links {

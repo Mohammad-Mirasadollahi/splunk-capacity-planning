@@ -7,7 +7,8 @@ import { initTips, bindTips, refreshOpenTip } from "./js/tips-ui.js";
 import { bindModalChrome, closeModal, openModal } from "./js/modal.js";
 import { initTabBars, setTabsHooks } from "./js/tabs.js";
 import { bindSourcesTable, rowFromPreset, renderRows } from "./js/sources.js";
-import { bindPlanFormChrome, snapshot, applySnapshot, fillReview } from "./js/plan-form.js";
+import { applyDemoSourceDefaults, demoGlobals } from "./js/defaults.js";
+import { bindPlanFormChrome, snapshot, applySnapshot, applyGlobals, fillReview } from "./js/plan-form.js";
 import { bindConfEditor, getConfText, copyConf } from "./js/conf-editor.js";
 import { renderAllCharts } from "./js/charts.js";
 import { bindWizard, openWizard, closeWizard, showStep } from "./js/wizard.js";
@@ -184,11 +185,8 @@ function bindCalculate() {
 async function boot() {
   await initEngine();
   const data = await fetchPresets();
-  state.rows = (data.sources || []).map(rowFromPreset);
-  const prefer = new Set(["windows", "linux"]);
-  state.rows.forEach((r) => {
-    if (prefer.has(r.key)) r.enabled = true;
-  });
+  state.rows = (data.sources || []).map((p) => applyDemoSourceDefaults(rowFromPreset(p)));
+  applyGlobals(demoGlobals());
   renderRows();
   showStep(0);
   const badge = document.getElementById("engine-badge");
@@ -204,6 +202,7 @@ setI18nHooks({
   onAfterSetLang() {
     bindTips(document);
     refreshOpenTip();
+    renderRows();
     if (state.step === STEPS - 1) fillReview();
   },
 });

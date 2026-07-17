@@ -103,6 +103,8 @@
                 <th data-i18n="res_cpu_phys">CPU physical</th>
                 <th data-i18n="res_cpu_logical">CPU logical / vCPU</th>
                 <th>RAM</th>
+                <th data-i18n="res_iops">IOPS</th>
+                <th data-i18n="res_raid">RAID</th>
                 <th data-i18n="res_storage">Storage</th>
                 <th data-i18n="res_disk">Disk/node</th>
                 <th data-i18n="res_network">Network</th>
@@ -234,6 +236,8 @@
         <li data-step="3"><span>4</span><em data-i18n="step_review">Review</em></li>
       </ol>
 
+      <aside id="wizard-context" class="wizard-context callout-note" hidden aria-live="polite"></aside>
+
       <form id="form" class="wizard-body">
         <section class="wiz-pane is-active" data-pane="0">
           <h3 data-i18n="topology">Topology & apps</h3>
@@ -243,57 +247,72 @@
             <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="topo-adv" data-i18n="tab_advanced">Advanced</button>
           </div>
           <div class="tab-panel is-active" data-panel="topo-cluster" role="tabpanel">
-            <p class="hint" data-i18n="tab_cluster_hint">Set concurrent users and searches — Splunk sizes Search Heads from users × daily volume, then raises SH count so total cores cover peak concurrent searches.</p>
-            <div class="grid">
-              <label class="field check glass-chip"><input name="indexer_cluster" type="checkbox" id="indexer_cluster"> <span class="tip-mark" data-tip="indexer_cluster" data-i18n="idx_cluster">Indexer cluster</span></label>
-              <label class="field">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="rf" data-i18n="lbl_rf">Replication factor</span><span class="field-hint" data-i18n="hint_rf">Raw data copies in the cluster</span></span>
-                <input name="rf" id="rf" type="number" value="3" min="1" disabled>
-              </label>
-              <label class="field">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="sf" data-i18n="lbl_sf">Search factor</span><span class="field-hint" data-i18n="hint_sf">Searchable copies with TSIDX</span></span>
-                <input name="sf" id="sf" type="number" value="2" min="1" disabled>
-              </label>
-              <label class="field check glass-chip"><input name="search_head_cluster" type="checkbox"> <span class="tip-mark" data-tip="shc" data-i18n="shc">Search head cluster</span></label>
-              <label class="field">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="concurrent_users" data-i18n="lbl_users">Concurrent search users</span><span class="field-hint" data-i18n="hint_users">People searching at the same time (official SH×IDX table)</span></span>
-                <input name="concurrent_users" type="number" value="8" min="1" required>
-              </label>
-              <label class="field">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="concurrent_searches" data-i18n="lbl_searches">Peak concurrent searches</span><span class="field-hint" data-i18n="hint_searches">Scheduled + ad-hoc jobs at peak (1 search ≈ 1 CPU core)</span></span>
-                <input name="concurrent_searches" type="number" value="8" min="1" required>
-              </label>
-              <label class="field">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="saved_searches" data-i18n="lbl_saved">Saved / scheduled searches</span><span class="field-hint" data-i18n="hint_saved">Total enabled saved searches (Dimensions sizing input)</span></span>
-                <input name="saved_searches" type="number" value="20" min="0" required>
-              </label>
-              <label class="field">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="n_idx" data-i18n="lbl_n_idx">Number of indexers</span><span class="field-hint" data-i18n="hint_n_idx">Leave 0 to calculate automatically</span></span>
-                <input name="n_idx" type="number" value="0" min="0" placeholder="0">
-              </label>
-              <label class="field">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="n_sh" data-i18n="lbl_n_sh">Number of search heads</span><span class="field-hint" data-i18n="hint_n_sh">Leave 0 to calculate from users × volume × searches</span></span>
-                <input name="n_sh" type="number" value="0" min="0" placeholder="0">
-              </label>
-            </div>
+            <section class="form-section" aria-labelledby="sec-idx-cluster-title">
+              <header class="form-section-head">
+                <h4 id="sec-idx-cluster-title" data-i18n="sec_idx_cluster">Indexer cluster</h4>
+                <p class="hint" data-i18n="sec_idx_cluster_hint">Enable clustering for the indexer tier — set RF/SF and optional peer count override.</p>
+              </header>
+              <div class="grid">
+                <label class="field check glass-chip"><input name="indexer_cluster" type="checkbox" id="indexer_cluster"> <span class="tip-mark" data-tip="indexer_cluster" data-i18n="idx_cluster">Indexer cluster</span></label>
+                <label class="field" data-depends-on="indexer_cluster" hidden>
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="rf" data-i18n="lbl_rf">Replication factor</span><span class="field-hint" data-i18n="hint_rf">Raw data copies in the cluster</span></span>
+                  <input name="rf" id="rf" type="number" value="3" min="1">
+                </label>
+                <label class="field" data-depends-on="indexer_cluster" hidden>
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="sf" data-i18n="lbl_sf">Search factor</span><span class="field-hint" data-i18n="hint_sf">Searchable copies with TSIDX</span></span>
+                  <input name="sf" id="sf" type="number" value="2" min="1">
+                </label>
+                <label class="field">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="n_idx" data-i18n="lbl_n_idx">Number of indexers</span><span class="field-hint" data-i18n="hint_n_idx">Leave 0 to calculate automatically</span></span>
+                  <input name="n_idx" type="number" value="0" min="0" placeholder="0">
+                  <span class="auto-rec" id="auto-n-idx" hidden></span>
+                </label>
+              </div>
+            </section>
+            <section class="form-section" aria-labelledby="sec-shc-title">
+              <header class="form-section-head">
+                <h4 id="sec-shc-title" data-i18n="sec_shc">Search head cluster</h4>
+                <p class="hint" data-i18n="sec_shc_hint">Set concurrent users and searches — Splunk sizes Search Heads from users × daily volume, then raises SH count so total cores cover peak concurrent searches.</p>
+              </header>
+              <div class="grid">
+                <label class="field check glass-chip"><input name="search_head_cluster" type="checkbox" id="search_head_cluster"> <span class="tip-mark" data-tip="shc" data-i18n="shc">Search head cluster</span></label>
+                <label class="field">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="concurrent_users" data-i18n="lbl_users">Concurrent search users</span><span class="field-hint" data-i18n="hint_users">People searching at the same time (official SH×IDX table)</span></span>
+                  <input name="concurrent_users" type="number" value="8" min="1" required>
+                </label>
+                <label class="field">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="concurrent_searches" data-i18n="lbl_searches">Peak concurrent searches</span><span class="field-hint" data-i18n="hint_searches">Scheduled + ad-hoc jobs at peak (1 search ≈ 1 CPU core)</span></span>
+                  <input name="concurrent_searches" type="number" value="8" min="1" required>
+                </label>
+                <label class="field">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="saved_searches" data-i18n="lbl_saved">Saved / scheduled searches</span><span class="field-hint" data-i18n="hint_saved">Total enabled saved searches (Dimensions sizing input)</span></span>
+                  <input name="saved_searches" type="number" value="20" min="0" required>
+                </label>
+                <label class="field">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="n_sh" data-i18n="lbl_n_sh">Number of search heads</span><span class="field-hint" data-i18n="hint_n_sh">Leave 0 to calculate from users × volume × searches</span></span>
+                  <input name="n_sh" type="number" value="0" min="0" placeholder="0">
+                  <span class="auto-rec" id="auto-n-sh" hidden></span>
+                </label>
+              </div>
+            </section>
           </div>
           <div class="tab-panel" data-panel="topo-apps" role="tabpanel" hidden>
             <p class="hint" data-i18n="tab_apps_hint">Turn on premium apps if you use them. DMA stores accelerated data-model summaries.</p>
             <div class="grid">
               <label class="field check glass-chip"><input name="has_es" type="checkbox" id="has_es"> <span class="tip-mark" data-tip="has_es" data-i18n="lbl_has_es">Enterprise Security (ES)</span></label>
-              <label class="field check glass-chip"><input name="has_itsi" type="checkbox"> <span class="tip-mark" data-tip="has_itsi" data-i18n="lbl_has_itsi">IT Service Intelligence (ITSI)</span></label>
+              <label class="field check glass-chip"><input name="has_itsi" type="checkbox" id="has_itsi"> <span class="tip-mark" data-tip="has_itsi" data-i18n="lbl_has_itsi">IT Service Intelligence (ITSI)</span></label>
               <label class="field check glass-chip"><input name="enable_dma" type="checkbox" id="enable_dma"> <span class="tip-mark" data-tip="enable_dma" data-i18n="lbl_dma">Data model acceleration (DMA)</span></label>
-              <label class="field">
+              <label class="field" data-depends-on="enable_dma" hidden>
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="dma_pct" data-i18n="lbl_dma_pct">DMA disk share</span><span class="field-hint" data-i18n="hint_dma_pct">Fraction of searchable data kept for DMA (e.g. 0.10 = 10%)</span></span>
                 <input name="dma_pct" type="number" step="0.01" min="0.01" max="1" value="0.10">
               </label>
             </div>
           </div>
           <div class="tab-panel" data-panel="topo-adv" role="tabpanel" hidden>
-            <p class="hint" data-i18n="tab_advanced_hint">SmartStore, your measured compression ratio, and whether frozen data is archived.</p>
+            <p class="hint" data-i18n="tab_advanced_hint">SmartStore and your measured compression ratio (optional).</p>
             <div class="grid">
               <label class="field check glass-chip"><input name="smartstore" type="checkbox" id="smartstore"> <span class="tip-mark" data-tip="smartstore" data-i18n="lbl_smartstore">SmartStore (object storage)</span></label>
-              <label class="field">
+              <label class="field" data-depends-on="smartstore" hidden>
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="remote_path" data-i18n="lbl_remote">Remote store path</span><span class="field-hint" data-i18n="hint_remote">S3 / GCS / blob path hint</span></span>
                 <input name="remote_path" type="text" value="" placeholder="s3://bucket/splunk" data-i18n-placeholder="ph_remote">
               </label>
@@ -301,7 +320,6 @@
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="compression" data-i18n="lbl_compression">Measured compression</span><span class="field-hint" data-i18n="hint_compression">Leave 0 for the default RF/SF model</span></span>
                 <input name="compression" type="number" step="0.01" min="0" max="2" value="0" placeholder="0" data-i18n-placeholder="ph_compression">
               </label>
-              <label class="field check glass-chip"><input name="archive_frozen" type="checkbox"> <span class="tip-mark" data-tip="archive_frozen" data-i18n="lbl_archive">Archive frozen buckets</span></label>
             </div>
           </div>
         </section>
@@ -327,6 +345,11 @@
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="headroom" data-i18n="lbl_headroom">Safety margin</span><span class="field-hint" data-i18n="hint_headroom">e.g. 1.2 = keep 20% spare capacity</span></span>
                 <input name="headroom" type="number" step="0.05" value="1.2" min="1">
               </label>
+              <label class="field check glass-chip"><input name="archive_frozen" type="checkbox" id="archive_frozen"> <span class="tip-mark" data-tip="archive_frozen" data-i18n="lbl_archive">Archive frozen buckets</span></label>
+              <label class="field" data-depends-on="archive_frozen" hidden>
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="frozen_path" data-i18n="lbl_frozen_path">Frozen / archive path</span><span class="field-hint" data-i18n="hint_frozen_path">Used when archive frozen is on</span></span>
+                <input name="frozen_path" id="frozen_path" type="text" value="/frozen">
+              </label>
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="summary_pct" data-i18n="lbl_summary_pct">Summary index share</span><span class="field-hint" data-i18n="hint_summary_pct">Share of source volume written to summaries</span></span>
                 <input name="summary_pct" type="number" step="0.01" value="0.10" min="0.01" max="1">
@@ -336,6 +359,7 @@
                 <input name="summary_retention_days" type="number" value="90" min="1">
               </label>
             </div>
+            <p class="hint" data-i18n="hint_archive_policy">Archive is a core retention choice: off = Splunk deletes at freeze; on = set the frozen/archive path that appears below.</p>
           </div>
           <div class="tab-panel" data-panel="ret-paths" role="tabpanel" hidden>
             <div class="grid">
@@ -346,10 +370,6 @@
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="cold_path" data-i18n="lbl_cold_path">Cold disk path</span><span class="field-hint" data-i18n="hint_cold_path">Older searchable buckets</span></span>
                 <input name="cold_path" type="text" value="/cold">
-              </label>
-              <label class="field">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="frozen_path" data-i18n="lbl_frozen_path">Frozen / archive path</span><span class="field-hint" data-i18n="hint_frozen_path">Used when archive frozen is on</span></span>
-                <input name="frozen_path" type="text" value="/frozen">
               </label>
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="summaries_path" data-i18n="lbl_sum_path">Summaries / DMA path</span><span class="field-hint" data-i18n="hint_sum_path">Summary indexes and tstats data</span></span>
@@ -364,7 +384,8 @@
               <div class="grid">
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="total_daily_gb" data-i18n="lbl_total_daily">Total daily ingest (GB/day)</span><span class="field-hint" data-i18n="hint_total_daily">If sources are also filled, they scale to this total</span></span>
-                  <input name="total_daily_gb" type="number" step="any" min="0" placeholder="e.g. 500" data-i18n-placeholder="ph_total_daily">
+                  <input name="total_daily_gb" type="number" step="any" min="0" value="500" placeholder="e.g. 500" data-i18n-placeholder="ph_total_daily">
+                  <span id="total-daily-counterpart" class="vol-counterpart" aria-live="polite"></span>
                 </label>
               </div>
               <p class="hint" data-i18n="total_hint">Leave blank if you only use per-source volumes below.</p>
@@ -374,15 +395,15 @@
               <div class="grid">
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="available_hot_gb" data-i18n="lbl_avail_hot">Available hot/warm disk</span><span class="field-hint" data-i18n="hint_avail_hot">Fast disk budget for recent data</span></span>
-                  <input name="available_hot_gb" type="number" step="any" min="0" placeholder="e.g. 10000" data-i18n-placeholder="ph_avail_hot">
+                  <input name="available_hot_gb" type="number" step="any" min="0" value="10000" placeholder="e.g. 10000" data-i18n-placeholder="ph_avail_hot">
                 </label>
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="available_cold_gb" data-i18n="lbl_avail_cold">Available cold disk</span><span class="field-hint" data-i18n="hint_avail_cold">Slower disk for older searchable data</span></span>
-                  <input name="available_cold_gb" type="number" step="any" min="0" placeholder="e.g. 20000" data-i18n-placeholder="ph_avail_cold">
+                  <input name="available_cold_gb" type="number" step="any" min="0" value="20000" placeholder="e.g. 20000" data-i18n-placeholder="ph_avail_cold">
                 </label>
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="available_summaries_gb" data-i18n="lbl_avail_sum">Available summaries disk</span><span class="field-hint" data-i18n="hint_avail_sum">Space for summary / DMA data</span></span>
-                  <input name="available_summaries_gb" type="number" step="any" min="0" placeholder="e.g. 2000" data-i18n-placeholder="ph_avail_sum">
+                  <input name="available_summaries_gb" type="number" step="any" min="0" value="2000" placeholder="e.g. 2000" data-i18n-placeholder="ph_avail_sum">
                 </label>
               </div>
               <p class="hint" data-i18n="cap_hint">Used to check fit and estimate the max daily volume your disks can hold.</p>
@@ -392,43 +413,90 @@
 
         <section class="wiz-pane" data-pane="2" hidden>
           <h3 data-i18n="sources">Log sources / indexes</h3>
-          <p class="hint" data-i18n="sources_hint">Turn on each source you collect, then enter daily GB (preferred) or events/sec. Hover a column title for details.</p>
-          <div class="tab-bar tab-bar-sm" role="tablist" data-tabs="sources-cols">
-            <button type="button" class="tab-btn is-active" role="tab" aria-selected="true" data-tab="src-basic" data-i18n="tab_src_basic">Volume</button>
-            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="src-adv" data-i18n="tab_src_adv">Retention & summary</button>
-          </div>
-          <div class="table-wrap">
-            <table class="src-table src-table--basic" id="src-table">
-              <thead>
-                <tr>
-                  <th data-i18n="col_use">Use</th>
-                  <th data-i18n="col_source">Source</th>
-                  <th data-i18n="col_index">Index name</th>
-                  <th><span class="tip-mark" data-tip="event_bytes" data-i18n="col_event_bytes">Avg event (bytes)</span></th>
-                  <th><span class="tip-mark" data-tip="daily_gb" data-i18n="col_daily_gb">Daily GB</span></th>
-                  <th><span class="tip-mark" data-tip="eps" data-i18n="col_eps">Events / sec</span></th>
-                  <th class="src-col-adv"><span class="tip-mark" data-tip="retention_days" data-i18n="col_ret">Retention days</span></th>
-                  <th class="src-col-adv"><span class="tip-mark" data-tip="hot_warm_days" data-i18n="col_hw">Hot/warm days</span></th>
-                  <th class="src-col-adv"><span class="tip-mark" data-tip="enable_summary" data-i18n="col_summary">Summary</span></th>
-                  <th class="src-col-adv"><span class="tip-mark" data-tip="summary_daily_gb" data-i18n="col_sum_gb">Summary GB/day</span></th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody id="src-body"></tbody>
-            </table>
-          </div>
-          <div class="row-actions">
-            <button type="button" class="btn-ghost" id="btn-add" data-i18n="add_row">+ Add custom source</button>
-            <button type="button" class="btn-ghost" id="btn-save" data-i18n="save">Save</button>
-            <button type="button" class="btn-ghost" id="btn-export" data-i18n="export">Export .json</button>
-            <button type="button" class="btn-ghost" id="btn-export-url" data-i18n="export_url">Export URL</button>
-          </div>
+          <section class="form-section" aria-labelledby="sec-vol-mode-title">
+            <header class="form-section-head">
+              <h4 id="sec-vol-mode-title" data-i18n="sec_vol_mode">How do you know your volume?</h4>
+              <p class="hint" data-i18n-html="sec_vol_mode_hint">Pick <strong>one</strong> way to enter volume: <strong>Daily GB</strong> <em>or</em> <strong>EPS</strong> — not both at once. Both mean <strong>raw / pre-indexed ingest</strong> (license-style), not compressed on-disk size. Under each number the other unit is estimated from average event size.</p>
+            </header>
+            <div class="mode-row" role="radiogroup" aria-labelledby="sec-vol-mode-title">
+              <label class="mode-chip">
+                <input type="radio" name="volume_input_mode" value="daily_gb" checked>
+                <span data-i18n="vol_mode_gb">Daily log volume (GB/day)</span>
+              </label>
+              <label class="mode-chip">
+                <input type="radio" name="volume_input_mode" value="eps">
+                <span data-i18n="vol_mode_eps">Events per second (EPS)</span>
+              </label>
+            </div>
+            <p id="vol-mode-exclusive-note" class="hint callout-note" data-i18n-html="sec_vol_mode_exclusive">Only the selected mode is editable. The other value appears in small text under each input (Daily↔EPS using event size). Sources without an EPS inherit the <strong>average EPS</strong> of sources that already have one.</p>
+            <p class="hint tip-mark" data-tip="eps" data-i18n="sec_vol_mode_eps_note">EPS = raw events arriving from the source (before Splunk compression). With average event size it becomes Daily raw GB; on-disk ≈ that × Comp.</p>
+          </section>
+
+          <section class="form-section" aria-labelledby="sec-log-sources-title">
+            <header class="form-section-head">
+              <h4 id="sec-log-sources-title" data-i18n="sec_log_sources">Log sources</h4>
+              <p class="hint" data-i18n="sources_hint">Turn on each source, enter volume in the mode you chose, and keep average event size accurate — the counterpart under each cell updates live.</p>
+            </header>
+            <div class="table-wrap">
+              <table class="src-table src-table--volume src-table--vol-gb" id="src-table">
+                <thead>
+                  <tr>
+                    <th data-i18n="col_use">Use</th>
+                    <th data-i18n="col_source">Source</th>
+                    <th data-i18n="col_index">Index name</th>
+                    <th class="src-col-event-bytes"><span class="tip-mark" data-tip="event_bytes" data-i18n="col_event_bytes">Avg event (bytes)</span></th>
+                    <th class="src-col-vol"><span class="tip-mark" data-tip="daily_gb" id="col-vol-label" data-i18n="col_daily_gb">Daily GB (raw)</span></th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="src-body"></tbody>
+              </table>
+            </div>
+            <div class="row-actions">
+              <button type="button" class="btn-ghost" id="btn-add" data-i18n="add_row">+ Add custom source</button>
+              <button type="button" class="btn-ghost" id="btn-save" data-i18n="save">Save</button>
+              <button type="button" class="btn-ghost" id="btn-export" data-i18n="export">Export .json</button>
+              <button type="button" class="btn-ghost" id="btn-export-url" data-i18n="export_url">Export URL</button>
+            </div>
+          </section>
+
+          <section class="form-section" aria-labelledby="sec-src-ret-title">
+            <header class="form-section-head">
+              <h4 id="sec-src-ret-title" data-i18n="sec_src_retention">Per-source retention &amp; summary</h4>
+              <p class="hint" data-i18n="src_ret_hint">Optional overrides per source. Leave blank to use the global retention from the Retention step. Summary adds an extra index on the summaries volume.</p>
+            </header>
+            <div class="table-wrap">
+              <table class="src-table src-table--retention" id="src-ret-table">
+                <thead>
+                  <tr>
+                    <th data-i18n="col_use">Use</th>
+                    <th data-i18n="col_source">Source</th>
+                    <th data-i18n="col_index">Index name</th>
+                    <th><span class="tip-mark" data-tip="retention_days" data-i18n="col_ret">Retention days</span></th>
+                    <th><span class="tip-mark" data-tip="hot_warm_days" data-i18n="col_hw">Hot/warm days</span></th>
+                    <th><span class="tip-mark" data-tip="enable_summary" data-i18n="col_summary">Summary</span></th>
+                    <th><span class="tip-mark" data-tip="summary_daily_gb" data-i18n="col_sum_gb">Summary GB/day</span></th>
+                  </tr>
+                </thead>
+                <tbody id="src-ret-body"></tbody>
+              </table>
+            </div>
+          </section>
         </section>
 
-        <section class="wiz-pane" data-pane="3" hidden>
+        <section class="wiz-pane wiz-pane--review" data-pane="3" hidden>
           <h3 data-i18n="step_review">Review & calculate</h3>
-          <pre id="review-box" class="conf-block review-box"></pre>
-          <p class="hint" data-i18n="review_hint">Back to edit any step, then calculate. Results open in tabs on the page.</p>
+          <p class="hint" data-i18n="review_hint">Everything from earlier steps is summarized below, with a live preview (metrics + charts). Edit a previous step if needed, then Calculate.</p>
+          <p id="review-preview-status" class="hint review-preview-status" hidden></p>
+          <div id="review-summary" class="review-summary"></div>
+          <h4 class="review-subhead" data-i18n="review_metrics_title">Preview metrics</h4>
+          <div id="review-metrics" class="metrics review-metrics"></div>
+          <h4 class="review-subhead" data-i18n="review_charts_title">Preview charts</h4>
+          <div id="review-charts" class="charts-grid review-charts"></div>
+          <details class="review-details">
+            <summary data-i18n="review_raw_summary">Full text summary</summary>
+            <pre id="review-box" class="conf-block review-box"></pre>
+          </details>
           <p id="err" class="err" hidden></p>
         </section>
       </form>
@@ -477,6 +545,32 @@
           </label>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Topology suggestions consent -->
+  <div class="modal-root" id="suggest-modal" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal glass suggest-modal" role="dialog" aria-modal="true" aria-labelledby="suggest-modal-title">
+      <div class="panel-shine" aria-hidden="true"></div>
+      <header class="wizard-head">
+        <div>
+          <p class="eyebrow" data-i18n="suggest_eyebrow">Topology advice</p>
+          <h2 id="suggest-modal-title" data-i18n="suggest_title">Recommended changes</h2>
+        </div>
+        <button type="button" class="btn-x" data-close-modal aria-label="Close">×</button>
+      </header>
+      <div class="suggest-modal-body">
+        <p class="hint" data-i18n="suggest_hint">Based on your users, searches, and volume, SCPcalc recommends enabling the options below. Accept to turn them on and recalculate, or skip to keep your current choices.</p>
+        <div id="suggest-list" class="suggest-list"></div>
+      </div>
+      <footer class="wizard-foot">
+        <button type="button" class="btn-ghost" id="btn-suggest-skip" data-i18n="suggest_skip">Skip</button>
+        <button type="button" class="cta" id="btn-suggest-accept">
+          <span class="cta-label" data-i18n="suggest_accept">Accept & recalculate</span>
+          <span class="cta-glow" aria-hidden="true"></span>
+        </button>
+      </footer>
     </div>
   </div>
 

@@ -1,0 +1,25 @@
+  <!-- Topology suggestions consent -->
+  <div class="modal-root" id="suggest-modal" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal glass suggest-modal" role="dialog" aria-modal="true" aria-labelledby="suggest-modal-title">
+      <div class="panel-shine" aria-hidden="true"></div>
+      <header class="wizard-head">
+        <div>
+          <p class="eyebrow" data-i18n="suggest_eyebrow">Topology advice</p>
+          <h2 id="suggest-modal-title" data-i18n="suggest_title">Recommended changes</h2>
+        </div>
+        <button type="button" class="btn-x" data-close-modal aria-label="Close">×</button>
+      </header>
+      <div class="suggest-modal-body">
+        <p class="hint" data-i18n="suggest_hint">Based on your users, searches, and volume, SCPcalc recommends enabling the options below. Accept to turn them on and recalculate, or skip to keep your current choices.</p>
+        <div id="suggest-list" class="suggest-list"></div>
+      </div>
+      <footer class="wizard-foot">
+        <button type="button" class="btn-ghost" id="btn-suggest-skip" data-i18n="suggest_skip">Skip</button>
+        <button type="button" class="cta" id="btn-suggest-accept">
+          <span class="cta-label" data-i18n="suggest_accept">Accept & recalculate</span>
+          <span class="cta-glow" aria-hidden="true"></span>
+        </button>
+      </footer>
+    </div>
+  </div>

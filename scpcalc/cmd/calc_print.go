@@ -107,10 +107,22 @@ func printPlanHuman(res model.PlanResult) {
 			for _, L := range d.Resources {
 				fmt.Printf("  %-28s  count=%-3d  tier=%s  PHYSICAL=%dc  LOGICAL/vCPU=%d  RAM=%dGB",
 					L.Role, L.Count, L.Tier, L.CPUCores, L.VCPU, L.RAMGB)
+				if L.IOPSHint != "" {
+					fmt.Printf("\n      IOPS: %s", L.IOPSHint)
+				}
+				if L.RAIDHint != "" {
+					fmt.Printf("\n      RAID: %s", L.RAIDHint)
+				}
 				if L.DiskGBHint > 0 {
 					fmt.Printf("  disk≈%.0fGB", L.DiskGBHint)
 				}
 				fmt.Println()
+				if L.IOPSHint != "" {
+					fmt.Printf("      IOPS: %s\n", L.IOPSHint)
+				}
+				if L.RAIDHint != "" {
+					fmt.Printf("      RAID: %s\n", L.RAIDHint)
+				}
 				if L.CPUCores > 0 {
 					fmt.Printf("      virt: reserve full CPU/RAM (no oversubscribe)  |  Splunk parallelization: only with spare cores above minimum\n")
 				}

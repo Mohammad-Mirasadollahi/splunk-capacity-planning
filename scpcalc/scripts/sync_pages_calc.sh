@@ -7,6 +7,7 @@ REPO="$(cd "$ROOT/.." && pwd)"
 DEST="$REPO/calc"
 README_SAVE=""
 
+python3 "$ROOT/scripts/assemble_html.py"
 "$ROOT/scripts/build_wasm.sh"
 
 if [[ -f "$DEST/README.md" ]]; then
@@ -18,6 +19,8 @@ rm -rf "$DEST"
 mkdir -p "$DEST"
 cp -a "$ROOT/web/." "$DEST/"
 rm -f "$DEST/embed.go"
+# Source-only modular HTML (assembled into index.html for runtime).
+rm -rf "$DEST/html"
 
 if [[ -n "$README_SAVE" ]]; then
   mv "$README_SAVE" "$DEST/README.md"
