@@ -23,6 +23,7 @@ import {
   hasShareHash,
 } from "./js/share-url.js";
 import { bindFeaturePrompts } from "./js/feature-prompt.js";
+import { bindNumberSteppers } from "./js/number-stepper.js";
 
 function flashSave(msg) {
   const saveMsg = document.getElementById("save-msg");
@@ -225,6 +226,7 @@ bindModalChrome({
 });
 bindPlanFormChrome();
 bindFeaturePrompts();
+bindNumberSteppers();
 bindSourcesTable();
 bindWizard();
 bindConfEditor();
