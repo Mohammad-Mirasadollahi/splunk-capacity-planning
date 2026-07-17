@@ -22,7 +22,7 @@ Estimates searchable storage / retention MB fields, recommends **N_SH / N_IDX** 
 | **User guide (full CLI + UI + API)** | [`scpcalc/README.md`](scpcalc/README.md) |
 | **Static Web UI (WASM)** | [`calc/`](calc/) — built in CI for Pages at `/calc/` (WASM **not** committed) |
 | Design | [`scpcalc/docs/`](scpcalc/docs/) (HLD · LLD · Logic · Language) |
-| Download | GitHub **Releases** (tag `scpcalc-v*`) |
+| Download | GitHub **Releases** (tag `scpcalc-v*`) — create with [`./tools/release.sh`](tools/release.sh) |
 | Local build | `cd scpcalc && make test && make wasm && make build` |
 
 ```bash

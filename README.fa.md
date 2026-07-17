@@ -26,7 +26,7 @@
 | **راهنمای کامل** | [`scpcalc/README.md`](scpcalc/README.md) |
 | **UI استاتیک (WASM)** | [`calc/`](calc/) — در CI برای Pages در `/calc/` |
 | طراحی | [`scpcalc/docs/`](scpcalc/docs/) |
-| دانلود | GitHub **Releases** (تگ `scpcalc-v*`) |
+| دانلود | GitHub **Releases** (تگ `scpcalc-v*`) — ساخت با [`./tools/release.sh`](tools/release.sh) |
 | ساخت محلی | `cd scpcalc && make test && make wasm && make build` |
 
 ## زبان

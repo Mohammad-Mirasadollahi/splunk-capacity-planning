@@ -50,6 +50,18 @@ make build
 
 Version file: [`VERSION`](VERSION) (currently `0.1.1`).
 
+**One-click release** (from repo root) — product help asks *why*, then bumps version, CHANGELOG, commit, tag, and push:
+
+```bash
+./tools/release.sh
+# or non-interactive:
+./tools/release.sh --bump patch --reason "Fix share URL import on Safari" --yes
+./tools/release.sh --help
+./tools/release.sh --dry-run --bump minor --reason "Preview only"
+```
+
+Manual equivalent:
+
 ```bash
 cd scpcalc
 make release              # → releases/scpcalc-v0.1.1/ (gitignored)
