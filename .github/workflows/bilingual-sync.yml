@@ -1,0 +1,24 @@
+name: Bilingual doc sync
+
+on:
+  push:
+    paths:
+      - "docs/**"
+      - "tools/check_en_fa_sync.py"
+      - "tools/add_lang_switcher.py"
+  pull_request:
+    paths:
+      - "docs/**"
+      - "tools/check_en_fa_sync.py"
+      - "tools/add_lang_switcher.py"
+
+jobs:
+  en-fa-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check English ↔ فارسی structural sync
+        run: python3 tools/check_en_fa_sync.py

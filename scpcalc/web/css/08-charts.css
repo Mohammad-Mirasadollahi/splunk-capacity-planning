@@ -1,0 +1,81 @@
+/* 08-charts.css — Chart cards and canvas */
+
+.charts-strip {
+  margin: 0.5rem 0 1.1rem;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.85rem;
+}
+
+.charts-grid-modal {
+  padding: 0 1.1rem 1.1rem;
+  overflow: auto;
+  max-height: min(70vh, 640px);
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.charts-modal {
+  width: min(1100px, 100%);
+}
+
+.charts-hint {
+  margin: 0.35rem 1.25rem 0.85rem;
+}
+
+.chart-card {
+  padding: 0.85rem 0.9rem 0.75rem;
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.chart-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.55rem;
+  margin-bottom: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.chart-card-head h4 {
+  margin: 0;
+  font-size: 0.88rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.chart-type-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.chart-type-label select {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.45rem;
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.78rem;
+  padding: 0.25rem 0.4rem;
+}
+
+.chart-canvas-wrap {
+  position: relative;
+  height: 240px;
+}
+
+.chart-canvas-wrap canvas {
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+.charts-grid-modal .chart-canvas-wrap {
+  height: 260px;
+}

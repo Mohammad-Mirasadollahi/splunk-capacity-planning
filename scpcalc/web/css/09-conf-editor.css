@@ -1,0 +1,98 @@
+/* 09-conf-editor.css — indexes.conf editor UI */
+
+.conf-editor-modal {
+  width: min(1100px, 100%);
+  max-height: min(96vh, 960px);
+}
+
+.editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: flex-end;
+  padding: 0.75rem 1.15rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.ed-field {
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.ed-field input {
+  min-width: 9rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.45rem;
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--ink);
+  padding: 0.4rem 0.5rem;
+  font: inherit;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+}
+
+.rename-panel {
+  padding: 0.75rem 1.15rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(63, 224, 197, 0.04);
+}
+
+.rename-panel h3 {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+  font-family: var(--font-display);
+}
+
+.rename-grid {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.65rem;
+}
+
+.rename-row {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr 1fr;
+  gap: 0.55rem;
+  align-items: end;
+}
+
+.rename-label {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--accent);
+  padding-bottom: 0.45rem;
+}
+
+.conf-editor {
+  display: block;
+  width: calc(100% - 2.2rem);
+  margin: 0.85rem 1.1rem 0.35rem;
+  min-height: 280px;
+  max-height: min(42vh, 420px);
+  resize: vertical;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.85rem;
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--ink);
+  padding: 0.9rem 1rem;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  direction: ltr;
+  unicode-bidi: isolate;
+  outline: none;
+}
+
+.conf-editor:focus {
+  border-color: rgba(63, 224, 197, 0.55);
+  box-shadow: 0 0 0 3px rgba(63, 224, 197, 0.15);
+}
+
+.editor-status {
+  margin: 0 1.15rem 0.85rem;
+  color: var(--accent);
+  font-size: 0.86rem;
+}

@@ -1,0 +1,62 @@
+name: scpcalc Pages (calc/)
+
+# Builds WASM in CI and deploys static site — keeps large .wasm out of git.
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "scpcalc/**"
+      - "docs/**"
+      - "index.html"
+      - "view.html"
+      - "assets/**"
+      - ".github/workflows/scpcalc-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-calc
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.x"
+      - name: Build WASM UI into calc/
+        working-directory: scpcalc
+        run: |
+          VERSION="$(tr -d '[:space:]' < VERSION 2>/dev/null || echo dev)"
+          export VERSION
+          chmod +x scripts/build_wasm.sh scripts/sync_pages_calc.sh
+          make pages-calc
+      - name: Assemble Pages site (docs + /calc)
+        run: |
+          mkdir -p _site
+          cp -a index.html view.html VERSION.md LICENSE CONTRIBUTING.md README.md _site/ 2>/dev/null || true
+          cp -a docs assets tools _site/ 2>/dev/null || true
+          rm -rf _site/calc
+          cp -a calc _site/calc
+          # Point readers at the live calculator
+          echo "Static calculator: /calc/" > _site/CALC.txt
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

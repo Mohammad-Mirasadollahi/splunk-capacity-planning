@@ -1,0 +1,125 @@
+/* 02-atmosphere.css — Background atmosphere, motion, shell */
+
+/* --- Atmosphere: gradients + light scatter --- */
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(1200px 700px at var(--mx) var(--my), rgba(63, 224, 197, 0.18), transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, rgba(90, 168, 255, 0.2), transparent 50%),
+    linear-gradient(155deg, var(--bg0), var(--bg1) 45%, var(--bg2));
+  transition: background-position 0.4s var(--ease);
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(50px);
+  opacity: 0.55;
+  animation: drift 18s var(--ease) infinite alternate;
+}
+
+.orb-a {
+  width: 42vw;
+  height: 42vw;
+  max-width: 520px;
+  max-height: 520px;
+  top: -8%;
+  left: -6%;
+  background: radial-gradient(circle, rgba(63, 224, 197, 0.7), transparent 68%);
+}
+
+.orb-b {
+  width: 36vw;
+  height: 36vw;
+  max-width: 440px;
+  max-height: 440px;
+  right: -4%;
+  top: 18%;
+  background: radial-gradient(circle, rgba(90, 168, 255, 0.65), transparent 70%);
+  animation-delay: -6s;
+  animation-duration: 22s;
+}
+
+.orb-c {
+  width: 28vw;
+  height: 28vw;
+  max-width: 360px;
+  max-height: 360px;
+  left: 35%;
+  bottom: -10%;
+  background: radial-gradient(circle, rgba(255, 180, 138, 0.35), transparent 70%);
+  animation-delay: -11s;
+  animation-duration: 26s;
+}
+
+.beam {
+  position: absolute;
+  inset: -20% -10%;
+  background: linear-gradient(
+    115deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.04) 48%,
+    rgba(63, 224, 197, 0.08) 52%,
+    transparent 65%
+  );
+  mix-blend-mode: screen;
+  animation: sweep 14s linear infinite;
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@keyframes drift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(4%, 6%, 0) scale(1.08); }
+}
+
+@keyframes sweep {
+  from { transform: translateX(-18%) rotate(8deg); }
+  to { transform: translateX(18%) rotate(8deg); }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pop {
+  0% { opacity: 0; transform: translateY(12px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(63, 224, 197, 0.35); }
+  50% { box-shadow: 0 0 28px 2px rgba(63, 224, 197, 0.45); }
+}
+
+@keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orb, .beam, .reveal, .metric-card, .cta-glow { animation: none !important; }
+}
+
+.shell {
+  position: relative;
+  z-index: 1;
+  width: min(980px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 2.2rem 0 3.5rem;
+}
+
+.reveal {
+  animation: rise 0.7s var(--ease) both;
+}
+
+.reveal.delay-1 { animation-delay: 0.08s; }

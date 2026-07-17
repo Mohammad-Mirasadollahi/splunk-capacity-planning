@@ -1,0 +1,46 @@
+name: scpcalc Release
+
+on:
+  push:
+    tags:
+      - "scpcalc-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: scpcalc
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.x"
+      - name: Version from tag
+        id: ver
+        run: |
+          VERSION="${GITHUB_REF_NAME#scpcalc-v}"
+          VERSION="${VERSION#scpcalc-}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+      - name: Build WASM + cross-compile
+        run: |
+          chmod +x scripts/make_release.sh scripts/build_wasm.sh
+          GO=go VERSION="${{ steps.ver.outputs.version }}" bash scripts/make_release.sh "${{ steps.ver.outputs.version }}"
+      - name: Upload Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: scpcalc/releases/scpcalc-v${{ steps.ver.outputs.version }}/*
+          generate_release_notes: true
+          body: |
+            Portable **scpcalc** `${{ steps.ver.outputs.version }}`
+
+            - **Binaries** — CLI + embedded Web UI (`serve`)
+            - **WASM** — `scpcalc-*-wasm.gz` / `.wasm` for static browser hosting (not stored in git)
+
+            Docs: `scpcalc/docs/` · Knowledge pack: `docs/en/` · Static UI deploy: Pages `/calc/`
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

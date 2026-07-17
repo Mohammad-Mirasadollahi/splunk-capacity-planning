@@ -1,0 +1,83 @@
+.doc-view {
+  background: rgba(12, 28, 36, 0.72);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 1.4rem 1.5rem 2rem;
+  line-height: 1.7;
+  overflow-x: auto;
+}
+
+body[data-lang="fa"] .doc-view {
+  font-family: var(--font-fa);
+  line-height: 1.9;
+}
+
+.doc-view h1,
+.doc-view h2,
+.doc-view h3,
+.doc-view h4 {
+  font-family: var(--font-display);
+  line-height: 1.25;
+}
+
+body[data-lang="fa"] .doc-view h1,
+body[data-lang="fa"] .doc-view h2,
+body[data-lang="fa"] .doc-view h3,
+body[data-lang="fa"] .doc-view h4 {
+  font-family: var(--font-fa);
+}
+
+.doc-view a { color: var(--accent); }
+.doc-view code,
+.doc-view pre {
+  font-family: var(--mono);
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.doc-view pre {
+  background: rgba(0, 0, 0, 0.35);
+  padding: 0.9rem 1rem;
+  border-radius: 0.6rem;
+  overflow-x: auto;
+}
+
+.doc-view table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.92rem;
+}
+
+.doc-view th,
+.doc-view td {
+  border: 1px solid var(--line);
+  padding: 0.45rem 0.55rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.doc-view blockquote {
+  margin: 1rem 0;
+  padding: 0.2rem 0.9rem;
+  border-inline-start: 3px solid var(--accent);
+  color: var(--muted);
+}
+
+.view-top {
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.home {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.home:hover { color: var(--accent); }
+
+.status {
+  color: #ffb4a8;
+  margin: 0 0 1rem;
+}

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>scpcalc — Splunk Capacity Calculator</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="atmosphere" aria-hidden="true">
+    <div class="orb orb-a"></div>
+    <div class="orb orb-b"></div>
+    <div class="orb orb-c"></div>
+    <div class="grain"></div>
+    <div class="beam"></div>
+  </div>
+
+  <div class="shell">
+    <header class="top glass-nav reveal">
+      <div class="brand">
+        <p class="eyebrow" data-i18n="eyebrow">Portable calculator</p>
+        <h1>scpcalc</h1>
+        <p class="lede" data-i18n="lede">Step-by-step wizard → storage, design, resources, indexes.conf.</p>
+        <p class="credit" data-i18n-html="credit_html">Designed by <strong>Mohammad Mirasadollahi</strong> · <a href="https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning" target="_blank" rel="noopener noreferrer">GitHub</a></p>
+        <p id="engine-badge" class="engine-badge" hidden></p>
+      </div>
+      <nav class="lang glass-chip" aria-label="Language">
+        <button type="button" data-lang="en" aria-pressed="true">English</button>
+        <button type="button" data-lang="fa" aria-pressed="false">فارسی</button>
+      </nav>
+    </header>
+
+    <section class="hero-panel glass reveal delay-1">
+      <div class="panel-shine" aria-hidden="true"></div>
+      <h2 data-i18n="hero_title">Plan your Splunk capacity</h2>
+      <p class="hint" data-i18n="hero_hint">A short wizard asks for mode, topology, retention, and sources — then builds settings and hardware guidance.</p>
+      <div class="row-actions hero-actions">
+        <button type="button" class="cta" id="btn-open-wizard" data-i18n="start_wizard">
+          <span class="cta-label">Start wizard</span>
+          <span class="cta-glow" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="btn-ghost" id="btn-load-home" data-i18n="load">Load</button>
+        <label class="btn-ghost file-btn">
+          <span data-i18n="import">Import .json</span>
+          <input type="file" id="file-import" accept="application/json,.json" hidden>
+        </label>
+      </div>
+      <p id="save-msg" class="save-msg" hidden></p>
+    </section>
+
+    <section id="out" class="panel glass results" hidden>
+      <div class="panel-shine" aria-hidden="true"></div>
+      <div class="section-head row-between">
+        <h2 data-i18n="results">Results</h2>
+        <div class="row-actions" style="margin:0">
+          <button type="button" class="btn-ghost" id="btn-reopen-wizard" data-i18n="edit_wizard">Edit in wizard</button>
+          <button type="button" class="btn-ghost" id="btn-dl-conf" data-i18n="download_conf">Download indexes.conf</button>
+          <button type="button" class="btn-ghost" id="btn-copy-conf-home" data-i18n="copy">Copy indexes.conf</button>
+          <button type="button" class="btn-ghost" id="btn-dl-design" data-i18n="download_design">Download design.txt</button>
+        </div>
+      </div>
+
+      <div class="tab-bar" role="tablist" aria-label="Results" data-tabs="results">
+        <button type="button" class="tab-btn is-active" role="tab" aria-selected="true" data-tab="overview" data-i18n="tab_overview">Overview</button>
+        <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="charts" data-i18n="charts">Charts</button>
+        <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="design" data-i18n="design">Design</button>
+        <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="resources" data-i18n="resources">Resources</button>
+        <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="settings" data-i18n="settings">Settings</button>
+        <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="indexes" data-i18n="per_index">Per index</button>
+        <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="conf" data-i18n="conf">indexes.conf</button>
+      </div>
+
+      <div class="tab-panel is-active" data-panel="overview" role="tabpanel">
+        <div id="metrics" class="metrics"></div>
+      </div>
+
+      <div class="tab-panel" data-panel="charts" role="tabpanel" hidden>
+        <p class="hint" data-i18n="charts_hint">Change chart type on each card. Values update after Calculate.</p>
+        <div class="charts-grid" id="charts-inline"></div>
+      </div>
+
+      <div class="tab-panel" data-panel="design" role="tabpanel" hidden>
+        <pre id="design" class="conf-block modal-pre"></pre>
+      </div>
+
+      <div class="tab-panel" data-panel="resources" role="tabpanel" hidden>
+        <div class="table-wrap modal-table">
+          <table class="src-table result-table" id="res-table">
+            <thead>
+              <tr>
+                <th data-i18n="res_role">Role</th>
+                <th>×</th>
+                <th data-i18n="res_tier">Tier</th>
+                <th>CPU</th>
+                <th>RAM</th>
+                <th data-i18n="res_storage">Storage</th>
+                <th data-i18n="res_disk">Disk/node</th>
+              </tr>
+            </thead>
+            <tbody id="res-body"></tbody>
+          </table>
+        </div>
+        <pre id="resources" class="conf-block modal-pre"></pre>
+      </div>
+
+      <div class="tab-panel" data-panel="settings" role="tabpanel" hidden>
+        <pre id="settings" class="conf-block modal-pre"></pre>
+      </div>
+
+      <div class="tab-panel" data-panel="indexes" role="tabpanel" hidden>
+        <div class="table-wrap modal-table">
+          <table class="src-table result-table" id="ix-table">
+            <thead>
+              <tr>
+                <th>index</th>
+                <th>daily_raw</th>
+                <th>on_disk</th>
+                <th>searchable_tb</th>
+                <th>maxTotal MB</th>
+                <th>homePath MB</th>
+                <th>summary</th>
+              </tr>
+            </thead>
+            <tbody id="ix-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="tab-panel" data-panel="conf" role="tabpanel" hidden>
+        <div class="tab-bar tab-bar-sm" role="tablist" aria-label="Conf editor" data-tabs="conf-inner">
+          <button type="button" class="tab-btn is-active" role="tab" aria-selected="true" data-tab="conf-edit" data-i18n="conf_edit">Editor</button>
+          <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="conf-rename" data-i18n="rename_volumes">Rename volumes</button>
+        </div>
+        <div class="tab-panel is-active" data-panel="conf-edit" role="tabpanel">
+          <div class="editor-toolbar">
+            <label class="ed-field">
+              <span data-i18n="find">Find</span>
+              <input type="text" id="conf-find" placeholder="text…">
+            </label>
+            <label class="ed-field">
+              <span data-i18n="replace">Replace</span>
+              <input type="text" id="conf-replace" placeholder="with…">
+            </label>
+            <button type="button" class="btn-ghost" id="btn-find-next" data-i18n="find_next">Find next</button>
+            <button type="button" class="btn-ghost" id="btn-replace-one" data-i18n="replace_one">Replace</button>
+            <button type="button" class="btn-ghost" id="btn-replace-all" data-i18n="replace_all">Replace all</button>
+            <button type="button" class="btn-ghost" id="btn-copy-conf" data-i18n="copy">Copy</button>
+            <button type="button" class="btn-ghost" id="btn-download-conf-ed" data-i18n="download_conf">Download</button>
+            <button type="button" class="btn-ghost" id="btn-reset-conf" data-i18n="reset_conf">Reset</button>
+          </div>
+          <textarea id="conf-editor" class="conf-editor" spellcheck="false" aria-label="indexes.conf editor"></textarea>
+          <p id="conf-status" class="editor-status" hidden></p>
+          <pre id="conf" hidden></pre>
+        </div>
+        <div class="tab-panel" data-panel="conf-rename" role="tabpanel" hidden>
+          <p class="hint" data-i18n="rename_hint">Change volume names or paths below — references like homePath = volume:… and thawedPath update everywhere.</p>
+          <div class="rename-panel">
+            <div class="rename-grid">
+              <div class="rename-row">
+                <span class="rename-label">hotwarm</span>
+                <label class="ed-field"><span data-i18n="vol_name">volume name</span><input id="rn-hot-name" type="text" value="hotwarm"></label>
+                <label class="ed-field"><span data-i18n="vol_path">path</span><input id="rn-hot-path" type="text" value="/hot"></label>
+              </div>
+              <div class="rename-row">
+                <span class="rename-label">cold</span>
+                <label class="ed-field"><span data-i18n="vol_name">volume name</span><input id="rn-cold-name" type="text" value="cold"></label>
+                <label class="ed-field"><span data-i18n="vol_path">path</span><input id="rn-cold-path" type="text" value="/cold"></label>
+              </div>
+              <div class="rename-row">
+                <span class="rename-label">summaries</span>
+                <label class="ed-field"><span data-i18n="vol_name">volume name</span><input id="rn-sum-name" type="text" value="summaries"></label>
+                <label class="ed-field"><span data-i18n="vol_path">path</span><input id="rn-sum-path" type="text" value="/summaries"></label>
+              </div>
+              <div class="rename-row">
+                <span class="rename-label">frozen</span>
+                <label class="ed-field"><span data-i18n="vol_path">frozen path</span><input id="rn-frozen-path" type="text" value="/frozen"></label>
+                <span></span>
+              </div>
+            </div>
+            <div class="row-actions" style="margin:0.65rem 0 0">
+              <button type="button" class="cta" id="btn-apply-rename" data-i18n="apply_rename">
+                <span class="cta-label">Apply rename to whole conf</span>
+                <span class="cta-glow" aria-hidden="true"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Wizard modal -->
+  <div class="modal-root" id="wizard-modal" hidden>
+    <div class="modal-backdrop" data-close-wizard></div>
+    <div class="modal glass wizard-modal" role="dialog" aria-modal="true" aria-labelledby="wizard-title">
+      <div class="panel-shine" aria-hidden="true"></div>
+      <header class="wizard-head">
+        <div>
+          <p class="eyebrow" data-i18n="wizard_eyebrow">Configuration wizard</p>
+          <h2 id="wizard-title" data-i18n="wizard_title">Capacity plan</h2>
+        </div>
+        <button type="button" class="btn-x modal-close" data-close-wizard aria-label="Close">×</button>
+      </header>
+
+      <ol class="wizard-steps" id="wizard-steps" aria-label="Steps">
+        <li data-step="0" class="is-active"><span>1</span><em data-i18n="step_mode">Mode</em></li>
+        <li data-step="1"><span>2</span><em data-i18n="step_topo">Topology</em></li>
+        <li data-step="2"><span>3</span><em data-i18n="step_ret">Retention</em></li>
+        <li data-step="3"><span>4</span><em data-i18n="step_src">Sources</em></li>
+        <li data-step="4"><span>5</span><em data-i18n="step_review">Review</em></li>
+      </ol>
+
+      <form id="form" class="wizard-body">
+        <section class="wiz-pane is-active" data-pane="0">
+          <h3 data-i18n="mode">How do you want to plan?</h3>
+          <div class="mode-row" role="radiogroup">
+            <label class="mode-chip"><input type="radio" name="mode" value="sources" checked> <span class="tip-mark" data-tip="mode_sources" data-i18n="mode_sources">My sources + volume each</span></label>
+            <label class="mode-chip"><input type="radio" name="mode" value="total"> <span class="tip-mark" data-tip="mode_total" data-i18n="mode_total">If this much log arrives</span></label>
+            <label class="mode-chip"><input type="radio" name="mode" value="capacity"> <span class="tip-mark" data-tip="mode_capacity" data-i18n="mode_capacity">I have this much disk (buckets)</span></label>
+          </div>
+          <p class="hint" data-i18n="mode_help">You can still refine sources later. Mode mainly changes which volume fields matter.</p>
+        </section>
+
+        <section class="wiz-pane" data-pane="1" hidden>
+          <h3 data-i18n="topology">Topology & apps</h3>
+          <div class="tab-bar tab-bar-sm" role="tablist" data-tabs="topo">
+            <button type="button" class="tab-btn is-active" role="tab" aria-selected="true" data-tab="topo-cluster" data-i18n="tab_cluster">Cluster</button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="topo-apps" data-i18n="tab_apps">Apps</button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="topo-adv" data-i18n="tab_advanced">Advanced</button>
+          </div>
+          <div class="tab-panel is-active" data-panel="topo-cluster" role="tabpanel">
+            <p class="hint" data-i18n="tab_cluster_hint">Indexer / search-head clustering and peer counts.</p>
+            <div class="grid">
+              <label class="field check glass-chip"><input name="indexer_cluster" type="checkbox" id="indexer_cluster"> <span class="tip-mark" data-tip="indexer_cluster" data-i18n="idx_cluster">Indexer cluster</span></label>
+              <label class="field"><span class="tip-mark" data-tip="rf">rf</span><input name="rf" id="rf" type="number" value="3" min="1" disabled></label>
+              <label class="field"><span class="tip-mark" data-tip="sf">sf</span><input name="sf" id="sf" type="number" value="2" min="1" disabled></label>
+              <label class="field check glass-chip"><input name="search_head_cluster" type="checkbox"> <span class="tip-mark" data-tip="shc" data-i18n="shc">Search head cluster (SHC)</span></label>
+              <label class="field"><span class="tip-mark" data-tip="concurrent_users" data-i18n="users">concurrent_users</span><input name="concurrent_users" type="number" value="8" min="1"></label>
+              <label class="field"><span class="tip-mark" data-tip="n_idx">n_idx (0=auto)</span><input name="n_idx" type="number" value="0" min="0"></label>
+              <label class="field"><span class="tip-mark" data-tip="n_sh">n_sh (0=auto)</span><input name="n_sh" type="number" value="0" min="0"></label>
+            </div>
+          </div>
+          <div class="tab-panel" data-panel="topo-apps" role="tabpanel" hidden>
+            <p class="hint" data-i18n="tab_apps_hint">Premium apps and DMA / tstats planning.</p>
+            <div class="grid">
+              <label class="field check glass-chip"><input name="has_es" type="checkbox" id="has_es"> <span class="tip-mark" data-tip="has_es">Enterprise Security (ES)</span></label>
+              <label class="field check glass-chip"><input name="has_itsi" type="checkbox"> <span class="tip-mark" data-tip="has_itsi">ITSI</span></label>
+              <label class="field check glass-chip"><input name="enable_dma" type="checkbox" id="enable_dma"> <span class="tip-mark" data-tip="enable_dma">DMA / tstats</span></label>
+              <label class="field"><span class="tip-mark" data-tip="dma_pct">dma_pct</span><input name="dma_pct" type="number" step="0.01" min="0.01" max="1" value="0.10"></label>
+            </div>
+          </div>
+          <div class="tab-panel" data-panel="topo-adv" role="tabpanel" hidden>
+            <p class="hint" data-i18n="tab_advanced_hint">SmartStore, measured compression, frozen archive.</p>
+            <div class="grid">
+              <label class="field check glass-chip"><input name="smartstore" type="checkbox" id="smartstore"> <span class="tip-mark" data-tip="smartstore">SmartStore</span></label>
+              <label class="field"><span class="tip-mark" data-tip="remote_path">remote_path</span><input name="remote_path" type="text" value="" placeholder="s3://bucket/splunk"></label>
+              <label class="field"><span class="tip-mark" data-tip="compression">compression (0=auto)</span><input name="compression" type="number" step="0.01" min="0" max="2" value="0" placeholder="measured C"></label>
+              <label class="field check glass-chip"><input name="archive_frozen" type="checkbox"> <span class="tip-mark" data-tip="archive_frozen">Archive frozen</span></label>
+            </div>
+          </div>
+        </section>
+
+        <section class="wiz-pane" data-pane="2" hidden>
+          <h3 data-i18n="retention">Retention & paths</h3>
+          <div class="tab-bar tab-bar-sm" role="tablist" data-tabs="reten">
+            <button type="button" class="tab-btn is-active" role="tab" aria-selected="true" data-tab="ret-policy" data-i18n="tab_policy">Policy</button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="ret-paths" data-i18n="tab_paths">Paths</button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="ret-vol" data-i18n="tab_volumes">Volumes</button>
+          </div>
+          <div class="tab-panel is-active" data-panel="ret-policy" role="tabpanel">
+            <div class="grid">
+              <label class="field"><span class="tip-mark" data-tip="retention_days">retention_days</span><input name="retention_days" type="number" value="90" min="1"></label>
+              <label class="field"><span class="tip-mark" data-tip="hot_warm_days">hot_warm_days</span><input name="hot_warm_days" type="number" value="30" min="1"></label>
+              <label class="field"><span class="tip-mark" data-tip="headroom">headroom</span><input name="headroom" type="number" step="0.05" value="1.2" min="1"></label>
+              <label class="field"><span class="tip-mark" data-tip="summary_pct">summary_pct</span><input name="summary_pct" type="number" step="0.01" value="0.10" min="0.01" max="1"></label>
+              <label class="field"><span class="tip-mark" data-tip="summary_retention_days">summary_retention_days</span><input name="summary_retention_days" type="number" value="90" min="1"></label>
+            </div>
+          </div>
+          <div class="tab-panel" data-panel="ret-paths" role="tabpanel" hidden>
+            <div class="grid">
+              <label class="field"><span class="tip-mark" data-tip="hot_path">hot_path</span><input name="hot_path" type="text" value="/hot"></label>
+              <label class="field"><span class="tip-mark" data-tip="cold_path">cold_path</span><input name="cold_path" type="text" value="/cold"></label>
+              <label class="field"><span class="tip-mark" data-tip="frozen_path">frozen_path</span><input name="frozen_path" type="text" value="/frozen"></label>
+              <label class="field"><span class="tip-mark" data-tip="summaries_path">summaries_path</span><input name="summaries_path" type="text" value="/summaries"></label>
+            </div>
+          </div>
+          <div class="tab-panel" data-panel="ret-vol" role="tabpanel" hidden>
+            <div id="total-box" class="subpanel" hidden>
+              <h4 data-i18n="total_title">Total daily ingest</h4>
+              <div class="grid">
+                <label class="field"><span class="tip-mark" data-tip="total_daily_gb">total_daily_gb</span><input name="total_daily_gb" type="number" step="any" min="0" placeholder="e.g. 500"></label>
+              </div>
+              <p class="hint" data-i18n="total_hint">Optional: fill source rows later to split indexes; they scale to this total.</p>
+            </div>
+            <div id="capacity-box" class="subpanel" hidden>
+              <h4 data-i18n="cap_title">Available disk per bucket layer (GB)</h4>
+              <div class="grid">
+                <label class="field"><span class="tip-mark" data-tip="available_hot_gb">available_hot_gb</span><input name="available_hot_gb" type="number" step="any" min="0" placeholder="SSD hot/warm"></label>
+                <label class="field"><span class="tip-mark" data-tip="available_cold_gb">available_cold_gb</span><input name="available_cold_gb" type="number" step="any" min="0" placeholder="cold"></label>
+                <label class="field"><span class="tip-mark" data-tip="available_summaries_gb">available_summaries_gb</span><input name="available_summaries_gb" type="number" step="any" min="0" placeholder="DMA/summary"></label>
+              </div>
+              <p class="hint" data-i18n="cap_hint">Checks fit and suggests max daily / max retention.</p>
+            </div>
+            <p class="hint" id="vol-mode-hint" data-i18n="tab_volumes_hint">Shown fields depend on planning mode (total / capacity).</p>
+          </div>
+        </section>
+
+        <section class="wiz-pane" data-pane="3" hidden>
+          <h3 data-i18n="sources">Log sources / indexes</h3>
+          <p class="hint" data-i18n="sources_hint">Pick sources, set daily_gb or EPS. Edit event_bytes. Add custom rows if needed.</p>
+          <div class="tab-bar tab-bar-sm" role="tablist" data-tabs="sources-cols">
+            <button type="button" class="tab-btn is-active" role="tab" aria-selected="true" data-tab="src-basic" data-i18n="tab_src_basic">Volume</button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="src-adv" data-i18n="tab_src_adv">Retention & summary</button>
+          </div>
+          <div class="table-wrap">
+            <table class="src-table src-table--basic" id="src-table">
+              <thead>
+                <tr>
+                  <th data-i18n="col_use">Use</th>
+                  <th data-i18n="col_source">Source</th>
+                  <th>index</th>
+                  <th><span class="tip-mark" data-tip="event_bytes">event_bytes</span></th>
+                  <th><span class="tip-mark" data-tip="daily_gb">daily_gb</span></th>
+                  <th><span class="tip-mark" data-tip="eps">eps</span></th>
+                  <th class="src-col-adv"><span class="tip-mark" data-tip="retention_days">ret</span></th>
+                  <th class="src-col-adv"><span class="tip-mark" data-tip="hot_warm_days">hw</span></th>
+                  <th class="src-col-adv"><span class="tip-mark" data-tip="enable_summary" data-i18n="col_summary">summary</span></th>
+                  <th class="src-col-adv"><span class="tip-mark" data-tip="summary_daily_gb">sum_gb</span></th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="src-body"></tbody>
+            </table>
+          </div>
+          <div class="row-actions">
+            <button type="button" class="btn-ghost" id="btn-add" data-i18n="add_row">+ Add custom source</button>
+            <button type="button" class="btn-ghost" id="btn-save" data-i18n="save">Save</button>
+            <button type="button" class="btn-ghost" id="btn-export" data-i18n="export">Export .json</button>
+          </div>
+        </section>
+
+        <section class="wiz-pane" data-pane="4" hidden>
+          <h3 data-i18n="step_review">Review & calculate</h3>
+          <pre id="review-box" class="conf-block review-box"></pre>
+          <p class="hint" data-i18n="review_hint">Back to edit any step, then calculate. Results open in tabs on the page.</p>
+          <p id="err" class="err" hidden></p>
+        </section>
+      </form>
+
+      <footer class="wizard-foot">
+        <button type="button" class="btn-ghost" id="btn-wiz-back" data-i18n="back" disabled>Back</button>
+        <div class="wiz-foot-right">
+          <button type="button" class="btn-ghost" data-close-wizard data-i18n="cancel">Cancel</button>
+          <button type="button" class="cta" id="btn-wiz-next" data-i18n="next">
+            <span class="cta-label">Next</span>
+            <span class="cta-glow" aria-hidden="true"></span>
+          </button>
+          <button type="button" class="cta" id="btn-wiz-calc" hidden data-i18n="calc">
+            <span class="cta-label">Calculate</span>
+            <span class="cta-glow" aria-hidden="true"></span>
+          </button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Detail content lives in Results tabs; wizard remains modal-only. -->
+
+  <div id="tip-pop" class="tip-pop" hidden role="tooltip"></div>
+
+  <script src="vendor/chart.umd.min.js"></script>
+  <script src="tips.js"></script>
+  <script src="wasm/wasm_exec.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

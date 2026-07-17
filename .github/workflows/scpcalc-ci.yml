@@ -1,0 +1,29 @@
+name: scpcalc CI
+
+on:
+  push:
+    paths:
+      - "scpcalc/**"
+      - ".github/workflows/scpcalc-ci.yml"
+  pull_request:
+    paths:
+      - "scpcalc/**"
+      - ".github/workflows/scpcalc-ci.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: scpcalc
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.x"
+      - name: WASM + test + build
+        run: |
+          chmod +x scripts/build_wasm.sh
+          make wasm
+          go test ./...
+          make build
