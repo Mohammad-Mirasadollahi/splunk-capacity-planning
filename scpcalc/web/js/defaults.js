@@ -7,6 +7,8 @@ export const DEMO_TOTAL_DAILY_GB = 500;
 export const DEMO_AVAILABLE_HOT_GB = 10000;
 export const DEMO_AVAILABLE_COLD_GB = 20000;
 export const DEMO_AVAILABLE_SUMMARIES_GB = 2000;
+export const DEMO_AVG_EVENT_BYTES = 500;
+export const DEMO_HEADROOM = 1.2;
 
 /** Per-preset default daily_gb (raw). Keys match presets catalog. */
 export const DEMO_SOURCE_DAILY_GB = {
@@ -23,6 +25,7 @@ export function demoGlobals() {
     available_hot_gb: DEMO_AVAILABLE_HOT_GB,
     available_cold_gb: DEMO_AVAILABLE_COLD_GB,
     available_summaries_gb: DEMO_AVAILABLE_SUMMARIES_GB,
+    headroom: DEMO_HEADROOM,
   };
 }
 
@@ -33,6 +36,9 @@ export function applyDemoSourceDefaults(row) {
   }
   if (DEMO_ENABLED_SOURCES.includes(row.key)) {
     row.enabled = true;
+  }
+  if (!(Number(row.event_bytes) > 0)) {
+    row.event_bytes = DEMO_AVG_EVENT_BYTES;
   }
   return row;
 }
@@ -47,11 +53,13 @@ function round3(n) {
 
 /**
  * Recommended wizard defaults from a target daily raw ingest (GB/day).
- * Used by Quick Start → Apply.
+ * Used by Quick Start → Apply. Pass headroom from the Quick Start field.
  */
-export function defaultsFromDailyGB(dailyGB) {
+export function defaultsFromDailyGB(dailyGB, { headroom } = {}) {
   const d = Math.max(0, Number(dailyGB) || 0);
   const scale = d > 0 ? d / DEMO_TOTAL_DAILY_GB : 1;
+  const hr = Number(headroom);
+  const head = Number.isFinite(hr) && hr >= 1 ? hr : DEMO_HEADROOM;
 
   let concurrent_users = 8;
   let concurrent_searches = 8;
@@ -80,7 +88,7 @@ export function defaultsFromDailyGB(dailyGB) {
     saved_searches,
     hot_warm_days: 30,
     retention_days: 90,
-    headroom: 1.2,
+    headroom: head,
     n_idx: 0,
     n_sh: 0,
     indexer_cluster: d >= 100,
@@ -91,17 +99,32 @@ export function defaultsFromDailyGB(dailyGB) {
   };
 }
 
-/** Scale demo Windows/Linux sources so they sum to totalGB (4:1). */
-export function scaleDemoSourcesToTotal(rows, totalGB) {
+/**
+ * Scale demo Windows/Linux sources so they sum to totalGB (4:1).
+ * Optionally seed avg event size (sources stay overridable afterward).
+ */
+export function scaleDemoSourcesToTotal(rows, totalGB, { eventBytes } = {}) {
   const d = Math.max(0, Number(totalGB) || 0);
   const keys = DEMO_ENABLED_SOURCES;
   const weights = keys.map((k) => DEMO_SOURCE_DAILY_GB[k] || 0);
   const wsum = weights.reduce((a, b) => a + b, 0) || 1;
+  const bytes = Math.max(1, Math.round(Number(eventBytes) || DEMO_AVG_EVENT_BYTES));
   for (const r of rows || []) {
     const i = keys.indexOf(r.key);
     if (i < 0) continue;
     r.enabled = true;
     r.daily_gb = d > 0 ? round3((d * weights[i]) / wsum) : "";
+    if (eventBytes != null) r.event_bytes = bytes;
   }
   return rows;
+}
+
+/** Apply planning avg event size to enabled sources (still editable per row later). */
+export function applyAvgEventBytesToSources(rows, eventBytes, { enabledOnly = true } = {}) {
+  const bytes = Math.max(1, Math.round(Number(eventBytes) || DEMO_AVG_EVENT_BYTES));
+  for (const r of rows || []) {
+    if (enabledOnly && !r.enabled) continue;
+    r.event_bytes = bytes;
+  }
+  return bytes;
 }

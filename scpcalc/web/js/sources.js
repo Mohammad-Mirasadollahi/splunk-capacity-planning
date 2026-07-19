@@ -11,6 +11,15 @@ import {
   numOr0,
   resolveEventBytes,
 } from "./volume-convert.js";
+import { DEMO_AVG_EVENT_BYTES } from "./defaults.js";
+
+/** Planning average event size: Quick Start field first, else enabled sources, else demo default. */
+export function planningAvgEventBytes() {
+  const fromQuick = numOr0(document.getElementById("avg_event_bytes")?.value);
+  if (fromQuick > 0) return Math.round(fromQuick);
+  const fromRows = averageEventBytes(state.rows, { enabledOnly: true });
+  return fromRows > 0 ? Math.round(fromRows) : DEMO_AVG_EVENT_BYTES;
+}
 
 export function blankCustom() {
   return {
@@ -90,12 +99,12 @@ export function refreshTotalCounterpart() {
   syncTotalVolumePair(null);
 }
 
-/** Sync total_daily_gb ↔ total_daily_eps using average event size from sources. */
+/** Sync total_daily_gb ↔ total_daily_eps using Quick Start avg event size (fallback: sources). */
 export function syncTotalVolumePair(edited) {
   const gbEl = document.getElementById("total_daily_gb") || document.querySelector('input[name="total_daily_gb"]');
   const epsEl = document.getElementById("total_daily_eps");
   if (!gbEl || !epsEl) return;
-  const bytes = averageEventBytes(state.rows, { enabledOnly: true });
+  const bytes = planningAvgEventBytes();
   if (edited === "eps") {
     const eps = numOr0(epsEl.value);
     const gb = eps > 0 ? roundVol(dailyGBFromEPS(eps, bytes), "gb") : "";

@@ -3,22 +3,33 @@
 
           <div class="subpanel quick-start" id="quick-start" aria-labelledby="quick-start-title">
             <header class="form-section-head">
-              <h4 id="quick-start-title" data-i18n="quick_title">Quick start — EPS or daily volume</h4>
-              <p class="hint" data-i18n="quick_hint">Enter total EPS or daily GB for an instant estimate. Optionally apply recommended defaults for volume, retention, topology, and sources.</p>
+              <h4 id="quick-start-title" data-i18n="quick_title">Quick start — volume drivers</h4>
+              <p class="hint" data-i18n="quick_hint">These are the only global volume drivers (not repeated below). Change them anytime later — Apply only seeds defaults; every field stays editable.</p>
             </header>
-            <div class="vol-pair-block" role="group" aria-label="Quick daily GB equals EPS">
+            <div class="vol-pair-block" role="group" aria-label="Total daily GB equals EPS">
               <label class="field vol-pair-side">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="total_daily_gb" data-i18n="lbl_total_daily">Total daily ingest (GB/day)</span><span class="field-hint" data-i18n="hint_total_daily">Raw/license volume before compression — not on-disk size. If sources are also filled, they scale to this total</span></span>
-                <input id="quick_daily_gb" type="number" step="any" min="0" value="" placeholder="e.g. 500" data-i18n-placeholder="ph_total_daily" inputmode="decimal">
+                <input name="total_daily_gb" id="total_daily_gb" type="number" step="any" min="0" value="500" placeholder="e.g. 500" data-i18n-placeholder="ph_total_daily" inputmode="decimal">
               </label>
               <span class="vol-eq vol-eq-lg" aria-hidden="true">=</span>
               <label class="field vol-pair-side">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="eps" data-i18n="lbl_total_eps">Total daily EPS</span><span class="field-hint" data-i18n="hint_total_eps">Linked to GB/day via average event size of your sources</span></span>
-                <input id="quick_daily_eps" type="number" step="any" min="0" value="" placeholder="e.g. 8000" data-i18n-placeholder="ph_total_eps" inputmode="decimal">
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="eps" data-i18n="lbl_total_eps">Total daily EPS</span><span class="field-hint" data-i18n="hint_total_eps">Linked to GB/day via average event size below</span></span>
+                <input id="total_daily_eps" type="number" step="any" min="0" value="" placeholder="e.g. 8000" data-i18n-placeholder="ph_total_eps" inputmode="decimal">
               </label>
             </div>
+            <div class="grid quick-drivers-grid">
+              <label class="field">
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="event_bytes" data-i18n="lbl_avg_event">Avg event size (bytes)</span><span class="field-hint" data-i18n="hint_avg_event">Average raw event / alert size — strongly drives GB↔EPS. Apply seeds sources; override per source later on the Sources step</span></span>
+                <input id="avg_event_bytes" type="number" step="1" min="1" value="500" placeholder="e.g. 500" data-i18n-placeholder="ph_avg_event" inputmode="numeric">
+              </label>
+              <label class="field">
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="headroom" data-i18n="lbl_headroom">Safety margin</span><span class="field-hint" data-i18n="hint_headroom">e.g. 1.2 = keep 20% spare capacity — multiplies searchable disk caps</span></span>
+                <input name="headroom" id="headroom" type="number" step="0.05" value="1.2" min="1">
+              </label>
+            </div>
+            <p class="hint" data-i18n="total_hint">Leave GB/EPS blank only if you plan solely from per-source volumes on the Sources step. Edit either side — the other updates from avg event size.</p>
             <label class="field check glass-chip quick-apply-chip"><input type="checkbox" id="quick-apply-defaults"> <span class="tip-mark" data-tip="total_daily_gb" data-i18n="quick_apply_lbl">Apply defaults to the rest of the wizard</span></label>
-            <p class="hint" data-i18n="quick_apply_hint">Checked: Estimate also fills total volume, scales demo sources, sets disk budgets and concurrent users/searches, and enables indexer cluster / SHC / SmartStore when the volume warrants it. Unchecked: estimate only — other wizard fields stay unchanged.</p>
+            <p class="hint" data-i18n="quick_apply_hint">Checked: Estimate seeds retention, disk budgets, concurrent users/searches, demo sources (GB + event size), and cluster/SHC/SmartStore when volume warrants it. Unchecked: estimate only. You can override any seeded value afterward.</p>
             <div class="row-actions quick-start-actions">
               <button type="button" class="cta" id="btn-quick-estimate">
                 <span class="cta-label" data-i18n="quick_estimate">Estimate</span>
@@ -33,22 +44,7 @@
             <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="ret-paths" data-i18n="tab_paths">Paths</button>
           </div>
           <div class="tab-panel is-active" data-panel="ret-vol" role="tabpanel">
-            <p class="hint" id="vol-mode-hint" data-i18n="tab_volumes_hint">Daily ingest drives the time↔disk conversion. Summaries disk is planned separately from hot/cold searchable retention.</p>
-            <div id="total-box" class="subpanel">
-              <h4 data-i18n="total_title">Total daily volume</h4>
-              <div class="vol-pair-block" role="group" aria-label="Total daily GB equals EPS">
-                <label class="field vol-pair-side">
-                  <span class="field-copy"><span class="field-label tip-mark" data-tip="total_daily_gb" data-i18n="lbl_total_daily">Total daily ingest (GB/day)</span><span class="field-hint" data-i18n="hint_total_daily">Raw/license volume before compression — not on-disk size. If sources are also filled, they scale to this total</span></span>
-                  <input name="total_daily_gb" id="total_daily_gb" type="number" step="any" min="0" value="500" placeholder="e.g. 500" data-i18n-placeholder="ph_total_daily">
-                </label>
-                <span class="vol-eq vol-eq-lg" aria-hidden="true">=</span>
-                <label class="field vol-pair-side">
-                  <span class="field-copy"><span class="field-label tip-mark" data-tip="eps" data-i18n="lbl_total_eps">Total daily EPS</span><span class="field-hint" data-i18n="hint_total_eps">Linked to GB/day via average event size of your sources</span></span>
-                  <input id="total_daily_eps" type="number" step="any" min="0" value="" placeholder="e.g. 8000" data-i18n-placeholder="ph_total_eps" inputmode="decimal">
-                </label>
-              </div>
-              <p class="hint" data-i18n="total_hint">Leave both blank if you only use per-source volumes below. Edit either box — the other updates automatically. Calculate always uses Daily GB.</p>
-            </div>
+            <p class="hint" id="vol-mode-hint" data-i18n="tab_volumes_hint">Total daily GB/EPS and safety margin live in Quick start above (single place). This tab is only for summaries disk budget — hot/cold searchable disk is on Policy.</p>
             <div id="capacity-box" class="subpanel">
               <h4 data-i18n="cap_sum_title">Summaries disk (GB)</h4>
               <div class="grid">
@@ -117,14 +113,10 @@
                     <output id="disk_total_out" class="readonly-value" for="available_hot_gb available_cold_gb">—</output>
                   </div>
                 </div>
-                <p class="hint" id="cap-disk-bridge" data-i18n="cap_bridge_hint">Bridge: disk ≈ daily on-disk × days × headroom. Set daily GB on Volumes (or sources) so conversion stays accurate.</p>
+                <p class="hint" id="cap-disk-bridge" data-i18n="cap_bridge_hint">Bridge: disk ≈ daily on-disk × days × headroom. Set daily GB in Quick start (or sources) so conversion stays accurate.</p>
               </div>
             </div>
             <div class="grid" style="margin-top:0.85rem">
-              <label class="field">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="headroom" data-i18n="lbl_headroom">Safety margin</span><span class="field-hint" data-i18n="hint_headroom">e.g. 1.2 = keep 20% spare capacity</span></span>
-                <input name="headroom" type="number" step="0.05" value="1.2" min="1">
-              </label>
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="summary_pct" data-i18n="lbl_summary_pct">Summary index share</span><span class="field-hint" data-i18n="hint_summary_pct">Share of source volume written to summaries</span></span>
                 <input name="summary_pct" type="number" step="0.01" value="0.10" min="0.01" max="1">
@@ -134,6 +126,7 @@
                 <input name="summary_retention_days" type="number" value="90" min="1">
               </label>
             </div>
+            <p class="hint" data-i18n="policy_headroom_note">Safety margin (headroom) is set once in Quick start above — it still applies to all size caps here.</p>
             <div class="field field-readonly" aria-live="polite" style="margin-top:0.65rem">
               <span class="field-copy"><span class="field-label tip-mark" data-tip="cold_path_max" data-i18n="lbl_cold_vol">Cold volume (indexes.conf)</span><span class="field-hint" data-i18n="hint_cold_vol">After Calculate: coldPath.maxDataSizeMB = maxTotal − homePath</span></span>
               <output id="cold_vol_auto" class="readonly-value" for="retention_days hot_warm_days">—</output>

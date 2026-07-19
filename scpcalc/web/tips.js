@@ -4,7 +4,7 @@ window.SCP_TIPS = {
     mode_sources: {
       title: "Per-source volume (Daily XOR EPS)",
       formula: "Daily_Raw_GB(source) = daily_gb  OR  EPS × 86400 × event_bytes / 1024³",
-      body: "Choose exactly one volume mode for the whole plan: Daily GB or EPS — not both as primary inputs. Under each number the UI shows the other unit (using event size). Sources without an EPS inherit the average EPS of sources that already have one. Combine freely with total_daily_gb and/or disk budgets on the Volumes tab.",
+      body: "Choose exactly one volume mode for the whole plan: Daily GB or EPS — not both as primary inputs. Under each number the UI shows the other unit (using event size). Sources without an EPS inherit the average EPS of sources that already have one. Combine freely with total_daily_gb (Quick start) and/or disk budgets.",
       example: "Daily 1 GB/day with event_bytes=500 → ≈ 23.8 EPS under the box. In EPS mode, a blank source takes the average EPS of filled sources.",
       links: [
         { label: "Estimate your storage requirements", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Estimateyourstoragerequirements" },
@@ -13,7 +13,7 @@ window.SCP_TIPS = {
     mode_total: {
       title: "Total daily ingest",
       formula: "Use total_daily_gb as D; optional source rows are scaled so Σ sources = total_daily_gb",
-      body: "Optional overall daily ingest on the Volumes tab. If you also fill sources, they scale to match the total. If sources are empty, index main is synthesized.",
+      body: "Optional overall daily ingest in Quick start. If you also fill sources, they scale to match the total. If sources are empty, index main is synthesized.",
       example: "total_daily_gb=500 with windows:linux = 4:1 → ~400 + 100 GB/day after scale.",
       links: [
         { label: "Estimate your storage requirements", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Estimateyourstoragerequirements" },
@@ -728,7 +728,7 @@ window.SCP_TIPS.fa = JSON.parse(JSON.stringify(window.SCP_TIPS.en));
   const fa = window.SCP_TIPS.fa;
   const map = {
     mode_sources: ["حجم هر منبع (Daily یا EPS)", "فقط یکی را به‌عنوان ورودی اصلی انتخاب کنید. زیر هر عدد واحد دیگر تخمین زده می‌شود؛ منبع بدون EPS میانگین EPS بقیه را می‌گیرد."],
-    mode_total: ["حجم کل روزانه", "اختیاری روی تب Volumes؛ با منابع اسکیل می‌شود یا ایندکس main ساخته می‌شود."],
+    mode_total: ["حجم کل روزانه", "اختیاری در Quick start؛ با منابع اسکیل می‌شود یا ایندکس main ساخته می‌شود."],
     mode_capacity: ["دیسک موجود باکت‌ها", "بودجه hot/cold اختیاری؛ تناسب دیسک و سقف روزانه/retention — قابل ترکیب با منابع/total."],
     indexer_cluster: ["کلاستر ایندکسر", "روشن = RF/SF فعال و ضریب 0.15×RF+0.35×SF. خاموش = برنامه‌ریزی standalone با Comp≈0.5."],
     rf: ["Replication Factor", "تعداد کپی rawdata در کلاستر. SF نباید از RF بیشتر باشد."],
