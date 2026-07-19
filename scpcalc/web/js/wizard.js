@@ -46,12 +46,20 @@ export function showStep(n) {
     void loadReviewPreview();
   }
   syncWizardBackLabel();
+  if (state.step === 0) {
+    import("./quick-start.js")
+      .then((m) => m.syncQuickFromGlobals?.())
+      .catch(() => {});
+  }
 }
 
 export function openWizard(atStep) {
   if (typeof atStep === "number") state.step = atStep;
   showStep(state.step);
   openModal(wizardModal());
+  import("./quick-start.js")
+    .then((m) => m.syncQuickFromGlobals?.())
+    .catch(() => {});
 }
 
 export function closeWizard() {

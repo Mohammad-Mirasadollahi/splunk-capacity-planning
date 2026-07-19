@@ -2,6 +2,7 @@
  * SCPcalc web UI entry — wires modular packages under ./js/
  */
 import { state, SAVE_KEY, STEPS, reduceMotion } from "./js/state.js";
+import { bindQuickStart } from "./js/quick-start.js";
 import { I18N, lang, setI18nHooks, bindLangSwitcher, t } from "./js/i18n.js";
 import { initTips, bindTips, refreshOpenTip } from "./js/tips-ui.js";
 import { bindModalChrome, closeModal, openModal } from "./js/modal.js";
@@ -233,6 +234,7 @@ bindFeaturePrompts();
 bindNumberSteppers();
 bindSourcesTable();
 bindWizard();
+bindQuickStart();
 bindConfEditor();
 bindPersistence();
 bindCalculate();

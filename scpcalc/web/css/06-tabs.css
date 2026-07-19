@@ -178,6 +178,36 @@
   padding-top: 0;
 }
 
+.quick-start {
+  margin-bottom: 1rem;
+  border-color: rgba(63, 224, 197, 0.22);
+}
+
+.quick-start-actions {
+  margin-top: 0.65rem;
+}
+
+.quick-apply-chip {
+  margin-top: 0.35rem;
+}
+
+.quick-estimate-out {
+  margin-top: 0.75rem;
+}
+
+.quick-estimate-title {
+  margin: 0 0 0.35rem;
+}
+
+.quick-estimate-list {
+  margin: 0 0 0.45rem;
+  padding-inline-start: 1.15rem;
+}
+
+.quick-estimate-list li {
+  margin: 0.15rem 0;
+}
+
 input.is-counterpart-input {
   opacity: 0.85;
   cursor: default;

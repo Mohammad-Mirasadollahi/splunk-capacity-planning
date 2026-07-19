@@ -449,12 +449,18 @@ export function migrateWizardStep(data) {
   if (ver < 4 && (data?.globals?.mode != null || ver === 3)) {
     step = Math.max(0, step - 1);
   }
+  // v6 and earlier: Topology was step 0, Retention step 1.
+  // v7+: Volume/Retention first (0), Topology/Cluster second (1).
+  if (ver < 7) {
+    if (step === 0) step = 1;
+    else if (step === 1) step = 0;
+  }
   return Math.max(0, Math.min(3, step));
 }
 
 export function snapshot() {
   return {
-    version: 6,
+    version: 7,
     volume_input_mode: readVolumeInputMode(),
     capacity_plan_mode: readCapacityPlanMode(),
     globals: collectGlobals(),
@@ -481,9 +487,9 @@ export function applySnapshot(data) {
   syncCapacityPair("mode");
 }
 
-export function buildPlanBody() {
+export function buildPlanBody(overrides = {}) {
   syncCapacityPair(null);
-  const g = collectGlobals();
+  const g = { ...collectGlobals(), ...overrides };
   syncVolumeInputMode("daily_gb");
   const sources = state.rows
     .filter((r) => r.enabled)
@@ -530,11 +536,7 @@ export function fillReview() {
   });
   const coldDays = Math.max(0, g.retention_days - g.hot_warm_days);
   const lines = [
-    `— From topology —`,
-    `Indexer cluster: ${g.indexer_cluster} (RF=${g.rf} SF=${g.sf}) | n_idx=${g.n_idx || "auto"}`,
-    `Search head cluster: ${g.search_head_cluster} | users=${g.concurrent_users} searches=${g.concurrent_searches} saved=${g.saved_searches} | n_sh=${g.n_sh || "auto"}`,
-    `apps: ES=${g.has_es} ITSI=${g.has_itsi} DMA=${g.enable_dma} SmartStore=${g.smartstore}`,
-    `— From retention —`,
+    `— From volume & retention —`,
     `plan by: ${g.capacity_plan_mode} | hot: ${g.hot_warm_days}d + cold: ${coldDays}d = total ${g.retention_days}d | headroom: ${g.headroom} | summary_ret: ${g.summary_retention_days}d`,
     `archive_frozen: ${g.archive_frozen}${g.archive_frozen ? ` → ${g.frozen_path}` : ""}`,
     `paths: ${g.hot_path} | ${g.cold_path} | ${g.frozen_path} | ${g.summaries_path}`,
@@ -545,6 +547,14 @@ export function fillReview() {
       `disk GB: hot=${g.available_hot_gb || 0} cold=${g.available_cold_gb || 0} summaries=${g.available_summaries_gb || 0}`
     );
   }
+  lines.push(`— From topology / cluster —`);
+  lines.push(
+    `Indexer cluster: ${g.indexer_cluster} (RF=${g.rf} SF=${g.sf}) | n_idx=${g.n_idx || "auto"}`
+  );
+  lines.push(
+    `Search head cluster: ${g.search_head_cluster} | users=${g.concurrent_users} searches=${g.concurrent_searches} saved=${g.saved_searches} | n_sh=${g.n_sh || "auto"}`
+  );
+  lines.push(`apps: ES=${g.has_es} ITSI=${g.has_itsi} DMA=${g.enable_dma} SmartStore=${g.smartstore}`);
   lines.push(`— From sources —`);
   lines.push(`volume input: GB/day = EPS (calc uses Daily GB) | enabled=${enabled.length} | Σ sources ≈ ${formatDailyGB(srcSum)} GB/day`);
   enabled.forEach((r) => {

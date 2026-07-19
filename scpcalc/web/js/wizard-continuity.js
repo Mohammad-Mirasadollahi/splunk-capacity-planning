@@ -11,6 +11,7 @@ import { t } from "./i18n.js";
 import { collectGlobals, readVolumeInputMode, fillReview } from "./plan-form.js";
 import { renderRows, refreshTotalCounterpart } from "./sources.js";
 import { setSoftTip } from "./tips-ui.js";
+import { syncQuickFromGlobals } from "./quick-start.js";
 
 /** When true, summary_retention_days tracks retention_days. */
 let summaryRetentionLinked = true;
@@ -38,30 +39,8 @@ function buildContextHTML(step) {
   const enabled = state.rows.filter((r) => r.enabled);
   const bits = [];
 
+  // Step order v7+: 0=Volume/Retention, 1=Topology/Cluster, 2=Sources, 3=Review
   if (step >= 1) {
-    const topo = [];
-    topo.push(
-      g.indexer_cluster
-        ? t("ctx_idx_cluster_on").replace("{rf}", String(g.rf)).replace("{sf}", String(g.sf))
-        : t("ctx_idx_cluster_off")
-    );
-    topo.push(
-      g.search_head_cluster
-        ? t("ctx_shc_on").replace("{u}", String(g.concurrent_users)).replace("{s}", String(g.concurrent_searches))
-        : t("ctx_shc_off").replace("{u}", String(g.concurrent_users)).replace("{s}", String(g.concurrent_searches))
-    );
-    if (g.n_idx > 0) topo.push(t("ctx_n_idx").replace("{n}", String(g.n_idx)));
-    if (g.n_sh > 0) topo.push(t("ctx_n_sh").replace("{n}", String(g.n_sh)));
-    const apps = [];
-    if (g.has_es) apps.push("ES");
-    if (g.has_itsi) apps.push("ITSI");
-    if (g.enable_dma) apps.push("DMA");
-    if (g.smartstore) apps.push("SmartStore");
-    if (apps.length) topo.push(apps.join(" · "));
-    bits.push(`<strong>${t("ctx_from_topology")}</strong> ${topo.join(" · ")}`);
-  }
-
-  if (step >= 2) {
     const coldDays = Math.max(0, (g.retention_days || 0) - (g.hot_warm_days || 0));
     const ret = [
       t("ctx_retention")
@@ -84,6 +63,29 @@ function buildContextHTML(step) {
       );
     }
     bits.push(`<strong>${t("ctx_from_retention")}</strong> ${ret.join(" · ")}`);
+  }
+
+  if (step >= 2) {
+    const topo = [];
+    topo.push(
+      g.indexer_cluster
+        ? t("ctx_idx_cluster_on").replace("{rf}", String(g.rf)).replace("{sf}", String(g.sf))
+        : t("ctx_idx_cluster_off")
+    );
+    topo.push(
+      g.search_head_cluster
+        ? t("ctx_shc_on").replace("{u}", String(g.concurrent_users)).replace("{s}", String(g.concurrent_searches))
+        : t("ctx_shc_off").replace("{u}", String(g.concurrent_users)).replace("{s}", String(g.concurrent_searches))
+    );
+    if (g.n_idx > 0) topo.push(t("ctx_n_idx").replace("{n}", String(g.n_idx)));
+    if (g.n_sh > 0) topo.push(t("ctx_n_sh").replace("{n}", String(g.n_sh)));
+    const apps = [];
+    if (g.has_es) apps.push("ES");
+    if (g.has_itsi) apps.push("ITSI");
+    if (g.enable_dma) apps.push("DMA");
+    if (g.smartstore) apps.push("SmartStore");
+    if (apps.length) topo.push(apps.join(" · "));
+    bits.push(`<strong>${t("ctx_from_topology")}</strong> ${topo.join(" · ")}`);
   }
 
   if (step >= 3) {
@@ -130,6 +132,7 @@ export function refreshWizardContext(step = state.step, { remountSources = false
   if (step <= 0) {
     el.hidden = true;
     el.innerHTML = "";
+    syncQuickFromGlobals();
     return;
   }
   syncLinkedSummaryRetention();
@@ -161,6 +164,7 @@ export function bindWizardContinuity() {
     if (name === "retention_days" || name === "hot_warm_days" || name === "cold_days") {
       syncLinkedSummaryRetention();
     }
+    if (name === "total_daily_gb") syncQuickFromGlobals();
     if (state.step >= 1) refreshWizardContext(state.step);
   });
   form.addEventListener("input", (e) => {
@@ -169,6 +173,7 @@ export function bindWizardContinuity() {
     if (name === "retention_days" || name === "hot_warm_days" || name === "cold_days") {
       syncLinkedSummaryRetention();
     }
+    if (name === "total_daily_gb") syncQuickFromGlobals();
     if (state.step >= 1) refreshWizardContext(state.step);
   });
 }

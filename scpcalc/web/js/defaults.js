@@ -36,3 +36,72 @@ export function applyDemoSourceDefaults(row) {
   }
   return row;
 }
+
+function round1(n) {
+  return Math.round(Number(n) || 0);
+}
+
+function round3(n) {
+  return Math.round((Number(n) || 0) * 1000) / 1000;
+}
+
+/**
+ * Recommended wizard defaults from a target daily raw ingest (GB/day).
+ * Used by Quick Start → Apply.
+ */
+export function defaultsFromDailyGB(dailyGB) {
+  const d = Math.max(0, Number(dailyGB) || 0);
+  const scale = d > 0 ? d / DEMO_TOTAL_DAILY_GB : 1;
+
+  let concurrent_users = 8;
+  let concurrent_searches = 8;
+  let saved_searches = 20;
+  if (d >= 1000) {
+    concurrent_users = 24;
+    concurrent_searches = 40;
+    saved_searches = 200;
+  } else if (d >= 500) {
+    concurrent_users = 16;
+    concurrent_searches = 24;
+    saved_searches = 100;
+  } else if (d >= 100) {
+    concurrent_users = 12;
+    concurrent_searches = 16;
+    saved_searches = 50;
+  }
+
+  return {
+    total_daily_gb: round3(d),
+    available_hot_gb: Math.max(100, round1(DEMO_AVAILABLE_HOT_GB * scale)),
+    available_cold_gb: Math.max(100, round1(DEMO_AVAILABLE_COLD_GB * scale)),
+    available_summaries_gb: Math.max(50, round1(DEMO_AVAILABLE_SUMMARIES_GB * scale)),
+    concurrent_users,
+    concurrent_searches,
+    saved_searches,
+    hot_warm_days: 30,
+    retention_days: 90,
+    headroom: 1.2,
+    n_idx: 0,
+    n_sh: 0,
+    indexer_cluster: d >= 100,
+    search_head_cluster: concurrent_users >= 12,
+    smartstore: d >= 500,
+    rf: 3,
+    sf: 2,
+  };
+}
+
+/** Scale demo Windows/Linux sources so they sum to totalGB (4:1). */
+export function scaleDemoSourcesToTotal(rows, totalGB) {
+  const d = Math.max(0, Number(totalGB) || 0);
+  const keys = DEMO_ENABLED_SOURCES;
+  const weights = keys.map((k) => DEMO_SOURCE_DAILY_GB[k] || 0);
+  const wsum = weights.reduce((a, b) => a + b, 0) || 1;
+  for (const r of rows || []) {
+    const i = keys.indexOf(r.key);
+    if (i < 0) continue;
+    r.enabled = true;
+    r.daily_gb = d > 0 ? round3((d * weights[i]) / wsum) : "";
+  }
+  return rows;
+}
