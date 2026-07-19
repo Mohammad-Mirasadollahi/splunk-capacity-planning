@@ -2,6 +2,10 @@
 
 All notable changes to this repository are documented here.
 
+## 0.3.1 — 2026-07-19
+
+- Quick Start adds avg event size and headroom as single volume drivers; Apply seeds stay overridable
+
 ## 0.3.0 — 2026-07-19
 
 - Wizard Quick Start: EPS or daily volume estimate with optional Apply defaults; Volume/Retention first, Cluster second
