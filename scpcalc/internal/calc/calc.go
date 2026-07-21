@@ -19,7 +19,7 @@ func Calculate(in model.Input) (model.Result, error) {
 		return model.Result{}, err
 	}
 	if len(plan.Indexes) == 0 {
-		return model.Result{}, err
+		return model.Result{}, fmt.Errorf("no indexes to size")
 	}
 	ix := plan.Indexes[0]
 	return model.Result{
@@ -115,6 +115,7 @@ func CalculatePlan(p model.PlanInput) (model.PlanResult, error) {
 		}
 		if hw > ret {
 			out.Warnings = append(out.Warnings, s.IndexName+": hot_warm_days > retention_days")
+			hw = ret // keep homePath.maxDataSizeMB <= maxTotalDataSizeMB
 		}
 
 		dailyRaw := s.DailyGB
@@ -124,6 +125,9 @@ func CalculatePlan(p model.PlanInput) (model.PlanResult, error) {
 		dailyOnDisk := dailyRaw * comp
 		maxTotal := int64(math.Round(dailyOnDisk * 1024 * float64(ret) * p.Headroom))
 		homeMax := int64(math.Round(dailyOnDisk * 1024 * float64(hw) * p.Headroom))
+		if homeMax > maxTotal {
+			homeMax = maxTotal
+		}
 		frozen := int64(ret) * 86400
 		maxData := "auto"
 		if dailyRaw >= 10 {
@@ -131,9 +135,6 @@ func CalculatePlan(p model.PlanInput) (model.PlanResult, error) {
 		}
 
 		coldPart := maxTotal - homeMax
-		if coldPart < 0 {
-			coldPart = 0
-		}
 		ix := model.IndexResult{
 			Key:                    s.Key,
 			Label:                  firstNonEmpty(s.Label, s.IndexName),
@@ -296,6 +297,9 @@ func applyPerPeer(out *model.PlanResult, d *model.Design) {
 		// Keep cold = maxTotal − home after peer split (ceilDiv can leave a 1-unit gap).
 		if rem := ix.MaxTotalDataSizeMB - ix.HomePathMaxDataSizeMB; rem >= 0 {
 			ix.ColdPathMaxDataSizeMB = rem
+		} else {
+			ix.HomePathMaxDataSizeMB = ix.MaxTotalDataSizeMB
+			ix.ColdPathMaxDataSizeMB = 0
 		}
 		if ix.SummaryMaxTotalMB > 0 {
 			ix.SummaryMaxTotalMB = ceilDiv(ix.SummaryMaxTotalMB, nidx)
@@ -303,6 +307,7 @@ func applyPerPeer(out *model.PlanResult, d *model.Design) {
 			if rem := ix.SummaryMaxTotalMB - ix.SummaryHomeMaxMB; rem >= 0 {
 				ix.SummaryColdMaxMB = rem
 			} else {
+				ix.SummaryHomeMaxMB = ix.SummaryMaxTotalMB
 				ix.SummaryColdMaxMB = 0
 			}
 		}

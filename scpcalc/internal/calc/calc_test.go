@@ -172,3 +172,47 @@ func TestESSmartStoreWarning(t *testing.T) {
 		t.Fatalf("expected ES SmartStore warning, got %v", res.Warnings)
 	}
 }
+
+func TestHotWarmExceedsRetentionClampsHomePath(t *testing.T) {
+	res, err := calc.Calculate(model.Input{
+		DailyGB:       100,
+		RetentionDays: 30,
+		HotWarmDays:   90,
+		Headroom:      1.0,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.HomePathMaxDataSizeMB > res.MaxTotalDataSizeMB {
+		t.Fatalf("homePath %d exceeds maxTotal %d", res.HomePathMaxDataSizeMB, res.MaxTotalDataSizeMB)
+	}
+	if res.HomePathMaxDataSizeMB != res.MaxTotalDataSizeMB {
+		t.Fatalf("expected homePath clamped to maxTotal, home=%d total=%d", res.HomePathMaxDataSizeMB, res.MaxTotalDataSizeMB)
+	}
+	if res.ColdPathMaxDataSizeMB != 0 {
+		t.Fatalf("expected coldPath 0 when hot_warm covers all retention, got %d", res.ColdPathMaxDataSizeMB)
+	}
+	found := false
+	for _, w := range res.Warnings {
+		if strings.Contains(w, "hot_warm_days > retention_days") {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatalf("expected hot_warm_days warning, got %v", res.Warnings)
+	}
+}
+
+func TestCalculateRejectsZeroIngest(t *testing.T) {
+	// Legacy Calculate must not return an empty Result with a nil error when
+	// there is nothing to size (zero ingest is dropped before index rows exist).
+	_, err := calc.Calculate(model.Input{
+		RetentionDays: 30,
+		HotWarmDays:   7,
+		Headroom:      1.0,
+	})
+	if err == nil {
+		t.Fatal("expected error when legacy Calculate has no sized indexes")
+	}
+}
