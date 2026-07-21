@@ -7,7 +7,8 @@
 #   3) commits on the current branch
 #   4) creates annotated tag scpcalc-vX.Y.Z
 #   5) pushes branch + tag → GitHub Actions builds binaries/WASM and publishes the Release
-#      (scpcalc-release.yml) and publishes the GHCR container package (scpcalc-package.yml)
+#      (scpcalc-release.yml reads CHANGELOG.md via tools/build_release_notes.py for What's Changed)
+#      and publishes the GHCR container package (scpcalc-package.yml)
 #
 # Usage:
 #   ./tools/release.sh                         # interactive (recommended)
