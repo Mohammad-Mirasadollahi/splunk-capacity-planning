@@ -30,24 +30,20 @@ jobs:
         run: |
           chmod +x scripts/make_release.sh scripts/build_wasm.sh
           GO=go VERSION="${{ steps.ver.outputs.version }}" bash scripts/make_release.sh "${{ steps.ver.outputs.version }}"
+      - name: Build release notes from CHANGELOG
+        working-directory: .
+        run: |
+          python3 tools/build_release_notes.py "${{ steps.ver.outputs.version }}" \
+            --out "$RUNNER_TEMP/scpcalc-release-notes.md"
+          echo "---- release notes preview ----"
+          head -n 40 "$RUNNER_TEMP/scpcalc-release-notes.md"
       - name: Upload Release
         uses: softprops/action-gh-release@v2
         with:
+          name: SCPcalc ${{ steps.ver.outputs.version }}
           files: scpcalc/releases/scpcalc-v${{ steps.ver.outputs.version }}/*
-          generate_release_notes: true
-          body: |
-            Portable **SCPcalc** `${{ steps.ver.outputs.version }}`
-
-            - **Binaries** — CLI + embedded Web UI (`serve`)
-            - **WASM** — `scpcalc-*-wasm.gz` / `.wasm` for static browser hosting (not stored in git)
-            - **GitHub Package (container)** — `ghcr.io/mohammad-mirasadollahi/scpcalc:${{ steps.ver.outputs.version }}`
-              (published by workflow `scpcalc-package.yml` on the same tag)
-
-            ```bash
-            docker pull ghcr.io/mohammad-mirasadollahi/scpcalc:${{ steps.ver.outputs.version }}
-            docker run --rm -p 12345:12345 ghcr.io/mohammad-mirasadollahi/scpcalc:${{ steps.ver.outputs.version }}
-            ```
-
-            Docs: `scpcalc/docs/` · Knowledge pack: `docs/en/` · Static UI deploy: Pages `/calc/`
+          # CHANGELOG is the source of truth for "what changed"; avoid duplicating raw commit spam.
+          generate_release_notes: false
+          body_path: ${{ runner.temp }}/scpcalc-release-notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

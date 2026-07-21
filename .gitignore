@@ -129,6 +129,11 @@ credentials.json
 secrets.*
 *.secret
 
+# --- Personal local notes (never publish; machine-specific auth paths) ---
+LOCAL-PUSH.md
+LOCAL-*.md
+.local/
+
 # --- Archives / dumps ---
 *.zip
 *.tar
