@@ -2,6 +2,10 @@
 
 All notable changes to this repository are documented here.
 
+## 0.3.2 — 2026-07-21
+
+- Fix homePath exceeding maxTotal, empty-index success path, and duplicate cluster metric cards
+
 ## 0.3.1 — 2026-07-19
 
 - Quick Start adds avg event size and headroom as single volume drivers; Apply seeds stay overridable
