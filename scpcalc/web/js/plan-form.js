@@ -311,6 +311,7 @@ export function syncCapacityPair(edited = null) {
   }
 
   syncColdVolumePreview();
+  import("./sources.js").then((m) => m.refreshIndexSizePreviews?.()).catch(() => {});
 }
 
 export function syncVolumeInputMode(_mode, { convert: _convert = false } = {}) {
@@ -348,14 +349,18 @@ export function collectGlobals() {
   const dmaOn = fd.get("enable_dma") === "on";
   const hotDays = num(fd, "hot_warm_days", 7);
   const coldDaysRaw = fd.get("cold_days");
+  let coldDays = 0;
   let retention = num(fd, "retention_days", 37);
   if (coldDaysRaw != null && String(coldDaysRaw) !== "") {
-    const cold = Math.max(0, Math.floor(Number(coldDaysRaw) || 0));
-    retention = Math.max(0, Math.floor(hotDays) + cold);
+    coldDays = Math.max(0, Math.floor(Number(coldDaysRaw) || 0));
+    retention = Math.max(0, Math.floor(hotDays) + coldDays);
+  } else {
+    coldDays = Math.max(0, Math.floor(retention) - Math.floor(hotDays));
   }
   return {
     retention_days: retention,
     hot_warm_days: hotDays,
+    cold_days: coldDays,
     headroom: num(fd, "headroom", 1.2),
     summary_pct: num(fd, "summary_pct", 0.1),
     summary_retention_days: num(fd, "summary_retention_days", 37),
@@ -595,6 +600,10 @@ export function bindPlanFormChrome() {
         const dma = document.getElementById("enable_dma");
         if (dma) dma.checked = true;
         syncToggleUI();
+        import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
+      } else if (input.id === "enable_dma" || input.id === "has_es" || input.id === "has_itsi") {
+        syncToggleUI();
+        import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
       } else syncToggleUI();
     });
   });
@@ -623,6 +632,23 @@ export function bindPlanFormChrome() {
       const cold = numOr0(document.getElementById("available_cold_gb")?.value);
       syncDiskTotal(hot, cold);
       import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
+    };
+    el.addEventListener("input", run);
+    el.addEventListener("change", run);
+  });
+  document.querySelectorAll('input[name="summary_pct"], #summary_pct, input[name="summary_retention_days"], #summary_retention_days').forEach((el) => {
+    const run = () => import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
+    el.addEventListener("input", run);
+    el.addEventListener("change", run);
+  });
+  document.querySelectorAll("#avg_event_bytes, input[name=\"avg_event_bytes\"]").forEach((el) => {
+    const run = () => {
+      import("./sources.js").then((m) => {
+        m.refreshTotalCounterpart?.();
+        m.refreshIndexSizePreviews?.();
+      }).catch(() => {});
+      import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
+      syncCapacityPair("bridge");
     };
     el.addEventListener("input", run);
     el.addEventListener("change", run);

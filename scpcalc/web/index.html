@@ -527,7 +527,7 @@
             <section class="form-section" aria-labelledby="sec-log-sources-title">
               <header class="form-section-head">
                 <h4 id="sec-log-sources-title" data-i18n="sec_log_sources">Log sources</h4>
-                <p class="hint" data-i18n="sources_hint">Turn on each source and set daily GB/EPS. Optional Retention / Hot-warm days override Policy globals (blank = use Policy). Per-index maxTotalDataSizeMB is calculated at Calculate — not typed in this table.</p>
+                <p class="hint" data-i18n="sources_hint">Turn on each source and set daily GB/EPS. Optional Retention / Hot-warm days override Policy globals (blank = use Policy). Index size (GB) is a live cluster-wide preview of maxTotalDataSizeMB ≈ on-disk × retention × headroom (under-fill scales to total_daily_gb; conf may ÷ peers). Need vs Policy disk budgets is checked live with a clear error.</p>
               </header>
               <p id="volume-budget-err" class="err volume-budget-err" hidden role="alert"></p>
               <div class="table-wrap">
@@ -541,6 +541,7 @@
                       <th class="src-col-vol"><span class="tip-mark" data-tip="daily_gb" id="col-vol-label" data-i18n="col_vol_pair">GB/day = EPS</span></th>
                       <th><span class="tip-mark" data-tip="retention_days" data-i18n="col_ret">Retention days</span></th>
                       <th><span class="tip-mark" data-tip="hot_warm_days" data-i18n="col_hw">Hot/warm days</span></th>
+                      <th class="src-col-idx-size"><span class="tip-mark" data-tip="max_total" data-i18n="col_idx_size">maxTotal (MB)</span></th>
                       <th><span class="tip-mark" data-tip="enable_summary" data-i18n="col_summary">Summary</span></th>
                       <th><span class="tip-mark" data-tip="summary_daily_gb" data-i18n="col_sum_gb">Summary GB/day</span></th>
                       <th></th>

@@ -6,12 +6,11 @@ import {
   averageEventBytes,
   dailyGBFromEPS,
   epsFromDailyGB,
-  formatDailyGB,
-  formatEPS,
   numOr0,
   resolveEventBytes,
 } from "./volume-convert.js";
 import { DEMO_AVG_EVENT_BYTES } from "./defaults.js";
+import { formatSizeGB, formatSizeMB, planSourceDiskNeeds, underfillScaleFactor } from "./source-sizing.js";
 
 /** Planning average event size: Quick Start field first, else enabled sources, else demo default. */
 export function planningAvgEventBytes() {
@@ -19,6 +18,69 @@ export function planningAvgEventBytes() {
   if (fromQuick > 0) return Math.round(fromQuick);
   const fromRows = averageEventBytes(state.rows, { enabledOnly: true });
   return fromRows > 0 ? Math.round(fromRows) : DEMO_AVG_EVENT_BYTES;
+}
+
+function indexSizeCellHTML(sized) {
+  if (!sized) {
+    return `<td class="src-col-idx-size"><span class="src-dep-placeholder">—</span></td>`;
+  }
+  const maxMB = formatSizeMB(sized.maxTotalMB);
+  const maxGB = formatSizeGB(sized.maxTotalGB);
+  const homeMB = formatSizeMB(sized.homeMB);
+  const scaleNote =
+    sized.scale > 1.001
+      ? `<span class="src-idx-scale" title="${escapeAttr(t("col_idx_scale_tip"))}">×${sized.scale.toFixed(2)}</span>`
+      : "";
+  return `<td class="src-col-idx-size">
+    <output class="src-idx-size readonly-value" data-idx-size="${sized.i}" aria-live="polite" title="maxTotalDataSizeMB (cluster-wide, pre peer-split)">${maxMB}</output>
+    <span class="src-idx-gb" data-idx-gb="${sized.i}">≈ ${maxGB} GB</span>
+    <span class="src-idx-home tip-mark" data-tip="hot_warm_days" data-idx-home="${sized.i}" title="homePath.maxDataSizeMB">${t("col_idx_home_short").replace("{n}", homeMB)}</span>
+    ${scaleNote}
+  </td>`;
+}
+
+export function refreshIndexSizePreviews() {
+  import("./plan-form.js")
+    .then(({ collectGlobals }) => {
+      const g = collectGlobals();
+      const plan = planSourceDiskNeeds(state.rows, g);
+      const byIndex = new Map();
+      plan.rows.forEach((s) => {
+        const idx = state.rows.indexOf(s.row);
+        if (idx >= 0) byIndex.set(idx, s);
+      });
+      state.rows.forEach((r, i) => {
+        const out = document.querySelector(`[data-idx-size="${i}"]`);
+        const gbEl = document.querySelector(`[data-idx-gb="${i}"]`);
+        const homeEl = document.querySelector(`[data-idx-home="${i}"]`);
+        const tr = document.querySelector(`tr[data-i="${i}"]`);
+        if (!out) return;
+        const sized = byIndex.get(i);
+        if (!r.enabled || !sized) {
+          out.textContent = "—";
+          if (gbEl) gbEl.textContent = "";
+          if (homeEl) homeEl.textContent = t("col_idx_home_short").replace("{n}", "—");
+          tr?.querySelector(".src-idx-scale")?.remove();
+          return;
+        }
+        out.textContent = formatSizeMB(sized.maxTotalMB);
+        if (gbEl) gbEl.textContent = `≈ ${formatSizeGB(sized.maxTotalGB)} GB`;
+        if (homeEl) homeEl.textContent = t("col_idx_home_short").replace("{n}", formatSizeMB(sized.homeMB));
+        let scaleEl = tr?.querySelector(".src-idx-scale");
+        if (sized.scale > 1.001) {
+          if (!scaleEl && tr) {
+            scaleEl = document.createElement("span");
+            scaleEl.className = "src-idx-scale";
+            scaleEl.title = t("col_idx_scale_tip");
+            tr.querySelector(".src-col-idx-size")?.appendChild(scaleEl);
+          }
+          if (scaleEl) scaleEl.textContent = `×${sized.scale.toFixed(2)}`;
+        } else {
+          scaleEl?.remove();
+        }
+      });
+    })
+    .catch(() => {});
 }
 
 export function blankCustom() {
@@ -120,11 +182,12 @@ export function syncTotalVolumePair(edited) {
   }
 }
 
-function volumeRowHTML(r, i) {
+function volumeRowHTML(r, i, sizedMap) {
   const title = r.notes ? ` data-soft-tip="${escapeAttr(r.notes)}" data-soft-tip-title="${escapeAttr(r.label || r.index_name || "Source")}"` : "";
   const on = !!r.enabled;
   const sumOn = !!r.enable_summary;
   const p = `src-${i}`;
+  const sized = on ? sizedMap.get(i) : null;
   return `<tr data-i="${i}" class="${on ? "src-row-on" : "src-row-off"}"${title}>
     <td><input type="checkbox" id="${p}-enabled" data-f="enabled" class="src-toggle" ${on ? "checked" : ""} aria-label="Use source"></td>
     <td><input type="text" id="${p}-label" data-f="label" value="${escapeAttr(r.label)}" ${on ? "" : "disabled"} autocomplete="off"></td>
@@ -133,6 +196,7 @@ function volumeRowHTML(r, i) {
     <td class="src-col-vol">${volumeCell(r, i, on)}</td>
     <td><input type="number" id="${p}-retention_days" data-f="retention_days" min="0" step="1" value="${r.retention_days}" placeholder="glob" ${on ? "" : "disabled"} autocomplete="off"></td>
     <td><input type="number" id="${p}-hot_warm_days" data-f="hot_warm_days" min="0" step="1" value="${r.hot_warm_days}" placeholder="glob" ${on ? "" : "disabled"} autocomplete="off"></td>
+    ${indexSizeCellHTML(sized)}
     <td><input type="checkbox" id="${p}-enable_summary" data-f="enable_summary" class="src-toggle" ${sumOn ? "checked" : ""} ${on ? "" : "disabled"}></td>
     <td class="src-col-sum-gb">${
       sumOn && on
@@ -143,20 +207,49 @@ function volumeRowHTML(r, i) {
   </tr>`;
 }
 
+function bumpBudgetsAndSizes() {
+  import("./state.js").then(({ state: st }) => {
+    st.capacityPlanMode = "time";
+  }).catch(() => {});
+  import("./plan-form.js")
+    .then((m) => {
+      m.syncCapacityPair?.("bridge");
+      return import("./volume-budget.js");
+    })
+    .then((m) => m.refreshVolumeBudgetUI?.())
+    .catch(() => {
+      import("./volume-budget.js").then((vb) => vb.refreshVolumeBudgetUI?.()).catch(() => {});
+    });
+}
+
 export function renderRows() {
   const srcBody = document.getElementById("src-body");
   if (!srcBody) return;
 
-  // Ensure linked pairs are consistent before paint (prefer GB as planning source of truth).
   state.rows.forEach((r) => {
     if (numOr0(r.daily_gb) > 0) syncRowVolumePair(r, state.rows, "daily_gb");
     else if (numOr0(r.eps) > 0) syncRowVolumePair(r, state.rows, "eps");
   });
 
-  srcBody.innerHTML = state.rows.map((r, i) => volumeRowHTML(r, i)).join("");
-  bindTips(srcBody);
-  refreshTotalCounterpart();
-  import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
+  import("./plan-form.js")
+    .then(({ collectGlobals }) => {
+      const g = collectGlobals();
+      const plan = planSourceDiskNeeds(state.rows, g);
+      const sizedMap = new Map();
+      plan.rows.forEach((s) => {
+        const idx = state.rows.indexOf(s.row);
+        if (idx >= 0) sizedMap.set(idx, { ...s, i: idx });
+      });
+      srcBody.innerHTML = state.rows.map((r, i) => volumeRowHTML(r, i, sizedMap)).join("");
+      bindTips(srcBody);
+      refreshTotalCounterpart();
+      import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
+    })
+    .catch(() => {
+      srcBody.innerHTML = state.rows.map((r, i) => volumeRowHTML(r, i, new Map())).join("");
+      bindTips(srcBody);
+      refreshTotalCounterpart();
+    });
 }
 
 function bindTableBody(srcBody) {
@@ -171,17 +264,17 @@ function bindTableBody(srcBody) {
     if (e.target.type === "checkbox") {
       state.rows[i][f] = e.target.checked;
       if (f === "enabled" || f === "enable_summary") renderRows();
-      else {
-        refreshTotalCounterpart();
-        import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
-      }
+      else bumpBudgetsAndSizes();
     } else {
       state.rows[i][f] = e.target.value;
       if (f === "daily_gb" || f === "eps" || f === "event_bytes") {
         syncRowVolumePair(state.rows[i], state.rows, f);
         updatePairInputs(tr, state.rows[i]);
         refreshTotalCounterpart();
-        import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
+        bumpBudgetsAndSizes();
+      } else if (f === "retention_days" || f === "hot_warm_days" || f === "summary_daily_gb") {
+        bumpBudgetsAndSizes();
+        refreshIndexSizePreviews();
       } else if (f === "label" || f === "index_name") {
         renderRows();
       }
@@ -198,9 +291,10 @@ function bindTableBody(srcBody) {
       syncRowVolumePair(state.rows[i], state.rows, f);
       updatePairInputs(tr, state.rows[i]);
       refreshTotalCounterpart();
-      import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
-    } else if (f === "label" || f === "index_name") {
-      // single merged table — nothing to mirror
+      bumpBudgetsAndSizes();
+    } else if (f === "retention_days" || f === "hot_warm_days" || f === "summary_daily_gb") {
+      bumpBudgetsAndSizes();
+      refreshIndexSizePreviews();
     }
   });
   srcBody.addEventListener("click", (e) => {
@@ -218,11 +312,11 @@ function bindTotalVolumePair() {
   gbEl.dataset.volPairBound = "1";
   const onGb = () => {
     syncTotalVolumePair("gb");
-    import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
+    bumpBudgetsAndSizes();
   };
   const onEps = () => {
     syncTotalVolumePair("eps");
-    import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
+    bumpBudgetsAndSizes();
   };
   gbEl.addEventListener("input", onGb);
   gbEl.addEventListener("change", onGb);
@@ -263,3 +357,5 @@ export function normalizeSnapshotRows(rows) {
   });
   return list;
 }
+
+export { underfillScaleFactor, planSourceDiskNeeds };

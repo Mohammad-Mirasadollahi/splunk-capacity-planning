@@ -993,6 +993,7 @@ def main() -> int:
         ok("ui.summaries_on_policy", 'data-panel="vol-policy"' in html and html.find('id="available_summaries_gb"') > html.find('data-panel="vol-policy"'))
         ok("ui.sources_under_volume", 'data-pane="1"' in html and 'id="src-table"' in html and "src-table--merged" in html)
         ok("ui.sources_merged_cols", 'data-i18n="col_ret"' in html and 'id="src-ret-table"' not in html)
+        ok("ui.sources_idx_size_col", 'data-i18n="col_idx_size"' in html and 'data-tip="max_total"' in html)
         _, state_js = http_bytes("/js/state.js")
         ok("ui.wizard.steps_const", "STEPS = 4" in state_js.decode("utf-8", errors="replace"))
         _, pf_mig = http_bytes("/js/plan-form.js")
@@ -1004,6 +1005,11 @@ def main() -> int:
         sj = sources_js.decode("utf-8", errors="replace")
         ok("ui.sources_field_ids", "const p = `src-${i}`" in sj or 'src-${i}' in sj)
         ok("ui.sources_merged_row", 'data-f="retention_days"' in sj and "retentionRowHTML" not in sj)
+        ok("ui.sources_idx_size_preview", "rowIndexMaxTotalGB" in sj or "planSourceDiskNeeds" in sj)
+        ok("ui.source_sizing_module", True)
+        code_ss, sizing_js = http_bytes("/js/source-sizing.js")
+        ok("ui.asset/js/source-sizing.js", code_ss == 200 and b"planSourceDiskNeeds" in sizing_js and b"underfillScaleFactor" in sizing_js)
+        ok("ui.collect_cold_days", b"cold_days:" in pf_mig or b"cold_days :" in pf_mig)
 
     except Exception as e:  # noqa: BLE001
         ok("http.exception", False, str(e))
