@@ -459,8 +459,9 @@ export async function runCalculate() {
       err.textContent = budget.message;
       err.dataset.budgetErr = "1";
     }
+    const diskBudget = /available_|disk need|دیسک|hot\/warm|hot\+cold|searchable disk/i.test(budget.message);
     showStep(1);
-    activateTab("volume", "vol-budget");
+    activateTab("volume", diskBudget ? "vol-policy" : "vol-sources");
     return;
   }
 
@@ -482,12 +483,12 @@ export async function runCalculate() {
       err.textContent = ex.message || String(ex);
     }
     const msg = String(ex.message || ex);
-    if (msg.includes("total_daily_gb") || msg.includes("available_hot") || msg.includes("available_cold") || msg.includes("available_summaries")) {
+    if (msg.includes("total_daily_gb")) {
       showStep(1);
-      activateTab("volume", "vol-budget");
-    } else if (/hot_path|cold_path|summaries_path|frozen_path/i.test(msg)) {
+      activateTab("volume", "vol-sources");
+    } else if (msg.includes("available_hot") || msg.includes("available_cold") || msg.includes("available_summaries")) {
       showStep(1);
-      activateTab("volume", "vol-paths");
+      activateTab("volume", "vol-policy");
     } else {
       showStep(STEPS - 1);
     }

@@ -125,73 +125,50 @@ export function planningDailyOnDiskGB() {
   return dailyOnDiskFromRaw(raw, comp);
 }
 
+/** Last edit direction for bridge refreshes: "time" (days→GB) or "disk" (GB→days). */
 export function readCapacityPlanMode() {
-  const checked = document.querySelector('input[name="capacity_plan_mode"]:checked');
-  const mode = checked?.value === "disk" ? "disk" : "time";
-  state.capacityPlanMode = mode;
-  return mode;
+  return state.capacityPlanMode === "disk" ? "disk" : "time";
 }
 
-function setCapSideEnabled(side, enabled) {
-  const box = document.getElementById(side === "time" ? "cap-time-box" : "cap-disk-box");
-  if (!box) return;
-  box.classList.toggle("is-primary", enabled);
-  box.classList.toggle("is-counterpart", !enabled);
-  box.querySelectorAll("input:not([type=hidden]):not([type=checkbox])").forEach((el) => {
-    if (el.name === "frozen_path") return;
-    el.readOnly = !enabled;
-    el.classList.toggle("is-counterpart-input", !enabled);
+function setCapSidesLinked() {
+  ["cap-time-box", "cap-disk-box"].forEach((id) => {
+    const box = document.getElementById(id);
+    if (!box) return;
+    box.classList.add("is-primary");
+    box.classList.remove("is-counterpart");
+    box.querySelectorAll("input:not([type=hidden]):not([type=checkbox])").forEach((el) => {
+      if (el.name === "frozen_path") return;
+      el.readOnly = false;
+      el.classList.remove("is-counterpart-input");
+    });
   });
 }
 
-function updateCapacityLabels(mode) {
+function updateCapacityLabels() {
   const hotLbl = document.getElementById("lbl_cap_hot");
   const coldLbl = document.getElementById("lbl_cap_cold");
   const hotHint = document.getElementById("hint_cap_hot");
   const coldHint = document.getElementById("hint_cap_cold");
   const modeHint = document.getElementById("cap-mode-hint");
-  if (mode === "disk") {
-    if (hotLbl) {
-      hotLbl.setAttribute("data-i18n", "lbl_avail_hot");
-      hotLbl.textContent = t("lbl_avail_hot");
-    }
-    if (coldLbl) {
-      coldLbl.setAttribute("data-i18n", "lbl_avail_cold");
-      coldLbl.textContent = t("lbl_avail_cold");
-    }
-    if (hotHint) {
-      hotHint.setAttribute("data-i18n", "hint_avail_hot");
-      hotHint.textContent = t("hint_avail_hot");
-    }
-    if (coldHint) {
-      coldHint.setAttribute("data-i18n", "hint_avail_cold");
-      coldHint.textContent = t("hint_avail_cold");
-    }
-    if (modeHint) {
-      modeHint.setAttribute("data-i18n", "cap_mode_hint_disk");
-      modeHint.textContent = t("cap_mode_hint_disk");
-    }
-  } else {
-    if (hotLbl) {
-      hotLbl.setAttribute("data-i18n", "lbl_need_hot");
-      hotLbl.textContent = t("lbl_need_hot");
-    }
-    if (coldLbl) {
-      coldLbl.setAttribute("data-i18n", "lbl_need_cold");
-      coldLbl.textContent = t("lbl_need_cold");
-    }
-    if (hotHint) {
-      hotHint.setAttribute("data-i18n", "hint_need_hot");
-      hotHint.textContent = t("hint_need_hot");
-    }
-    if (coldHint) {
-      coldHint.setAttribute("data-i18n", "hint_need_cold");
-      coldHint.textContent = t("hint_need_cold");
-    }
-    if (modeHint) {
-      modeHint.setAttribute("data-i18n", "cap_mode_hint_time");
-      modeHint.textContent = t("cap_mode_hint_time");
-    }
+  if (hotLbl) {
+    hotLbl.setAttribute("data-i18n", "lbl_avail_hot");
+    hotLbl.textContent = t("lbl_avail_hot");
+  }
+  if (coldLbl) {
+    coldLbl.setAttribute("data-i18n", "lbl_avail_cold");
+    coldLbl.textContent = t("lbl_avail_cold");
+  }
+  if (hotHint) {
+    hotHint.setAttribute("data-i18n", "hint_avail_hot");
+    hotHint.textContent = t("hint_avail_hot");
+  }
+  if (coldHint) {
+    coldHint.setAttribute("data-i18n", "hint_avail_cold");
+    coldHint.textContent = t("hint_avail_cold");
+  }
+  if (modeHint) {
+    modeHint.setAttribute("data-i18n", "cap_mode_hint_linked");
+    modeHint.textContent = t("cap_mode_hint_linked");
   }
 }
 
@@ -247,14 +224,13 @@ export function syncColdVolumePreview() {
 }
 
 /**
- * Sync retention time ↔ searchable disk GB.
+ * Sync retention time ↔ searchable disk GB (both sides always editable).
+ * Edit days → update GB; edit GB → update days. Bridge/rate refresh uses last direction.
  * @param {"hot_days"|"cold_days"|"hot_gb"|"cold_gb"|"mode"|"bridge"|null} edited
  */
 export function syncCapacityPair(edited = null) {
-  const mode = readCapacityPlanMode();
-  setCapSideEnabled("time", mode === "time");
-  setCapSideEnabled("disk", mode === "disk");
-  updateCapacityLabels(mode);
+  setCapSidesLinked();
+  updateCapacityLabels();
 
   const hotDaysEl = document.getElementById("hot_warm_days") || document.querySelector('input[name="hot_warm_days"]');
   const coldDaysEl = document.getElementById("cold_days");
@@ -264,6 +240,9 @@ export function syncCapacityPair(edited = null) {
     syncColdVolumePreview();
     return;
   }
+
+  if (edited === "hot_days" || edited === "cold_days") state.capacityPlanMode = "time";
+  else if (edited === "hot_gb" || edited === "cold_gb") state.capacityPlanMode = "disk";
 
   const g = collectGlobals();
   const headroom = g.headroom > 0 ? g.headroom : 1.2;
@@ -279,7 +258,12 @@ export function syncCapacityPair(edited = null) {
     }
   }
 
-  if (mode === "time") {
+  const fromDays =
+    edited === "hot_days" ||
+    edited === "cold_days" ||
+    ((edited === "bridge" || edited === "mode" || edited == null) && state.capacityPlanMode !== "disk");
+
+  if (fromDays) {
     const hot = readIntDays(hotDaysEl, 0);
     const cold = readIntDays(coldDaysEl, 0);
     const total = syncRetentionTotal(hot, cold);
@@ -432,11 +416,7 @@ export function applyGlobals(g) {
     const hw = Number(g.hot_warm_days) || 0;
     coldEl.value = String(Math.max(0, ret - hw));
   }
-  const mode = g.capacity_plan_mode === "disk" ? "disk" : "time";
-  document.querySelectorAll('input[name="capacity_plan_mode"]').forEach((el) => {
-    el.checked = el.value === mode;
-  });
-  state.capacityPlanMode = mode;
+  state.capacityPlanMode = g.capacity_plan_mode === "disk" ? "disk" : "time";
   syncClusterFields();
   syncArchiveFields();
 }
@@ -610,10 +590,6 @@ export function bindPlanFormChrome() {
   syncClusterFields();
   syncArchiveFields();
 
-  document.querySelectorAll('input[name="capacity_plan_mode"]').forEach((el) => {
-    el.addEventListener("change", () => syncCapacityPair("mode"));
-  });
-
   const wire = (sel, edited) => {
     document.querySelectorAll(sel).forEach((el) => {
       const run = () => {
@@ -633,6 +609,6 @@ export function bindPlanFormChrome() {
     "bridge"
   );
 
-  syncCapacityPair("mode");
+  syncCapacityPair("bridge");
   syncVolumeInputMode("daily_gb");
 }
