@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- WASM compile + Go/Chart bridges may need eval; allow explicitly (GitHub Pages has no CSP header). -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; base-uri 'self'; form-action 'self'">
   <title>SCPcalc — Splunk Capacity Calculator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -109,7 +111,7 @@
               <h3 class="view-block-title" data-i18n="node_table_title">Nodes</h3>
               <label class="table-find">
                 <span data-i18n="table_find">Find in table</span>
-                <input type="search" id="node-find" data-i18n-placeholder="node_find_ph" placeholder="Peer, SH, RAM…" autocomplete="off">
+                <input type="search" id="node-find" name="node_find" data-i18n-placeholder="node_find_ph" placeholder="Peer, SH, RAM…" autocomplete="off">
               </label>
               <span class="table-find-count" id="node-find-count" hidden></span>
             </div>
@@ -176,7 +178,7 @@
               <h3 class="view-block-title" data-i18n="res_table_title">Hardware by role</h3>
               <label class="table-find">
                 <span data-i18n="table_find">Find in table</span>
-                <input type="search" id="res-find" data-i18n-placeholder="table_find_ph" placeholder="role, tier, RAM…" autocomplete="off">
+                <input type="search" id="res-find" name="res_find" data-i18n-placeholder="table_find_ph" placeholder="role, tier, RAM…" autocomplete="off">
               </label>
               <span class="table-find-count" id="res-find-count" hidden></span>
             </div>
@@ -254,7 +256,7 @@
               <h3 class="view-block-title" data-i18n="ix_table_title">Per-index sizing</h3>
               <label class="table-find">
                 <span data-i18n="table_find">Find in table</span>
-                <input type="search" id="ix-find" data-i18n-placeholder="table_find_ph_ix" placeholder="index, GB, MB…" autocomplete="off">
+                <input type="search" id="ix-find" name="ix_find" data-i18n-placeholder="table_find_ph_ix" placeholder="index, GB, MB…" autocomplete="off">
               </label>
               <span class="table-find-count" id="ix-find-count" hidden></span>
             </div>
@@ -300,11 +302,11 @@
           <div class="editor-toolbar">
             <label class="ed-field">
               <span data-i18n="find">Find</span>
-              <input type="text" id="conf-find" placeholder="text…">
+              <input type="text" id="conf-find" name="conf_find" placeholder="text…" autocomplete="off">
             </label>
             <label class="ed-field">
               <span data-i18n="replace">Replace</span>
-              <input type="text" id="conf-replace" placeholder="with…">
+              <input type="text" id="conf-replace" name="conf_replace" placeholder="with…" autocomplete="off">
             </label>
             <button type="button" class="btn-ghost" id="btn-find-next" data-i18n="find_next">Find next</button>
             <button type="button" class="btn-ghost" id="btn-replace-one" data-i18n="replace_one">Replace</button>
@@ -313,7 +315,7 @@
             <button type="button" class="btn-ghost" id="btn-download-conf-ed" data-i18n="download_conf">Download</button>
             <button type="button" class="btn-ghost" id="btn-reset-conf" data-i18n="reset_conf">Reset</button>
           </div>
-          <textarea id="conf-editor" class="conf-editor" spellcheck="false" aria-label="indexes.conf editor"></textarea>
+          <textarea id="conf-editor" name="conf_editor" class="conf-editor" spellcheck="false" aria-label="indexes.conf editor"></textarea>
           <p id="conf-status" class="editor-status" hidden></p>
           <pre id="conf" hidden></pre>
         </div>
@@ -323,22 +325,22 @@
             <div class="rename-grid">
               <div class="rename-row">
                 <span class="rename-label">hotwarm</span>
-                <label class="ed-field"><span data-i18n="vol_name">volume name</span><input id="rn-hot-name" type="text" value="hotwarm"></label>
-                <label class="ed-field"><span data-i18n="vol_path">path</span><input id="rn-hot-path" type="text" value="/hot"></label>
+                <label class="ed-field"><span data-i18n="vol_name">volume name</span><input id="rn-hot-name" name="rn_hot_name" type="text" value="hotwarm" autocomplete="off"></label>
+                <label class="ed-field"><span data-i18n="vol_path">path</span><input id="rn-hot-path" name="rn_hot_path" type="text" value="/hot" autocomplete="off"></label>
               </div>
               <div class="rename-row">
                 <span class="rename-label">cold</span>
-                <label class="ed-field"><span data-i18n="vol_name">volume name</span><input id="rn-cold-name" type="text" value="cold"></label>
-                <label class="ed-field"><span data-i18n="vol_path">path</span><input id="rn-cold-path" type="text" value="/cold"></label>
+                <label class="ed-field"><span data-i18n="vol_name">volume name</span><input id="rn-cold-name" name="rn_cold_name" type="text" value="cold" autocomplete="off"></label>
+                <label class="ed-field"><span data-i18n="vol_path">path</span><input id="rn-cold-path" name="rn_cold_path" type="text" value="/cold" autocomplete="off"></label>
               </div>
               <div class="rename-row">
                 <span class="rename-label">summaries</span>
-                <label class="ed-field"><span data-i18n="vol_name">volume name</span><input id="rn-sum-name" type="text" value="summaries"></label>
-                <label class="ed-field"><span data-i18n="vol_path">path</span><input id="rn-sum-path" type="text" value="/summaries"></label>
+                <label class="ed-field"><span data-i18n="vol_name">volume name</span><input id="rn-sum-name" name="rn_sum_name" type="text" value="summaries" autocomplete="off"></label>
+                <label class="ed-field"><span data-i18n="vol_path">path</span><input id="rn-sum-path" name="rn_sum_path" type="text" value="/summaries" autocomplete="off"></label>
               </div>
               <div class="rename-row">
                 <span class="rename-label">frozen</span>
-                <label class="ed-field"><span data-i18n="vol_path">frozen path</span><input id="rn-frozen-path" type="text" value="/frozen"></label>
+                <label class="ed-field"><span data-i18n="vol_path">frozen path</span><input id="rn-frozen-path" name="rn_frozen_path" type="text" value="/frozen" autocomplete="off"></label>
                 <span></span>
               </div>
             </div>
@@ -422,13 +424,13 @@
                 <span class="vol-eq vol-eq-lg" aria-hidden="true">=</span>
                 <label class="field vol-pair-side">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="eps" data-i18n="lbl_total_eps">Total daily EPS</span><span class="field-hint" data-i18n="hint_total_eps">Linked to GB/day via average event size below</span></span>
-                  <input id="total_daily_eps" type="number" step="any" min="0" value="" placeholder="e.g. 8000" data-i18n-placeholder="ph_total_eps" inputmode="decimal">
+                  <input id="total_daily_eps" name="total_daily_eps" type="number" step="any" min="0" value="" placeholder="e.g. 8000" data-i18n-placeholder="ph_total_eps" inputmode="decimal">
                 </label>
               </div>
               <div class="grid quick-drivers-grid">
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="event_bytes" data-i18n="lbl_avg_event">Avg event size (bytes)</span><span class="field-hint" data-i18n="hint_avg_event">Average raw event / alert size — strongly drives GB↔EPS. Apply seeds sources; override per source later on the Sources tab</span></span>
-                  <input id="avg_event_bytes" type="number" step="1" min="1" value="500" placeholder="e.g. 500" data-i18n-placeholder="ph_avg_event" inputmode="numeric">
+                  <input id="avg_event_bytes" name="avg_event_bytes" type="number" step="1" min="1" value="500" placeholder="e.g. 500" data-i18n-placeholder="ph_avg_event" inputmode="numeric">
                 </label>
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="headroom" data-i18n="lbl_headroom">Safety margin</span><span class="field-hint" data-i18n="hint_headroom">e.g. 1.2 = keep 20% spare capacity — multiplies searchable disk caps</span></span>
@@ -444,7 +446,7 @@
               <div class="grid">
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="available_summaries_gb" data-i18n="lbl_avail_sum">Available summaries disk</span><span class="field-hint" data-i18n="hint_avail_sum">Space for summary / DMA data</span></span>
-                  <input name="available_summaries_gb" type="number" step="any" min="0" value="2000" placeholder="e.g. 2000" data-i18n-placeholder="ph_avail_sum">
+                  <input name="available_summaries_gb" id="available_summaries_gb" type="number" step="any" min="0" value="2000" placeholder="e.g. 2000" data-i18n-placeholder="ph_avail_sum">
                 </label>
               </div>
               <p class="hint" data-i18n="cap_sum_hint">Hot/cold searchable disk is linked to retention time on the Retention step (plan by time or by disk).</p>
@@ -503,11 +505,11 @@
           <div class="tab-panel is-active" data-panel="ret-policy" role="tabpanel">
             <div class="mode-row cap-mode-row" role="radiogroup" aria-label="Capacity planning basis">
               <label class="mode-chip">
-                <input type="radio" name="capacity_plan_mode" value="time" checked>
+                <input type="radio" name="capacity_plan_mode" id="capacity_plan_mode_time" value="time" checked>
                 <span data-i18n="cap_mode_time">Plan by time</span>
               </label>
               <label class="mode-chip">
-                <input type="radio" name="capacity_plan_mode" value="disk">
+                <input type="radio" name="capacity_plan_mode" id="capacity_plan_mode_disk" value="disk">
                 <span data-i18n="cap_mode_disk">Plan by disk</span>
               </label>
             </div>
@@ -563,11 +565,11 @@
             <div class="grid" style="margin-top:0.85rem">
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="summary_pct" data-i18n="lbl_summary_pct">Summary index share</span><span class="field-hint" data-i18n="hint_summary_pct">Share of source volume written to summaries</span></span>
-                <input name="summary_pct" type="number" step="0.01" value="0.10" min="0.01" max="1">
+                <input name="summary_pct" id="summary_pct" type="number" step="0.01" value="0.10" min="0.01" max="1">
               </label>
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="summary_retention_days" data-i18n="lbl_summary_ret">Summary retention (days)</span><span class="field-hint" data-i18n="hint_summary_ret">How long summary indexes stay searchable</span></span>
-                <input name="summary_retention_days" type="number" value="90" min="1">
+                <input name="summary_retention_days" id="summary_retention_days" type="number" value="90" min="1">
               </label>
             </div>
             <p class="hint" data-i18n="policy_headroom_note">Safety margin (headroom) is set once under Volume → Budget — it still applies to all size caps here.</p>
@@ -582,15 +584,15 @@
             <div class="grid">
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="hot_path" data-i18n="lbl_hot_path">Hot / warm disk path</span><span class="field-hint" data-i18n="hint_hot_path">Local SSD path for recent data</span></span>
-                <input name="hot_path" type="text" value="/hot">
+                <input name="hot_path" id="hot_path" type="text" value="/hot">
               </label>
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="cold_path" data-i18n="lbl_cold_path">Cold disk path</span><span class="field-hint" data-i18n="hint_cold_path">Older searchable buckets</span></span>
-                <input name="cold_path" type="text" value="/cold">
+                <input name="cold_path" id="cold_path" type="text" value="/cold">
               </label>
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="summaries_path" data-i18n="lbl_sum_path">Summaries / DMA path</span><span class="field-hint" data-i18n="hint_sum_path">Summary indexes and tstats data</span></span>
-                <input name="summaries_path" type="text" value="/summaries">
+                <input name="summaries_path" id="summaries_path" type="text" value="/summaries">
               </label>
             </div>
           </div>
@@ -646,7 +648,7 @@
                 </label>
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="n_idx" data-i18n="lbl_n_idx">Number of indexers</span><span class="field-hint" data-i18n="hint_n_idx">Leave 0 to calculate automatically</span></span>
-                  <input name="n_idx" type="number" value="0" min="0" placeholder="0">
+                  <input name="n_idx" id="n_idx" type="number" value="0" min="0" placeholder="0">
                   <span class="auto-rec" id="auto-n-idx" hidden></span>
                 </label>
               </div>
@@ -660,19 +662,19 @@
                 <label class="field check glass-chip"><input name="search_head_cluster" type="checkbox" id="search_head_cluster"> <span class="tip-mark" data-tip="shc" data-i18n="shc">Search head cluster</span></label>
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="concurrent_users" data-i18n="lbl_users">Concurrent search users</span><span class="field-hint" data-i18n="hint_users">People searching at the same time (official SH×IDX table)</span></span>
-                  <input name="concurrent_users" type="number" value="8" min="1" required>
+                  <input name="concurrent_users" id="concurrent_users" type="number" value="8" min="1" required>
                 </label>
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="concurrent_searches" data-i18n="lbl_searches">Peak concurrent searches</span><span class="field-hint" data-i18n="hint_searches">Scheduled + ad-hoc jobs at peak (1 search ≈ 1 CPU core)</span></span>
-                  <input name="concurrent_searches" type="number" value="8" min="1" required>
+                  <input name="concurrent_searches" id="concurrent_searches" type="number" value="8" min="1" required>
                 </label>
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="saved_searches" data-i18n="lbl_saved">Saved / scheduled searches</span><span class="field-hint" data-i18n="hint_saved">Total enabled saved searches (Dimensions sizing input)</span></span>
-                  <input name="saved_searches" type="number" value="20" min="0" required>
+                  <input name="saved_searches" id="saved_searches" type="number" value="20" min="0" required>
                 </label>
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="n_sh" data-i18n="lbl_n_sh">Number of search heads</span><span class="field-hint" data-i18n="hint_n_sh">Leave 0 to calculate from users × volume × searches</span></span>
-                  <input name="n_sh" type="number" value="0" min="0" placeholder="0">
+                  <input name="n_sh" id="n_sh" type="number" value="0" min="0" placeholder="0">
                   <span class="auto-rec" id="auto-n-sh" hidden></span>
                   <span class="field-hint shc-n-sh-hint" id="shc-n-sh-hint" hidden data-i18n="hint_shc_n_sh">With SHC: use 1 (single-member interim) or ≥3 — Splunk does not support 2 members for HA.</span>
                 </label>
@@ -687,7 +689,7 @@
               <label class="field check glass-chip"><input name="enable_dma" type="checkbox" id="enable_dma"> <span class="tip-mark" data-tip="enable_dma" data-i18n="lbl_dma">Data model acceleration (DMA)</span></label>
               <label class="field" data-depends-on="enable_dma" hidden>
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="dma_pct" data-i18n="lbl_dma_pct">DMA disk share</span><span class="field-hint" data-i18n="hint_dma_pct">Fraction of searchable data kept for DMA (e.g. 0.10 = 10%)</span></span>
-                <input name="dma_pct" type="number" step="0.01" min="0.01" max="1" value="0.10">
+                <input name="dma_pct" id="dma_pct" type="number" step="0.01" min="0.01" max="1" value="0.10">
               </label>
             </div>
           </div>
@@ -697,11 +699,11 @@
               <label class="field check glass-chip"><input name="smartstore" type="checkbox" id="smartstore"> <span class="tip-mark" data-tip="smartstore" data-i18n="lbl_smartstore">SmartStore (object storage)</span></label>
               <label class="field" data-depends-on="smartstore" hidden>
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="remote_path" data-i18n="lbl_remote">Remote store path</span><span class="field-hint" data-i18n="hint_remote">S3 / GCS / blob path hint</span></span>
-                <input name="remote_path" type="text" value="" placeholder="s3://bucket/splunk" data-i18n-placeholder="ph_remote">
+                <input name="remote_path" id="remote_path" type="text" value="" placeholder="s3://bucket/splunk" data-i18n-placeholder="ph_remote">
               </label>
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="compression" data-i18n="lbl_compression">Measured compression</span><span class="field-hint" data-i18n="hint_compression">Leave 0 for the default RF/SF model</span></span>
-                <input name="compression" type="number" step="0.01" min="0" max="2" value="0" placeholder="0" data-i18n-placeholder="ph_compression">
+                <input name="compression" id="compression" type="number" step="0.01" min="0" max="2" value="0" placeholder="0" data-i18n-placeholder="ph_compression">
               </label>
             </div>
           </div>
@@ -755,7 +757,7 @@
         <p class="hint" data-i18n="import_paste_hint">Paste an Export URL (or #scp1… hash) from docs / a colleague, or choose a .json file.</p>
         <label class="field import-paste-field">
           <span data-i18n="import_paste_label">Paste share URL</span>
-          <textarea id="import-url-input" rows="4" data-i18n-placeholder="import_paste_ph" placeholder="https://…/calc/#scp1z.…"></textarea>
+          <textarea id="import-url-input" name="import_url_input" rows="4" data-i18n-placeholder="import_paste_ph" placeholder="https://…/calc/#scp1z.…"></textarea>
         </label>
         <div class="row-actions">
           <button type="button" class="cta" id="btn-import-url-apply" data-i18n="import_apply_url">
@@ -764,7 +766,7 @@
           </button>
           <label class="btn-ghost file-btn">
             <span data-i18n="import_json_file">Choose .json file</span>
-            <input type="file" id="file-import" accept="application/json,.json" hidden>
+            <input type="file" id="file-import" name="file_import" accept="application/json,.json" hidden>
           </label>
         </div>
       </div>
@@ -813,7 +815,7 @@
         <p class="hint" id="feature-prompt-body"></p>
         <p class="hint feature-prompt-doc" id="feature-prompt-doc" hidden></p>
         <label class="field check glass-chip feature-prompt-dont">
-          <input type="checkbox" id="feature-prompt-dont">
+          <input type="checkbox" id="feature-prompt-dont" name="feature_prompt_dont">
           <span data-i18n="fp_dont_show">Don't show this again</span>
         </label>
       </div>

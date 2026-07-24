@@ -10,11 +10,11 @@
           <div class="tab-panel is-active" data-panel="ret-policy" role="tabpanel">
             <div class="mode-row cap-mode-row" role="radiogroup" aria-label="Capacity planning basis">
               <label class="mode-chip">
-                <input type="radio" name="capacity_plan_mode" value="time" checked>
+                <input type="radio" name="capacity_plan_mode" id="capacity_plan_mode_time" value="time" checked>
                 <span data-i18n="cap_mode_time">Plan by time</span>
               </label>
               <label class="mode-chip">
-                <input type="radio" name="capacity_plan_mode" value="disk">
+                <input type="radio" name="capacity_plan_mode" id="capacity_plan_mode_disk" value="disk">
                 <span data-i18n="cap_mode_disk">Plan by disk</span>
               </label>
             </div>
@@ -70,11 +70,11 @@
             <div class="grid" style="margin-top:0.85rem">
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="summary_pct" data-i18n="lbl_summary_pct">Summary index share</span><span class="field-hint" data-i18n="hint_summary_pct">Share of source volume written to summaries</span></span>
-                <input name="summary_pct" type="number" step="0.01" value="0.10" min="0.01" max="1">
+                <input name="summary_pct" id="summary_pct" type="number" step="0.01" value="0.10" min="0.01" max="1">
               </label>
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="summary_retention_days" data-i18n="lbl_summary_ret">Summary retention (days)</span><span class="field-hint" data-i18n="hint_summary_ret">How long summary indexes stay searchable</span></span>
-                <input name="summary_retention_days" type="number" value="90" min="1">
+                <input name="summary_retention_days" id="summary_retention_days" type="number" value="90" min="1">
               </label>
             </div>
             <p class="hint" data-i18n="policy_headroom_note">Safety margin (headroom) is set once under Volume → Budget — it still applies to all size caps here.</p>
@@ -89,15 +89,15 @@
             <div class="grid">
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="hot_path" data-i18n="lbl_hot_path">Hot / warm disk path</span><span class="field-hint" data-i18n="hint_hot_path">Local SSD path for recent data</span></span>
-                <input name="hot_path" type="text" value="/hot">
+                <input name="hot_path" id="hot_path" type="text" value="/hot">
               </label>
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="cold_path" data-i18n="lbl_cold_path">Cold disk path</span><span class="field-hint" data-i18n="hint_cold_path">Older searchable buckets</span></span>
-                <input name="cold_path" type="text" value="/cold">
+                <input name="cold_path" id="cold_path" type="text" value="/cold">
               </label>
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="summaries_path" data-i18n="lbl_sum_path">Summaries / DMA path</span><span class="field-hint" data-i18n="hint_sum_path">Summary indexes and tstats data</span></span>
-                <input name="summaries_path" type="text" value="/summaries">
+                <input name="summaries_path" id="summaries_path" type="text" value="/summaries">
               </label>
             </div>
           </div>

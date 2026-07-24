@@ -23,7 +23,7 @@
                 </label>
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="n_idx" data-i18n="lbl_n_idx">Number of indexers</span><span class="field-hint" data-i18n="hint_n_idx">Leave 0 to calculate automatically</span></span>
-                  <input name="n_idx" type="number" value="0" min="0" placeholder="0">
+                  <input name="n_idx" id="n_idx" type="number" value="0" min="0" placeholder="0">
                   <span class="auto-rec" id="auto-n-idx" hidden></span>
                 </label>
               </div>
@@ -37,19 +37,19 @@
                 <label class="field check glass-chip"><input name="search_head_cluster" type="checkbox" id="search_head_cluster"> <span class="tip-mark" data-tip="shc" data-i18n="shc">Search head cluster</span></label>
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="concurrent_users" data-i18n="lbl_users">Concurrent search users</span><span class="field-hint" data-i18n="hint_users">People searching at the same time (official SH×IDX table)</span></span>
-                  <input name="concurrent_users" type="number" value="8" min="1" required>
+                  <input name="concurrent_users" id="concurrent_users" type="number" value="8" min="1" required>
                 </label>
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="concurrent_searches" data-i18n="lbl_searches">Peak concurrent searches</span><span class="field-hint" data-i18n="hint_searches">Scheduled + ad-hoc jobs at peak (1 search ≈ 1 CPU core)</span></span>
-                  <input name="concurrent_searches" type="number" value="8" min="1" required>
+                  <input name="concurrent_searches" id="concurrent_searches" type="number" value="8" min="1" required>
                 </label>
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="saved_searches" data-i18n="lbl_saved">Saved / scheduled searches</span><span class="field-hint" data-i18n="hint_saved">Total enabled saved searches (Dimensions sizing input)</span></span>
-                  <input name="saved_searches" type="number" value="20" min="0" required>
+                  <input name="saved_searches" id="saved_searches" type="number" value="20" min="0" required>
                 </label>
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="n_sh" data-i18n="lbl_n_sh">Number of search heads</span><span class="field-hint" data-i18n="hint_n_sh">Leave 0 to calculate from users × volume × searches</span></span>
-                  <input name="n_sh" type="number" value="0" min="0" placeholder="0">
+                  <input name="n_sh" id="n_sh" type="number" value="0" min="0" placeholder="0">
                   <span class="auto-rec" id="auto-n-sh" hidden></span>
                   <span class="field-hint shc-n-sh-hint" id="shc-n-sh-hint" hidden data-i18n="hint_shc_n_sh">With SHC: use 1 (single-member interim) or ≥3 — Splunk does not support 2 members for HA.</span>
                 </label>
@@ -64,7 +64,7 @@
               <label class="field check glass-chip"><input name="enable_dma" type="checkbox" id="enable_dma"> <span class="tip-mark" data-tip="enable_dma" data-i18n="lbl_dma">Data model acceleration (DMA)</span></label>
               <label class="field" data-depends-on="enable_dma" hidden>
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="dma_pct" data-i18n="lbl_dma_pct">DMA disk share</span><span class="field-hint" data-i18n="hint_dma_pct">Fraction of searchable data kept for DMA (e.g. 0.10 = 10%)</span></span>
-                <input name="dma_pct" type="number" step="0.01" min="0.01" max="1" value="0.10">
+                <input name="dma_pct" id="dma_pct" type="number" step="0.01" min="0.01" max="1" value="0.10">
               </label>
             </div>
           </div>
@@ -74,11 +74,11 @@
               <label class="field check glass-chip"><input name="smartstore" type="checkbox" id="smartstore"> <span class="tip-mark" data-tip="smartstore" data-i18n="lbl_smartstore">SmartStore (object storage)</span></label>
               <label class="field" data-depends-on="smartstore" hidden>
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="remote_path" data-i18n="lbl_remote">Remote store path</span><span class="field-hint" data-i18n="hint_remote">S3 / GCS / blob path hint</span></span>
-                <input name="remote_path" type="text" value="" placeholder="s3://bucket/splunk" data-i18n-placeholder="ph_remote">
+                <input name="remote_path" id="remote_path" type="text" value="" placeholder="s3://bucket/splunk" data-i18n-placeholder="ph_remote">
               </label>
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="compression" data-i18n="lbl_compression">Measured compression</span><span class="field-hint" data-i18n="hint_compression">Leave 0 for the default RF/SF model</span></span>
-                <input name="compression" type="number" step="0.01" min="0" max="2" value="0" placeholder="0" data-i18n-placeholder="ph_compression">
+                <input name="compression" id="compression" type="number" step="0.01" min="0" max="2" value="0" placeholder="0" data-i18n-placeholder="ph_compression">
               </label>
             </div>
           </div>

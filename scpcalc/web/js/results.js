@@ -104,7 +104,7 @@ function renderNodePicker() {
       const s = formatLayerSpecs(n.layer || {});
       const find = [n.label, n.id, n.role, n.tier, s.ram, s.cpuPhys, s.disk, "peer", "node"].filter(Boolean).join(" ");
       return `<tr data-node-idx="${i}" data-find="${escapeAttr(find)}" class="${n.selected ? "is-node-selected" : ""}">
-        <td class="col-check"><input type="checkbox" data-node-check ${n.selected ? "checked" : ""} aria-label="${escapeAttr(n.id)}"></td>
+        <td class="col-check"><input type="checkbox" id="node-sel-${i}" name="node_sel_${i}" data-node-check ${n.selected ? "checked" : ""} aria-label="${escapeAttr(n.id)}"></td>
         <td><span class="node-label-pill">${escapeAttr(n.label)}</span></td>
         <td><code>${escapeAttr(n.id)}</code></td>
         <td>${escapeAttr(n.role)}</td>

@@ -985,6 +985,10 @@ def main() -> int:
         ok("ui.snapshot_v9", b"version: 9" in pf_mig and b"ver < 9" in pf_mig)
         code_vb, budget_js = http_bytes("/js/volume-budget.js")
         ok("ui.volume_budget_js", code_vb == 200 and b"checkVolumeBudgets" in budget_js)
+        ok("ui.csp_meta", "Content-Security-Policy" in html and "unsafe-eval" in html)
+        _, sources_js = http_bytes("/js/sources.js")
+        sj = sources_js.decode("utf-8", errors="replace")
+        ok("ui.sources_field_ids", "src-vol-" in sj and "${p}-enabled" in sj)
 
     except Exception as e:  # noqa: BLE001
         ok("http.exception", False, str(e))

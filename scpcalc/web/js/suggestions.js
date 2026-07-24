@@ -1,6 +1,7 @@
 import { openModal, closeModal } from "./modal.js";
 import { syncClusterFields, syncToggleUI } from "./plan-form.js";
 import { t } from "./i18n.js";
+import { escapeAttr } from "./util.js";
 
 const suggestModal = () => document.getElementById("suggest-modal");
 const SESSION_KEY = "scpcalc-suggest-dismissed";
@@ -44,7 +45,7 @@ export function askSuggestions(design) {
   listEl.innerHTML = pending
     .map(
       (s) => `<label class="suggest-item">
-        <input type="checkbox" data-suggest-id="${s.id}" checked>
+        <input type="checkbox" id="suggest-${escapeAttr(s.id)}" name="suggest_${escapeAttr(s.id)}" data-suggest-id="${s.id}" checked>
         <span>
           <strong>${s.title || s.id}</strong>
           <em>${s.reason || ""}</em>

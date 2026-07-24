@@ -12,7 +12,7 @@
         <p class="hint" data-i18n="import_paste_hint">Paste an Export URL (or #scp1… hash) from docs / a colleague, or choose a .json file.</p>
         <label class="field import-paste-field">
           <span data-i18n="import_paste_label">Paste share URL</span>
-          <textarea id="import-url-input" rows="4" data-i18n-placeholder="import_paste_ph" placeholder="https://…/calc/#scp1z.…"></textarea>
+          <textarea id="import-url-input" name="import_url_input" rows="4" data-i18n-placeholder="import_paste_ph" placeholder="https://…/calc/#scp1z.…"></textarea>
         </label>
         <div class="row-actions">
           <button type="button" class="cta" id="btn-import-url-apply" data-i18n="import_apply_url">
@@ -21,7 +21,7 @@
           </button>
           <label class="btn-ghost file-btn">
             <span data-i18n="import_json_file">Choose .json file</span>
-            <input type="file" id="file-import" accept="application/json,.json" hidden>
+            <input type="file" id="file-import" name="file_import" accept="application/json,.json" hidden>
           </label>
         </div>
       </div>

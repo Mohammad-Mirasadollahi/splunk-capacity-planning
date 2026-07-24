@@ -20,13 +20,13 @@
                 <span class="vol-eq vol-eq-lg" aria-hidden="true">=</span>
                 <label class="field vol-pair-side">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="eps" data-i18n="lbl_total_eps">Total daily EPS</span><span class="field-hint" data-i18n="hint_total_eps">Linked to GB/day via average event size below</span></span>
-                  <input id="total_daily_eps" type="number" step="any" min="0" value="" placeholder="e.g. 8000" data-i18n-placeholder="ph_total_eps" inputmode="decimal">
+                  <input id="total_daily_eps" name="total_daily_eps" type="number" step="any" min="0" value="" placeholder="e.g. 8000" data-i18n-placeholder="ph_total_eps" inputmode="decimal">
                 </label>
               </div>
               <div class="grid quick-drivers-grid">
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="event_bytes" data-i18n="lbl_avg_event">Avg event size (bytes)</span><span class="field-hint" data-i18n="hint_avg_event">Average raw event / alert size — strongly drives GB↔EPS. Apply seeds sources; override per source later on the Sources tab</span></span>
-                  <input id="avg_event_bytes" type="number" step="1" min="1" value="500" placeholder="e.g. 500" data-i18n-placeholder="ph_avg_event" inputmode="numeric">
+                  <input id="avg_event_bytes" name="avg_event_bytes" type="number" step="1" min="1" value="500" placeholder="e.g. 500" data-i18n-placeholder="ph_avg_event" inputmode="numeric">
                 </label>
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="headroom" data-i18n="lbl_headroom">Safety margin</span><span class="field-hint" data-i18n="hint_headroom">e.g. 1.2 = keep 20% spare capacity — multiplies searchable disk caps</span></span>
@@ -42,7 +42,7 @@
               <div class="grid">
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="available_summaries_gb" data-i18n="lbl_avail_sum">Available summaries disk</span><span class="field-hint" data-i18n="hint_avail_sum">Space for summary / DMA data</span></span>
-                  <input name="available_summaries_gb" type="number" step="any" min="0" value="2000" placeholder="e.g. 2000" data-i18n-placeholder="ph_avail_sum">
+                  <input name="available_summaries_gb" id="available_summaries_gb" type="number" step="any" min="0" value="2000" placeholder="e.g. 2000" data-i18n-placeholder="ph_avail_sum">
                 </label>
               </div>
               <p class="hint" data-i18n="cap_sum_hint">Hot/cold searchable disk is linked to retention time on the Retention step (plan by time or by disk).</p>

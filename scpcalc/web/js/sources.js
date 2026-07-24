@@ -80,11 +80,13 @@ export function syncRowVolumePair(row, rows, edited) {
   }
 }
 
-function volumeCell(r, on) {
+function volumeCell(r, i, on) {
+  const gbId = `src-vol-${i}-daily_gb`;
+  const epsId = `src-vol-${i}-eps`;
   return `<div class="vol-pair" role="group" aria-label="GB/day equals EPS">
-    <input type="number" data-f="daily_gb" class="vol-gb" min="0" step="any" value="${escapeAttr(String(r.daily_gb ?? ""))}" placeholder="GB/day" ${on ? "" : "disabled"} aria-label="Daily GB">
+    <input type="number" id="${gbId}" data-f="daily_gb" class="vol-gb" min="0" step="any" value="${escapeAttr(String(r.daily_gb ?? ""))}" placeholder="GB/day" ${on ? "" : "disabled"} aria-label="Daily GB" autocomplete="off">
     <span class="vol-eq" aria-hidden="true">=</span>
-    <input type="number" data-f="eps" class="vol-eps" min="0" step="any" value="${escapeAttr(String(r.eps ?? ""))}" placeholder="EPS" ${on ? "" : "disabled"} aria-label="EPS">
+    <input type="number" id="${epsId}" data-f="eps" class="vol-eps" min="0" step="any" value="${escapeAttr(String(r.eps ?? ""))}" placeholder="EPS" ${on ? "" : "disabled"} aria-label="EPS" autocomplete="off">
   </div>`;
 }
 
@@ -121,12 +123,13 @@ export function syncTotalVolumePair(edited) {
 function volumeRowHTML(r, i) {
   const title = r.notes ? ` data-soft-tip="${escapeAttr(r.notes)}" data-soft-tip-title="${escapeAttr(r.label || r.index_name || "Source")}"` : "";
   const on = !!r.enabled;
+  const p = `src-vol-${i}`;
   return `<tr data-i="${i}" class="${on ? "src-row-on" : "src-row-off"}"${title}>
-    <td><input type="checkbox" data-f="enabled" class="src-toggle" ${on ? "checked" : ""} aria-label="Use source"></td>
-    <td><input type="text" data-f="label" value="${escapeAttr(r.label)}" ${on ? "" : "disabled"}></td>
-    <td><input type="text" data-f="index_name" value="${escapeAttr(r.index_name)}" ${on ? "" : "disabled"}></td>
-    <td class="src-col-event-bytes"><input type="number" data-f="event_bytes" min="1" step="1" value="${r.event_bytes}" ${on ? "" : "disabled"}></td>
-    <td class="src-col-vol">${volumeCell(r, on)}</td>
+    <td><input type="checkbox" id="${p}-enabled" data-f="enabled" class="src-toggle" ${on ? "checked" : ""} aria-label="Use source"></td>
+    <td><input type="text" id="${p}-label" data-f="label" value="${escapeAttr(r.label)}" ${on ? "" : "disabled"} autocomplete="off"></td>
+    <td><input type="text" id="${p}-index_name" data-f="index_name" value="${escapeAttr(r.index_name)}" ${on ? "" : "disabled"} autocomplete="off"></td>
+    <td class="src-col-event-bytes"><input type="number" id="${p}-event_bytes" data-f="event_bytes" min="1" step="1" value="${r.event_bytes}" ${on ? "" : "disabled"} autocomplete="off"></td>
+    <td class="src-col-vol">${volumeCell(r, i, on)}</td>
     <td><button type="button" class="btn-x" data-rm="${i}" aria-label="Remove">×</button></td>
   </tr>`;
 }
@@ -134,16 +137,17 @@ function volumeRowHTML(r, i) {
 function retentionRowHTML(r, i) {
   const on = !!r.enabled;
   const sumOn = !!r.enable_summary;
+  const p = `src-ret-${i}`;
   return `<tr data-i="${i}" class="${on ? "src-row-on" : "src-row-off"}">
-    <td><input type="checkbox" data-f="enabled" class="src-toggle" ${on ? "checked" : ""} aria-label="Use source"></td>
-    <td><input type="text" data-f="label" value="${escapeAttr(r.label)}" ${on ? "" : "disabled"}></td>
-    <td><input type="text" data-f="index_name" value="${escapeAttr(r.index_name)}" ${on ? "" : "disabled"}></td>
-    <td><input type="number" data-f="retention_days" min="0" step="1" value="${r.retention_days}" placeholder="glob" ${on ? "" : "disabled"}></td>
-    <td><input type="number" data-f="hot_warm_days" min="0" step="1" value="${r.hot_warm_days}" placeholder="glob" ${on ? "" : "disabled"}></td>
-    <td><input type="checkbox" data-f="enable_summary" class="src-toggle" ${sumOn ? "checked" : ""} ${on ? "" : "disabled"}></td>
+    <td><input type="checkbox" id="${p}-enabled" data-f="enabled" class="src-toggle" ${on ? "checked" : ""} aria-label="Use source"></td>
+    <td><input type="text" id="${p}-label" data-f="label" value="${escapeAttr(r.label)}" ${on ? "" : "disabled"} autocomplete="off"></td>
+    <td><input type="text" id="${p}-index_name" data-f="index_name" value="${escapeAttr(r.index_name)}" ${on ? "" : "disabled"} autocomplete="off"></td>
+    <td><input type="number" id="${p}-retention_days" data-f="retention_days" min="0" step="1" value="${r.retention_days}" placeholder="glob" ${on ? "" : "disabled"} autocomplete="off"></td>
+    <td><input type="number" id="${p}-hot_warm_days" data-f="hot_warm_days" min="0" step="1" value="${r.hot_warm_days}" placeholder="glob" ${on ? "" : "disabled"} autocomplete="off"></td>
+    <td><input type="checkbox" id="${p}-enable_summary" data-f="enable_summary" class="src-toggle" ${sumOn ? "checked" : ""} ${on ? "" : "disabled"}></td>
     <td class="src-col-sum-gb">${
       sumOn && on
-        ? `<input type="number" data-f="summary_daily_gb" min="0" step="any" value="${r.summary_daily_gb}" placeholder="auto%">`
+        ? `<input type="number" id="${p}-summary_daily_gb" data-f="summary_daily_gb" min="0" step="any" value="${r.summary_daily_gb}" placeholder="auto%" autocomplete="off">`
         : `<span class="src-dep-placeholder">—</span>`
     }</td>
   </tr>`;
