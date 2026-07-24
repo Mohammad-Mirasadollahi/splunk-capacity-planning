@@ -6,6 +6,10 @@
   }
   .top { flex-direction: column; }
   .modal { max-height: 96vh; }
+  .wizard-modal {
+    height: 96vh;
+    max-height: 96vh;
+  }
   .wizard-steps em { display: none; }
   .tab-btn {
     font-size: 0.8rem;

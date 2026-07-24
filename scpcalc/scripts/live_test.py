@@ -977,7 +977,21 @@ def main() -> int:
             and html.index('data-i18n="step_ret"') < html.index('data-i18n="step_topo"')
             and html.index('data-i18n="step_topo"') < html.index('data-i18n="step_review"'),
         )
-        ok("ui.volume_tabs", 'data-tabs="volume"' in html and 'data-tab="vol-sources"' in html and 'data-tab="vol-policy"' in html)
+        ok("ui.volume_tabs", 'data-tabs="volume"' in html and 'data-tab="vol-budget"' in html and 'data-tab="vol-paths"' in html)
+        ok("ui.volume_no_policy_tab", 'data-tab="vol-policy"' not in html and 'data-panel="vol-policy"' not in html)
+        ok("ui.volume_no_sources_tab", 'data-tab="vol-sources"' not in html and 'data-panel="vol-sources"' not in html)
+        # Tab order: Plan → Paths (only Paths is separate)
+        _vb = html.index('data-tab="vol-budget"')
+        _vpath = html.index('data-tab="vol-paths"')
+        ok("ui.volume_tab_order", _vb < _vpath)
+        ok("ui.vol_plan_merged", 'class="vol-plan"' in html and 'id="available_summaries_gb"' in html and 'id="total_daily_gb"' in html and 'id="src-table"' in html)
+        ok("ui.vol_plan_formula", 'data-i18n-html="vol_plan_formula"' in html or "vol_plan_formula" in html)
+        ok("ui.sources_on_plan", 'vol-plan-sources' in html and html.find('id="src-table"') > html.find('data-panel="vol-budget"') and html.find('id="src-table"') < html.find('data-panel="vol-paths"'))
+        ok(
+            "ui.summaries_on_plan",
+            html.find('id="available_summaries_gb"') > html.find('data-panel="vol-budget"')
+            and html.find('id="available_summaries_gb"') < html.find('data-panel="vol-paths"'),
+        )
         ok("ui.sources_under_volume", 'data-pane="1"' in html and 'id="src-table"' in html and "src-table--merged" in html)
         ok("ui.sources_merged_cols", 'data-i18n="col_ret"' in html and 'id="src-ret-table"' not in html)
         _, state_js = http_bytes("/js/state.js")
