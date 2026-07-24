@@ -241,6 +241,7 @@ body.modal-open {
   padding: 0.75rem 1rem;
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.4rem;
   border-bottom: 0;
   background: rgba(0, 0, 0, 0.18);
@@ -256,6 +257,8 @@ body.modal-open {
   color: var(--muted);
   font-size: 0.8rem;
   font-weight: 600;
+  line-height: 1.25;
+  box-sizing: border-box;
   cursor: pointer;
   transition: background 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease);
 }
