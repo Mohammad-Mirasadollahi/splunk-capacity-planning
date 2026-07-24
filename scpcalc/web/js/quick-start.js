@@ -1,6 +1,6 @@
 /**
- * Wizard Quick Start: volume drivers (GB/EPS, avg event size, headroom) →
- * estimate, optional Apply defaults. Fields are the real form inputs (no duplicates).
+ * Wizard Quick Start: volume drivers (GB/EPS, avg event size, headroom).
+ * Overview tab can seed recommended defaults from those drivers.
  */
 import { state } from "./state.js";
 import { t } from "./i18n.js";
@@ -68,7 +68,7 @@ function applyVolumeDefaults(dailyGB) {
   applyGlobals({
     ...current,
     ...defaults,
-    headroom, // user Quick Start margin wins
+    headroom, // user Volumes-tab margin wins
     hot_path: current.hot_path || "/hot",
     cold_path: current.cold_path || "/cold",
     frozen_path: current.frozen_path || "/frozen",
@@ -100,25 +100,7 @@ function applyVolumeDefaults(dailyGB) {
   syncToggleUI();
 }
 
-/** Estimate body: use Quick Start drivers without necessarily mutating sources. */
-function buildEstimateBody(dailyGB, { applyEventBytesToSources }) {
-  const headroom = readQuickHeadroom();
-  const eventBytes = readAvgEventBytes();
-  const body = buildPlanBody({ total_daily_gb: dailyGB, headroom });
-  if (applyEventBytesToSources) {
-    body.sources = (body.sources || []).map((s) => ({ ...s, event_bytes: eventBytes }));
-  } else if (!(body.sources || []).length) {
-    // Engine synthesizes from total; event size still matters for EPS display only.
-  } else {
-    body.sources = (body.sources || []).map((s) => ({
-      ...s,
-      event_bytes: eventBytes > 0 ? eventBytes : s.event_bytes || DEMO_AVG_EVENT_BYTES,
-    }));
-  }
-  return body;
-}
-
-function renderQuickPreview(data, { applied }) {
+function renderApplyPreview(data) {
   const out = document.getElementById("quick-estimate-out");
   if (!out) return;
   const d = data?.design || {};
@@ -134,7 +116,6 @@ function renderQuickPreview(data, { applied }) {
     d.hot_need_gb != null || d.cold_need_gb != null
       ? Math.round((Number(d.hot_need_gb) || 0) + (Number(d.cold_need_gb) || 0) + (Number(d.summaries_need_gb) || 0))
       : "—";
-  const appliedNote = applied ? t("quick_applied_note") : t("quick_estimate_only_note");
   out.hidden = false;
   out.innerHTML = `<p class="quick-estimate-title"><strong>${escapeAttr(t("quick_result_title"))}</strong></p>
     <ul class="quick-estimate-list">
@@ -147,11 +128,11 @@ function renderQuickPreview(data, { applied }) {
       <li>${escapeAttr(t("quick_res_nodes").replace("{sh}", String(nSh)).replace("{idx}", String(nIdx)))}</li>
       <li>${escapeAttr(t("quick_res_disk").replace("{h}", String(hot)).replace("{c}", String(cold)).replace("{t}", String(total)))}</li>
     </ul>
-    <p class="hint">${escapeAttr(appliedNote)}</p>`;
+    <p class="hint">${escapeAttr(t("quick_applied_note"))}</p>`;
 }
 
-export async function runQuickEstimate() {
-  const btn = document.getElementById("btn-quick-estimate");
+export async function runApplyDefaults() {
+  const btn = document.getElementById("btn-apply-defaults");
   const out = document.getElementById("quick-estimate-out");
   const err = document.getElementById("err");
   const dailyGB = readQuickDailyGB();
@@ -163,19 +144,13 @@ export async function runQuickEstimate() {
     return;
   }
 
-  const apply = !!document.getElementById("quick-apply-defaults")?.checked;
   btn?.classList.add("loading");
   if (err) err.hidden = true;
   try {
-    if (apply) {
-      applyVolumeDefaults(dailyGB);
-      const data = await runPlan(buildPlanBody());
-      updateAutoRecBadges(data.design);
-      renderQuickPreview(data, { applied: true });
-    } else {
-      const data = await runPlan(buildEstimateBody(dailyGB, { applyEventBytesToSources: false }));
-      renderQuickPreview(data, { applied: false });
-    }
+    applyVolumeDefaults(dailyGB);
+    const data = await runPlan(buildPlanBody());
+    updateAutoRecBadges(data.design);
+    renderApplyPreview(data);
   } catch (ex) {
     if (out) {
       out.hidden = false;
@@ -190,12 +165,16 @@ export async function runQuickEstimate() {
   }
 }
 
+/** @deprecated Use runApplyDefaults — kept for any stale callers. */
+export async function runQuickEstimate() {
+  return runApplyDefaults();
+}
+
 export function bindQuickStart() {
   const bytesEl = document.getElementById("avg_event_bytes");
   if (bytesEl && bytesEl.dataset.quickBound !== "1") {
     bytesEl.dataset.quickBound = "1";
     const onBytes = () => {
-      // Recalculate EPS↔GB with the new average event size (totals stay the single source of truth).
       const active = document.activeElement;
       const prefer = active?.id === "total_daily_eps" ? "eps" : "gb";
       syncTotalVolumePair(prefer);
@@ -203,10 +182,10 @@ export function bindQuickStart() {
     bytesEl.addEventListener("input", onBytes);
     bytesEl.addEventListener("change", onBytes);
   }
-  const btn = document.getElementById("btn-quick-estimate");
+  const btn = document.getElementById("btn-apply-defaults");
   if (btn && btn.dataset.quickBound !== "1") {
     btn.dataset.quickBound = "1";
-    btn.addEventListener("click", () => void runQuickEstimate());
+    btn.addEventListener("click", () => void runApplyDefaults());
   }
   syncQuickFromGlobals();
 }
