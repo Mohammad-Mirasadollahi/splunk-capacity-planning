@@ -1,0 +1,90 @@
+        <section class="wiz-pane" data-pane="1" hidden>
+          <h3 data-i18n="volume_title">Volume &amp; sources</h3>
+
+          <div class="tab-bar tab-bar-sm" role="tablist" data-tabs="volume">
+            <button type="button" class="tab-btn is-active" role="tab" aria-selected="true" data-tab="vol-budget" data-i18n="tab_vol_budget">Budget</button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="vol-sources" data-i18n="tab_vol_sources">Sources</button>
+          </div>
+
+          <div class="tab-panel is-active" data-panel="vol-budget" role="tabpanel">
+            <section class="form-section" id="volume-drivers" aria-labelledby="vol-drivers-title">
+              <header class="form-section-head">
+                <h4 id="vol-drivers-title" data-i18n="vol_drivers_title">Daily volume &amp; drivers</h4>
+                <p class="hint" data-i18n="vol_drivers_hint">These values are the planning budget for later steps. Per-index volumes on the Sources tab must stay within the daily total; searchable disk need must stay within the hot/cold budgets on Retention.</p>
+              </header>
+              <div class="vol-pair-block" role="group" aria-label="Total daily GB equals EPS">
+                <label class="field vol-pair-side">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="total_daily_gb" data-i18n="lbl_total_daily">Total daily ingest (GB/day)</span><span class="field-hint" data-i18n="hint_total_daily">Raw/license volume before compression — not on-disk size. Cap for all enabled sources on the Sources tab</span></span>
+                  <input name="total_daily_gb" id="total_daily_gb" type="number" step="any" min="0" value="500" placeholder="e.g. 500" data-i18n-placeholder="ph_total_daily" inputmode="decimal">
+                </label>
+                <span class="vol-eq vol-eq-lg" aria-hidden="true">=</span>
+                <label class="field vol-pair-side">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="eps" data-i18n="lbl_total_eps">Total daily EPS</span><span class="field-hint" data-i18n="hint_total_eps">Linked to GB/day via average event size below</span></span>
+                  <input id="total_daily_eps" type="number" step="any" min="0" value="" placeholder="e.g. 8000" data-i18n-placeholder="ph_total_eps" inputmode="decimal">
+                </label>
+              </div>
+              <div class="grid quick-drivers-grid">
+                <label class="field">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="event_bytes" data-i18n="lbl_avg_event">Avg event size (bytes)</span><span class="field-hint" data-i18n="hint_avg_event">Average raw event / alert size — strongly drives GB↔EPS. Apply seeds sources; override per source later on the Sources tab</span></span>
+                  <input id="avg_event_bytes" type="number" step="1" min="1" value="500" placeholder="e.g. 500" data-i18n-placeholder="ph_avg_event" inputmode="numeric">
+                </label>
+                <label class="field">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="headroom" data-i18n="lbl_headroom">Safety margin</span><span class="field-hint" data-i18n="hint_headroom">e.g. 1.2 = keep 20% spare capacity — multiplies searchable disk caps</span></span>
+                  <input name="headroom" id="headroom" type="number" step="0.05" value="1.2" min="1">
+                </label>
+              </div>
+              <p class="hint" data-i18n="total_hint">Leave GB/EPS blank only if you plan solely from per-source volumes on the Sources tab. Edit either side — the other updates from avg event size.</p>
+            </section>
+
+            <p class="hint" id="vol-mode-hint" data-i18n="tab_volumes_hint">Daily GB/EPS and safety margin are the global budget (single place). Below is only summaries disk budget — hot/cold searchable disk is on Retention.</p>
+            <div id="capacity-box" class="subpanel">
+              <h4 data-i18n="cap_sum_title">Summaries disk (GB)</h4>
+              <div class="grid">
+                <label class="field">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="available_summaries_gb" data-i18n="lbl_avail_sum">Available summaries disk</span><span class="field-hint" data-i18n="hint_avail_sum">Space for summary / DMA data</span></span>
+                  <input name="available_summaries_gb" type="number" step="any" min="0" value="2000" placeholder="e.g. 2000" data-i18n-placeholder="ph_avail_sum">
+                </label>
+              </div>
+              <p class="hint" data-i18n="cap_sum_hint">Hot/cold searchable disk is linked to retention time on the Retention step (plan by time or by disk).</p>
+            </div>
+          </div>
+
+          <div class="tab-panel" data-panel="vol-sources" role="tabpanel" hidden>
+            <section class="form-section" aria-labelledby="sec-vol-mode-title">
+              <header class="form-section-head">
+                <h4 id="sec-vol-mode-title" data-i18n="sec_vol_mode">Enter volume as GB/day or EPS</h4>
+                <p class="hint" data-i18n-html="sec_vol_mode_hint">Use the linked <strong>GB/day = EPS</strong> pair on each source (and on Total daily volume). Edit either side — the other updates from average event size. Planning math always uses <strong>raw Daily GB</strong> under the hood.</p>
+              </header>
+              <p class="hint tip-mark" data-tip="eps" data-i18n="sec_vol_mode_eps_note">EPS = raw events arriving from the source (before Splunk compression). With average event size it becomes Daily raw GB; on-disk ≈ that × Comp.</p>
+            </section>
+
+            <section class="form-section" aria-labelledby="sec-log-sources-title">
+              <header class="form-section-head">
+                <h4 id="sec-log-sources-title" data-i18n="sec_log_sources">Log sources</h4>
+                <p class="hint" data-i18n="sources_hint">Turn on each source, fill GB/day or EPS (the other fills automatically), and override avg event size per source if needed. The sum of enabled sources must not exceed Total daily ingest on the Budget tab.</p>
+              </header>
+              <p id="volume-budget-err" class="err volume-budget-err" hidden role="alert"></p>
+              <div class="table-wrap">
+                <table class="src-table src-table--volume" id="src-table">
+                  <thead>
+                    <tr>
+                      <th data-i18n="col_use">Use</th>
+                      <th data-i18n="col_source">Source</th>
+                      <th data-i18n="col_index">Index name</th>
+                      <th class="src-col-event-bytes"><span class="tip-mark" data-tip="event_bytes" data-i18n="col_event_bytes">Avg event (bytes)</span></th>
+                      <th class="src-col-vol"><span class="tip-mark" data-tip="daily_gb" id="col-vol-label" data-i18n="col_vol_pair">GB/day = EPS</span></th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="src-body"></tbody>
+                </table>
+              </div>
+              <div class="row-actions">
+                <button type="button" class="btn-ghost" id="btn-add" data-i18n="add_row">+ Add custom source</button>
+                <button type="button" class="btn-ghost" id="btn-save" data-i18n="save">Save</button>
+                <button type="button" class="btn-ghost" id="btn-export" data-i18n="export">Export .json</button>
+                <button type="button" class="btn-ghost" id="btn-export-url" data-i18n="export_url">Export URL</button>
+              </div>
+            </section>
+          </div>
+        </section>

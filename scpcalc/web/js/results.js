@@ -459,7 +459,9 @@ export async function runCalculate() {
       err.textContent = budget.message;
       err.dataset.budgetErr = "1";
     }
-    showStep(3); // Sources — where per-index volumes are edited
+    const diskBudget = /available_|disk need|دیسک|hot\/warm|hot\+cold|searchable disk/i.test(budget.message);
+    showStep(diskBudget ? 2 : 1);
+    activateTab(diskBudget ? "reten" : "volume", diskBudget ? "ret-policy" : "vol-sources");
     return;
   }
 
@@ -481,8 +483,13 @@ export async function runCalculate() {
       err.textContent = ex.message || String(ex);
     }
     const msg = String(ex.message || ex);
-    if (msg.includes("total_daily_gb") || msg.includes("available_hot") || msg.includes("available_cold") || msg.includes("available_summaries")) {
-      showStep(msg.includes("total_daily_gb") ? 3 : 1);
+    if (msg.includes("total_daily_gb")) {
+      showStep(1);
+      activateTab("volume", "vol-sources");
+    } else if (msg.includes("available_hot") || msg.includes("available_cold") || msg.includes("available_summaries")) {
+      showStep(msg.includes("available_summaries") ? 1 : 2);
+      if (!msg.includes("available_summaries")) activateTab("reten", "ret-policy");
+      else activateTab("volume", "vol-budget");
     } else {
       showStep(STEPS - 1);
     }

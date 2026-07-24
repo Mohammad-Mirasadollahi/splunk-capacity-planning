@@ -459,12 +459,19 @@ export function migrateWizardStep(data) {
   if (ver < 8) {
     step = Math.min(4, step + 1);
   }
+  // v9+: Volume and Retention split; Sources folded into Volume.
+  // v8: 0 Overview, 1 Vol+Ret, 2 Cluster, 3 Sources, 4 Review
+  // v9: 0 Overview, 1 Volume(+Sources), 2 Retention, 3 Cluster, 4 Review
+  if (ver < 9) {
+    if (step === 2) step = 3;
+    else if (step === 3) step = 1;
+  }
   return Math.max(0, Math.min(4, step));
 }
 
 export function snapshot() {
   return {
-    version: 8,
+    version: 9,
     volume_input_mode: readVolumeInputMode(),
     capacity_plan_mode: readCapacityPlanMode(),
     globals: collectGlobals(),

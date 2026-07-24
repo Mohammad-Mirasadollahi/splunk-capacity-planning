@@ -968,8 +968,21 @@ def main() -> int:
         ok("ui.wizard.five_steps", 'data-step="4"' in html and 'data-pane="4"' in html)
         ok("ui.volume_drivers", 'id="volume-drivers"' in html and "Quick start — volume drivers" not in html)
         ok("ui.volume_budget_err", 'id="volume-budget-err"' in html)
+        ok("ui.wizard.step_retention", 'data-i18n="step_retention"' in html)
+        ok("ui.wizard.no_top_sources_step", 'data-i18n="step_src"' not in html)
+        ok(
+            "ui.wizard.order_volume_retention",
+            'data-i18n="step_ret"' in html
+            and 'data-i18n="step_retention"' in html
+            and html.index('data-i18n="step_ret"') < html.index('data-i18n="step_retention"')
+            and html.index('data-i18n="step_retention"') < html.index('data-i18n="step_topo"'),
+        )
+        ok("ui.volume_tabs", 'data-tabs="volume"' in html and 'data-tab="vol-sources"' in html)
+        ok("ui.sources_under_volume", 'data-pane="1"' in html and 'id="src-table"' in html)
         _, state_js = http_bytes("/js/state.js")
         ok("ui.wizard.steps_const", "STEPS = 5" in state_js.decode("utf-8", errors="replace"))
+        _, pf_mig = http_bytes("/js/plan-form.js")
+        ok("ui.snapshot_v9", b"version: 9" in pf_mig and b"ver < 9" in pf_mig)
         code_vb, budget_js = http_bytes("/js/volume-budget.js")
         ok("ui.volume_budget_js", code_vb == 200 and b"checkVolumeBudgets" in budget_js)
 

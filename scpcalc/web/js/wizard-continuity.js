@@ -39,22 +39,33 @@ function buildContextHTML(step) {
   const enabled = state.rows.filter((r) => r.enabled);
   const bits = [];
 
-  // Step order v8+: 0=Overview, 1=Volume/Retention, 2=Topology/Cluster, 3=Sources, 4=Review
+  // Step order v9+: 0=Overview, 1=Volume(+Sources), 2=Retention, 3=Cluster, 4=Review
   if (step >= 2) {
+    const vol = [];
+    if (g.total_daily_gb > 0) {
+      vol.push(t("ctx_total_daily").replace("{n}", formatDailyGB(g.total_daily_gb)));
+      const eps = totalEPSFromDailyGB(g.total_daily_gb, state.rows);
+      if (eps > 0) vol.push(t("ctx_total_eps").replace("{n}", formatEPS(eps)));
+    }
+    vol.push(t("ctx_headroom").replace("{h}", String(g.headroom)));
+    const srcSum = estimateEnabledDailyGB(enabled, mode);
+    vol.push(t("ctx_sources_on").replace("{n}", String(enabled.length)));
+    if (srcSum > 0) vol.push(t("ctx_sources_sum").replace("{n}", formatDailyGB(srcSum)));
+    if (g.total_daily_gb > 0 && srcSum > 0) {
+      vol.push(t("ctx_scale_note").replace("{t}", formatDailyGB(g.total_daily_gb)));
+    }
+    bits.push(`<strong>${t("ctx_from_sources")}</strong> ${vol.join(" · ")}`);
+  }
+
+  if (step >= 3) {
     const coldDays = Math.max(0, (g.retention_days || 0) - (g.hot_warm_days || 0));
     const ret = [
       t("ctx_retention")
         .replace("{r}", String(g.retention_days))
         .replace("{hw}", String(g.hot_warm_days))
         .replace("{c}", String(coldDays)),
-      t("ctx_headroom").replace("{h}", String(g.headroom)),
     ];
     if (g.archive_frozen) ret.push(t("ctx_archive_on").replace("{p}", g.frozen_path || "/frozen"));
-    if (g.total_daily_gb > 0) {
-      ret.push(t("ctx_total_daily").replace("{n}", formatDailyGB(g.total_daily_gb)));
-      const eps = totalEPSFromDailyGB(g.total_daily_gb, state.rows);
-      if (eps > 0) ret.push(t("ctx_total_eps").replace("{n}", formatEPS(eps)));
-    }
     if (g.available_hot_gb || g.available_cold_gb) {
       ret.push(
         t("ctx_disk")
@@ -65,7 +76,7 @@ function buildContextHTML(step) {
     bits.push(`<strong>${t("ctx_from_retention")}</strong> ${ret.join(" · ")}`);
   }
 
-  if (step >= 3) {
+  if (step >= 4) {
     const topo = [];
     topo.push(
       g.indexer_cluster
@@ -88,19 +99,6 @@ function buildContextHTML(step) {
     bits.push(`<strong>${t("ctx_from_topology")}</strong> ${topo.join(" · ")}`);
   }
 
-  if (step >= 4) {
-    const srcSum = estimateEnabledDailyGB(enabled, mode);
-    const src = [
-      t("ctx_vol_mode"),
-      t("ctx_sources_on").replace("{n}", String(enabled.length)),
-    ];
-    if (srcSum > 0) src.push(t("ctx_sources_sum").replace("{n}", formatDailyGB(srcSum)));
-    if (g.total_daily_gb > 0 && srcSum > 0) {
-      src.push(t("ctx_scale_note").replace("{t}", formatDailyGB(g.total_daily_gb)));
-    }
-    bits.push(`<strong>${t("ctx_from_sources")}</strong> ${src.join(" · ")}`);
-  }
-
   if (!bits.length) return "";
   return `<p class="wizard-context-title">${t("ctx_title")}</p><ul class="wizard-context-list">${bits
     .map((b) => `<li>${b}</li>`)
@@ -117,12 +115,12 @@ export function syncLinkedSummaryRetention() {
 export function applyInheritedSourcePlaceholders() {
   const g = collectGlobals();
   document.querySelectorAll('#src-ret-body input[data-f="retention_days"]').forEach((el) => {
-    el.placeholder = String(g.retention_days || 37);
-    setSoftTip(el, t("ctx_inherit_ret").replace("{n}", String(g.retention_days || 37)));
+    el.placeholder = String(g.retention_days || 90);
+    setSoftTip(el, t("ctx_inherit_ret").replace("{n}", String(g.retention_days || 90)));
   });
   document.querySelectorAll('#src-ret-body input[data-f="hot_warm_days"]').forEach((el) => {
-    el.placeholder = String(g.hot_warm_days || 7);
-    setSoftTip(el, t("ctx_inherit_hw").replace("{n}", String(g.hot_warm_days || 7)));
+    el.placeholder = String(g.hot_warm_days || 30);
+    setSoftTip(el, t("ctx_inherit_hw").replace("{n}", String(g.hot_warm_days || 30)));
   });
 }
 
@@ -133,14 +131,15 @@ export function refreshWizardContext(step = state.step, { remountSources = false
     el.hidden = true;
     el.innerHTML = "";
     syncQuickFromGlobals();
+    if (remountSources) renderRows();
     return;
   }
   syncLinkedSummaryRetention();
   const html = buildContextHTML(step);
   el.innerHTML = html;
   el.hidden = !html;
-  if (step >= 3) {
-    if (remountSources) renderRows();
+  if (remountSources) renderRows();
+  if (step >= 2) {
     applyInheritedSourcePlaceholders();
     refreshTotalCounterpart();
   }
