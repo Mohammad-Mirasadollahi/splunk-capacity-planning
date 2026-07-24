@@ -986,6 +986,8 @@ def main() -> int:
         ok("ui.volume_tab_order", _vb < _vp < _vs < _vpath)
         ok("ui.no_cap_mode_radios", 'name="capacity_plan_mode"' not in html)
         ok("ui.cap_mode_hint_linked", 'data-i18n="cap_mode_hint_linked"' in html)
+        ok("ui.cap_disk_scenario", 'id="cap-disk-scenario"' in html and 'id="cap-time-scenario"' in html)
+        ok("ui.disk_total_mirrors_retention", 'id="disk_total_out"' in html and 'id="retention_total_out"' in html)
         ok("ui.policy_index_size_note", 'data-i18n="policy_index_size_note"' in html or "maxTotalDataSizeMB" in html)
         ok("ui.paths_hint", 'data-i18n="paths_hint"' in html)
         ok("ui.summaries_on_policy", 'data-panel="vol-policy"' in html and html.find('id="available_summaries_gb"') > html.find('data-panel="vol-policy"'))

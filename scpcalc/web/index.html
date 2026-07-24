@@ -484,15 +484,16 @@
                     <span class="field-copy"><span class="field-label tip-mark" data-tip="available_cold_gb" id="lbl_cap_cold" data-i18n="lbl_avail_cold">Cold volume (GB)</span><span class="field-hint" id="hint_cap_cold" data-i18n="hint_avail_cold">→ [volume:cold] maxVolumeDataSizeMB</span></span>
                     <input name="available_cold_gb" id="available_cold_gb" type="number" step="any" min="0" value="20000" placeholder="e.g. 20000" data-i18n-placeholder="ph_avail_cold">
                   </label>
+                  <div class="field field-readonly" aria-live="polite">
+                    <span class="field-copy"><span class="field-label tip-mark" data-tip="available_hot_gb" data-i18n="lbl_disk_total">Total searchable volume</span><span class="field-hint" data-i18n="hint_disk_total">→ hot + cold maxVolumeDataSizeMB budgets (summaries separate)</span></span>
+                    <output id="disk_total_out" class="readonly-value" for="available_hot_gb available_cold_gb">—</output>
+                  </div>
                   <label class="field">
                     <span class="field-copy"><span class="field-label tip-mark" data-tip="available_summaries_gb" data-i18n="lbl_avail_sum">Summaries volume (GB)</span><span class="field-hint" data-i18n="hint_avail_sum">→ [volume:_splunk_summaries] maxVolumeDataSizeMB</span></span>
                     <input name="available_summaries_gb" id="available_summaries_gb" type="number" step="any" min="0" value="2000" placeholder="e.g. 2000" data-i18n-placeholder="ph_avail_sum">
                   </label>
-                  <div class="field field-readonly" aria-live="polite">
-                    <span class="field-copy"><span class="field-label" data-i18n="lbl_disk_total">Hot + cold volume</span><span class="field-hint" data-i18n="hint_disk_total">Searchable volumes only (summaries separate)</span></span>
-                    <output id="disk_total_out" class="readonly-value" for="available_hot_gb available_cold_gb">—</output>
-                  </div>
                 </div>
+                <p class="callout-note" id="cap-disk-scenario" aria-live="polite"></p>
                 <p class="hint" id="cap-disk-bridge" data-i18n="cap_bridge_hint">Bridge: disk ≈ daily on-disk × days × headroom. Set daily GB under Budget (or sources) so conversion stays accurate.</p>
               </div>
             </div>

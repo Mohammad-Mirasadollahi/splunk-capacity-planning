@@ -187,6 +187,8 @@ function syncDiskTotal(hotGB, coldGB) {
   if (out) {
     out.textContent = sum > 0 ? t("disk_total_fmt").replace("{n}", formatDiskGB(sum)) : "—";
   }
+  const sumEl = document.getElementById("available_summaries_gb");
+  updateDiskScenario(numOr0(hotGB), numOr0(coldGB), sum, numOr0(sumEl?.value));
   return sum;
 }
 
@@ -200,6 +202,17 @@ function updateTimeScenario(hot, cold, total) {
     .replace("{hot}", String(hot))
     .replace("{cold}", String(cold))
     .replace("{total}", String(total));
+}
+
+function updateDiskScenario(hotGB, coldGB, totalGB, summariesGB) {
+  const el = document.getElementById("cap-disk-scenario");
+  if (!el) return;
+  el.setAttribute("data-i18n", "cap_scenario_disk");
+  el.textContent = t("cap_scenario_disk")
+    .replace("{hot}", formatDiskGB(hotGB))
+    .replace("{cold}", formatDiskGB(coldGB))
+    .replace("{total}", formatDiskGB(totalGB))
+    .replace("{sum}", formatDiskGB(summariesGB));
 }
 
 /** Read-only coldPath preview after days are known. */
@@ -604,6 +617,16 @@ export function bindPlanFormChrome() {
   wire('input[name="cold_days"], #cold_days', "cold_days");
   wire('input[name="available_hot_gb"], #available_hot_gb', "hot_gb");
   wire('input[name="available_cold_gb"], #available_cold_gb', "cold_gb");
+  document.querySelectorAll('input[name="available_summaries_gb"], #available_summaries_gb').forEach((el) => {
+    const run = () => {
+      const hot = numOr0(document.getElementById("available_hot_gb")?.value);
+      const cold = numOr0(document.getElementById("available_cold_gb")?.value);
+      syncDiskTotal(hot, cold);
+      import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
+    };
+    el.addEventListener("input", run);
+    el.addEventListener("change", run);
+  });
   wire(
     'input[name="headroom"], input[name="total_daily_gb"], input[name="compression"], input[name="rf"], input[name="sf"]',
     "bridge"
