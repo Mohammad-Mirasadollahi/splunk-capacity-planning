@@ -43,10 +43,13 @@ body.modal-open {
   box-shadow: var(--shadow), 0 0 0 1px rgba(63, 224, 197, 0.08);
 }
 
-/* ~10% wider on each side vs previous 980px → ~1176px; use most of the viewport */
+/* Fixed shell size — tab/step content scrolls inside .wizard-body, not resize the dialog. */
 .wizard-modal {
   width: min(1176px, 90vw);
   max-width: 90vw;
+  height: min(92vh, 900px);
+  max-height: min(92vh, 900px);
+  min-height: min(92vh, 900px);
 }
 
 .form-section {
@@ -213,6 +216,7 @@ body.modal-open {
   gap: 1rem;
   padding: 1.1rem 1.25rem 0.85rem;
   border-bottom: 0;
+  flex-shrink: 0;
 }
 
 .wizard-head h2 {
@@ -245,6 +249,7 @@ body.modal-open {
   gap: 0.4rem;
   border-bottom: 0;
   background: rgba(0, 0, 0, 0.18);
+  flex-shrink: 0;
 }
 
 .wizard-steps li {
@@ -293,7 +298,8 @@ body.modal-open {
 }
 
 .wizard-body {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: auto;
   padding: 1rem 1.25rem 0.5rem;
   scrollbar-gutter: stable;
@@ -316,6 +322,7 @@ body.modal-open {
   padding: 0.85rem 1.25rem 1.1rem;
   border-top: 0;
   background: rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
 }
 
 .wiz-foot-right {

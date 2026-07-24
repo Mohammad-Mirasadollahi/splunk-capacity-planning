@@ -203,21 +203,28 @@
 .row-actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.55rem;
   margin-bottom: 1rem;
 }
 
 .btn-ghost,
 .file-btn,
+button.btn-ghost,
 a.btn-ghost {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.05);
   color: var(--ink);
   font: inherit;
   font-size: 0.85rem;
   font-weight: 600;
-  line-height: 1.25;
-  padding: 0.45rem 0.85rem;
+  line-height: 1;
+  height: 2.35rem;
+  min-height: 2.35rem;
+  padding: 0 0.9rem;
   border-radius: 0.65rem;
   cursor: pointer;
   display: inline-flex;
@@ -225,6 +232,8 @@ a.btn-ghost {
   justify-content: center;
   box-sizing: border-box;
   text-decoration: none;
+  text-align: center;
+  white-space: nowrap;
   vertical-align: middle;
   transition: border-color 0.2s var(--ease), background 0.2s var(--ease), transform 0.2s var(--ease);
 }
@@ -381,4 +390,7 @@ a.btn-ghost:hover {
   letter-spacing: -0.02em;
 }
 
-.hero-actions { margin-top: 1rem; }
+.hero-actions {
+  margin-top: 1rem;
+  align-items: center;
+}

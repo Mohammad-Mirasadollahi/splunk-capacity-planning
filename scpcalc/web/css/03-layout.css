@@ -47,9 +47,37 @@
 a.nav-docs {
   text-decoration: none;
   white-space: nowrap;
-  align-self: center;
-  height: fit-content;
+}
+
+.glass-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.22rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  height: 2.35rem;
   min-height: 2.35rem;
+  box-sizing: border-box;
+}
+
+.lang button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 600;
+  line-height: 1;
+  height: 1.9rem;
+  padding: 0 0.95rem;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s var(--ease), color 0.25s var(--ease), transform 0.2s var(--ease);
 }
 
 .eyebrow {
@@ -113,29 +141,6 @@ h1 {
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-}
-
-.glass-chip {
-  display: inline-flex;
-  gap: 0.3rem;
-  padding: 0.28rem;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  height: fit-content;
-}
-
-.lang button {
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-  font: inherit;
-  font-weight: 600;
-  padding: 0.45rem 0.95rem;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: background 0.25s var(--ease), color 0.25s var(--ease), transform 0.2s var(--ease);
 }
 
 .lang button:hover { color: var(--ink); transform: translateY(-1px); }
@@ -495,9 +500,16 @@ input[type="number"]::-webkit-inner-spin-button {
   color: var(--accent-ink);
   font: inherit;
   font-weight: 700;
-  padding: 0.78rem 1.35rem;
+  line-height: 1;
+  height: 2.35rem;
+  min-height: 2.35rem;
+  padding: 0 1.35rem;
   border-radius: 0.85rem;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
   transition: transform 0.25s var(--ease), filter 0.25s var(--ease);
   animation: pulse-glow 3.2s ease-in-out infinite;
 }

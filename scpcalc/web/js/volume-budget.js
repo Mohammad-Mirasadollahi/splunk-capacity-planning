@@ -23,7 +23,8 @@ export function checkVolumeBudgets() {
       ok: false,
       message: t("err_sources_exceed_total")
         .replace("{sum}", formatDailyGB(sum))
-        .replace("{cap}", formatDailyGB(cap)),
+        .replace("{cap}", formatDailyGB(cap))
+        .replace("{over}", formatDailyGB(sum - cap)),
       warn: "",
     };
   }

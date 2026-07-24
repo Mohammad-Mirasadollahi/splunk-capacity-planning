@@ -6,6 +6,7 @@ import {
   averageEventBytes,
   dailyGBFromEPS,
   epsFromDailyGB,
+  formatEPS,
   numOr0,
   resolveEventBytes,
 } from "./volume-convert.js";
@@ -27,13 +28,16 @@ function indexSizeCellHTML(sized) {
   const maxMB = formatSizeMB(sized.maxTotalMB);
   const maxGB = formatSizeGB(sized.maxTotalGB);
   const homeMB = formatSizeMB(sized.homeMB);
+  const bytes = resolveEventBytes(sized.row, state.rows);
+  const eps = sized.dailyRaw > 0 && bytes > 0 ? epsFromDailyGB(sized.dailyRaw, bytes) : numOr0(sized.row.eps);
+  const epsTxt = formatEPS(eps);
   const scaleNote =
     sized.scale > 1.001
       ? `<span class="src-idx-scale" title="${escapeAttr(t("col_idx_scale_tip"))}">×${sized.scale.toFixed(2)}</span>`
       : "";
   return `<td class="src-col-idx-size">
     <output class="src-idx-size readonly-value" data-idx-size="${sized.i}" aria-live="polite" title="maxTotalDataSizeMB (cluster-wide, pre peer-split)">${maxMB}</output>
-    <span class="src-idx-gb" data-idx-gb="${sized.i}">≈ ${maxGB} GB</span>
+    <span class="src-idx-gb" data-idx-gb="${sized.i}">≈ ${maxGB} GB · ${epsTxt} EPS</span>
     <span class="src-idx-home tip-mark" data-tip="hot_warm_days" data-idx-home="${sized.i}" title="homePath.maxDataSizeMB">${t("col_idx_home_short").replace("{n}", homeMB)}</span>
     ${scaleNote}
   </td>`;
@@ -63,8 +67,10 @@ export function refreshIndexSizePreviews() {
           tr?.querySelector(".src-idx-scale")?.remove();
           return;
         }
+        const bytes = resolveEventBytes(r, state.rows);
+        const eps = sized.dailyRaw > 0 && bytes > 0 ? epsFromDailyGB(sized.dailyRaw, bytes) : numOr0(r.eps);
         out.textContent = formatSizeMB(sized.maxTotalMB);
-        if (gbEl) gbEl.textContent = `≈ ${formatSizeGB(sized.maxTotalGB)} GB`;
+        if (gbEl) gbEl.textContent = `≈ ${formatSizeGB(sized.maxTotalGB)} GB · ${formatEPS(eps)} EPS`;
         if (homeEl) homeEl.textContent = t("col_idx_home_short").replace("{n}", formatSizeMB(sized.homeMB));
         let scaleEl = tr?.querySelector(".src-idx-scale");
         if (sized.scale > 1.001) {

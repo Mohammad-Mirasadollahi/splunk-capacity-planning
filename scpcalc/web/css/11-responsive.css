@@ -9,6 +9,7 @@
   .wizard-modal {
     height: 96vh;
     max-height: 96vh;
+    min-height: 96vh;
   }
   .wizard-steps em { display: none; }
   .tab-btn {

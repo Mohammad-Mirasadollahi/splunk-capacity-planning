@@ -442,8 +442,8 @@ func (p *PlanInput) Validate() error {
 		}
 		if sum > p.TotalDailyGB+0.01 {
 			return fmt.Errorf(
-				"sources daily volume sum (%.3f GB/day) exceeds total_daily_gb budget (%.3f GB/day) — lower per-index volumes or raise the Volume-step total",
-				sum, p.TotalDailyGB,
+				"sources daily volume sum (%.3f GB/day) exceeds total_daily_gb budget (%.3f GB/day) by %.3f GB/day — lower per-index volumes or raise the Volume-step total",
+				sum, p.TotalDailyGB, sum-p.TotalDailyGB,
 			)
 		}
 	}

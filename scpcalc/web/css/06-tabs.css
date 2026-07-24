@@ -70,7 +70,7 @@
 }
 
 .src-col-idx-size {
-  min-width: 5.5rem;
+  min-width: 7.5rem;
   white-space: nowrap;
 }
 
@@ -123,17 +123,46 @@
 }
 
 .vol-pair {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  min-width: 12.5rem;
+  justify-content: center;
+  gap: 0.35rem;
+  min-width: 0;
+  width: max-content;
+  max-width: 100%;
   flex-wrap: nowrap;
+  vertical-align: middle;
 }
 
 .vol-pair input {
-  flex: 1 1 0;
-  min-width: 4.5rem;
-  width: 0;
+  flex: 0 0 5.25rem;
+  width: 5.25rem;
+  min-width: 4.25rem;
+  max-width: 5.75rem;
+}
+
+.src-table th.src-col-vol,
+.src-table td.src-col-vol {
+  text-align: center;
+  width: 1%;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.src-table td.src-col-vol .vol-pair {
+  margin-inline: auto;
+}
+
+.src-table .vol-pair .num-stepper {
+  flex: 0 0 5.75rem;
+  width: 5.75rem;
+  max-width: 5.75rem;
+}
+
+.src-table .vol-pair .num-stepper > input[type="number"] {
+  width: 100%;
+  min-width: 0;
+  flex: none;
 }
 
 .vol-eq {
@@ -143,19 +172,22 @@
   color: var(--accent);
   opacity: 0.9;
   user-select: none;
+  line-height: 1;
 }
 
 .vol-pair-block {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: 0.75rem 1rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: end;
+  gap: 0.75rem 0.65rem;
   margin-bottom: 0.85rem;
+  /* Match ~two columns of .grid (auto-fill minmax 220px), not full modal width */
+  width: min(100%, 34rem);
+  max-width: 100%;
 }
 
 .vol-pair-block .vol-pair-side {
-  flex: 1 1 200px;
-  min-width: 180px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
@@ -168,9 +200,11 @@
 
 .vol-eq-lg {
   font-size: 1.35rem;
-  align-self: flex-end;
-  padding-top: 0;
-  margin-bottom: 0.55rem;
+  align-self: end;
+  justify-self: center;
+  padding: 0;
+  margin: 0 0 0.55rem;
+  line-height: 1;
 }
 
 .vol-counterpart {

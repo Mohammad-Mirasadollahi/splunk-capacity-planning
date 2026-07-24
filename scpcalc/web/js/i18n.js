@@ -41,7 +41,7 @@ export function setLang(next) {
   document.body.dataset.lang = l;
   document.body.dir = l === "fa" ? "rtl" : "ltr";
   const docsURL = `https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=${l}`;
-  document.querySelectorAll("#link-docs-hub, #link-docs-hub-btn, #link-docs-hub-hero, a[data-docs-hub]").forEach((a) => {
+  document.querySelectorAll("#link-docs-hub, #link-docs-hub-btn, a[data-docs-hub]").forEach((a) => {
     a.setAttribute("href", docsURL);
   });
   document.querySelectorAll(".lang button").forEach((b) => {
