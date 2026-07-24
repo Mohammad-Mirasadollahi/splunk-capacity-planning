@@ -197,8 +197,8 @@ There is **no exclusive planning mode**. Fill any combination:
 | Input | Effect |
 |---|---|
 | `sources[]` with `daily_gb` or `eps`+`event_bytes` | Size those indexes |
-| `total_daily_gb` | Synthesize `main` if no sources, or scale source rows to the total |
-| `available_hot_gb` / `available_cold_gb` (/ summaries) | Fit badges + max daily / max retention from disk |
+| `total_daily_gb` | Budget ceiling: synthesize `main` if no sources; scale sources **up** when under-fill; **error** if sources exceed |
+| `available_hot_gb` / `available_cold_gb` (/ summaries) | Fit badges + max daily / max retention; **error** if calculated need exceeds budget |
 
 `--mode` on the CLI is **deprecated** and ignored; the result label (`sources`/`total`/`capacity`) is inferred for display only.
 
@@ -319,8 +319,8 @@ See also [`examples/plan.sample.json`](examples/plan.sample.json).
   "rf": 3,
   "sf": 2,
   "search_head_cluster": true,
-  "retention_days": 90,
-  "hot_warm_days": 30,
+  "retention_days": 37,
+  "hot_warm_days": 7,
   "headroom": 1.2,
   "hot_path": "/hot",
   "cold_path": "/cold",

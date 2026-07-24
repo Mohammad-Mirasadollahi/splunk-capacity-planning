@@ -191,6 +191,7 @@ async function boot() {
   const data = await fetchPresets();
   state.rows = (data.sources || []).map((p) => applyDemoSourceDefaults(rowFromPreset(p)));
   applyGlobals(demoGlobals());
+  syncCapacityPair("mode");
   renderRows();
   showStep(0);
   const badge = document.getElementById("engine-badge");

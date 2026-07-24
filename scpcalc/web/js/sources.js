@@ -99,7 +99,7 @@ export function refreshTotalCounterpart() {
   syncTotalVolumePair(null);
 }
 
-/** Sync total_daily_gb ↔ total_daily_eps using Quick Start avg event size (fallback: sources). */
+/** Sync total_daily_gb ↔ total_daily_eps using Volume-step avg event size (fallback: sources). */
 export function syncTotalVolumePair(edited) {
   const gbEl = document.getElementById("total_daily_gb") || document.querySelector('input[name="total_daily_gb"]');
   const epsEl = document.getElementById("total_daily_eps");
@@ -168,6 +168,7 @@ export function renderRows() {
     retBody.innerHTML = state.rows.map((r, i) => retentionRowHTML(r, i)).join("");
   }
   refreshTotalCounterpart();
+  import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
 }
 
 function bindTableBody(srcBody) {
@@ -182,13 +183,17 @@ function bindTableBody(srcBody) {
     if (e.target.type === "checkbox") {
       state.rows[i][f] = e.target.checked;
       if (f === "enabled" || f === "enable_summary") renderRows();
-      else refreshTotalCounterpart();
+      else {
+        refreshTotalCounterpart();
+        import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
+      }
     } else {
       state.rows[i][f] = e.target.value;
       if (f === "daily_gb" || f === "eps" || f === "event_bytes") {
         syncRowVolumePair(state.rows[i], state.rows, f);
         updatePairInputs(tr, state.rows[i]);
         refreshTotalCounterpart();
+        import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
       } else if (f === "label" || f === "index_name") {
         renderRows();
       }
@@ -205,6 +210,7 @@ function bindTableBody(srcBody) {
       syncRowVolumePair(state.rows[i], state.rows, f);
       updatePairInputs(tr, state.rows[i]);
       refreshTotalCounterpart();
+      import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
     } else if (f === "label" || f === "index_name") {
       const other =
         srcBody.id === "src-body"
@@ -226,8 +232,14 @@ function bindTotalVolumePair() {
   const epsEl = document.getElementById("total_daily_eps");
   if (!gbEl || gbEl.dataset.volPairBound === "1") return;
   gbEl.dataset.volPairBound = "1";
-  const onGb = () => syncTotalVolumePair("gb");
-  const onEps = () => syncTotalVolumePair("eps");
+  const onGb = () => {
+    syncTotalVolumePair("gb");
+    import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
+  };
+  const onEps = () => {
+    syncTotalVolumePair("eps");
+    import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
+  };
   gbEl.addEventListener("input", onGb);
   gbEl.addEventListener("change", onGb);
   epsEl?.addEventListener("input", onEps);

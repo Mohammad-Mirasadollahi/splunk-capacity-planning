@@ -51,7 +51,7 @@ Daily_Raw_GB = EPS × 86400 × event_bytes / (1024³)
 
 If both are set and `daily_gb > 0`, **daily_gb wins** in the engine. The Web UI is stricter: pick **Daily GB** *or* **EPS** as the only primary column; the other unit is shown as a live estimate under each input (and blank EPS rows inherit the average EPS of filled sources).
 
-**`total_daily_gb`:** if only this is set, synthesize index `main`. If sources exist and total is set, scale source volumes so they sum to total.
+**`total_daily_gb`:** planning budget (ceiling). If only this is set, synthesize index `main`. If sources under-fill the total, scale them up. If sources exceed the total, validation fails.
 
 ## 3. Compression / on-disk factor
 
@@ -116,12 +116,12 @@ DMA_MB ≈ TotalDailyOnDisk_GB × 1024 × RetentionDays × Headroom × dma_pct  
 ## 7. Volume budgets
 
 ```text
-HotBudgetMB   = Σ homePath.maxDataSizeMB   (+ available_hot_gb cap if set)
-ColdBudgetMB  = Σ (maxTotal − homePath)    (+ available_cold_gb cap)
-SumBudgetMB   = Σ summary maxTotal + DMA   (+ available_summaries_gb cap)
+HotBudgetMB   = Σ homePath.maxDataSizeMB
+ColdBudgetMB  = Σ (maxTotal − homePath)
+SumBudgetMB   = Σ summary maxTotal + DMA
 ```
 
-Design “need” uses **pre-cap cluster-wide** budgets; conf `maxVolumeDataSizeMB` uses per-peer values after ÷ `N_IDX`.
+If `available_hot_gb` / `available_cold_gb` / `available_summaries_gb` is set and calculated need exceeds that budget, calculation **errors** (do not silently shrink). When available ≥ need, conf volume caps may still expand up to the available budget. Design “need” uses pre-cap cluster-wide budgets; conf `maxVolumeDataSizeMB` uses per-peer values after ÷ `N_IDX`.
 
 ## 8. Capacity reverse
 

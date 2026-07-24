@@ -30,7 +30,7 @@ func TestModeTotalSynthesizesMain(t *testing.T) {
 	}
 }
 
-func TestModeTotalScalesSources(t *testing.T) {
+func TestModeTotalScalesSourcesUp(t *testing.T) {
 	res, err := calc.CalculatePlan(model.PlanInput{
 		Mode:          model.ModeTotal,
 		TotalDailyGB:  100,
@@ -46,7 +46,27 @@ func TestModeTotalScalesSources(t *testing.T) {
 		t.Fatal(err)
 	}
 	if res.TotalDailyRawGB < 99.9 || res.TotalDailyRawGB > 100.1 {
-		t.Fatalf("expected scaled to 100, got %v", res.TotalDailyRawGB)
+		t.Fatalf("expected scaled up to 100, got %v", res.TotalDailyRawGB)
+	}
+}
+
+func TestSourcesExceedTotalDailyGB(t *testing.T) {
+	_, err := calc.CalculatePlan(model.PlanInput{
+		Mode:          model.ModeTotal,
+		TotalDailyGB:  100,
+		RetentionDays: 10,
+		HotWarmDays:   5,
+		Headroom:      1.0,
+		Sources: []model.SourceRow{
+			{IndexName: "a", DailyGB: 80},
+			{IndexName: "b", DailyGB: 40},
+		},
+	})
+	if err == nil {
+		t.Fatal("expected error when sources sum exceeds total_daily_gb")
+	}
+	if !strings.Contains(err.Error(), "exceeds total_daily_gb") {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
@@ -72,8 +92,8 @@ func TestCapacityDiskOnlyWithoutMode(t *testing.T) {
 	}
 }
 
-func TestAvailableCapsShrinkConfVolumes(t *testing.T) {
-	res, err := calc.CalculatePlan(model.PlanInput{
+func TestAvailableHotUnderNeedErrors(t *testing.T) {
+	_, err := calc.CalculatePlan(model.PlanInput{
 		Mode:           model.ModeSources,
 		RetentionDays:  60,
 		HotWarmDays:    30,
@@ -83,23 +103,11 @@ func TestAvailableCapsShrinkConfVolumes(t *testing.T) {
 			{IndexName: "windows", DailyGB: 100},
 		},
 	})
-	if err != nil {
-		t.Fatal(err)
+	if err == nil {
+		t.Fatal("expected error when hot need exceeds available_hot_gb")
 	}
-	if res.HotVolumeMB != 1024 { // 1 GB × 1024
-		t.Fatalf("hot volume mb=%d", res.HotVolumeMB)
-	}
-	if res.Design == nil || res.Design.HotNeedGB < 10 {
-		t.Fatalf("design need should remain large, got %v", res.Design.HotNeedGB)
-	}
-	found := false
-	for _, w := range res.Warnings {
-		if strings.Contains(w, "available_hot_gb") {
-			found = true
-		}
-	}
-	if !found {
-		t.Fatalf("expected hot cap warning, got %v", res.Warnings)
+	if !strings.Contains(err.Error(), "available_hot_gb") {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }
 

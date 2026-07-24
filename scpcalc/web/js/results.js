@@ -1,8 +1,9 @@
-import { state, reduceMotion } from "./state.js";
+import { state, reduceMotion, STEPS } from "./state.js";
 import { escapeAttr } from "./util.js";
 import { tipCatalog, bindTips } from "./tips-ui.js";
 import { activateTab } from "./tabs.js";
 import { buildPlanBody } from "./plan-form.js";
+import { refreshVolumeBudgetUI } from "./volume-budget.js";
 import { setConfText, syncVolStateFromGlobals } from "./conf-editor.js";
 import { renderAllCharts } from "./charts.js";
 import { closeWizard, showStep } from "./wizard.js";
@@ -447,7 +448,21 @@ export async function runCalculate() {
   const err = document.getElementById("err");
   const btnCalc = document.getElementById("btn-wiz-calc");
 
-  if (err) err.hidden = true;
+  if (err) {
+    err.hidden = true;
+    delete err.dataset.budgetErr;
+  }
+  const budget = refreshVolumeBudgetUI();
+  if (!budget.ok) {
+    if (err) {
+      err.hidden = false;
+      err.textContent = budget.message;
+      err.dataset.budgetErr = "1";
+    }
+    showStep(3); // Sources — where per-index volumes are edited
+    return;
+  }
+
   btnCalc?.classList.add("loading");
   try {
     let data = await runPlan(buildPlanBody());
@@ -465,7 +480,12 @@ export async function runCalculate() {
       err.hidden = false;
       err.textContent = ex.message || String(ex);
     }
-    showStep(3);
+    const msg = String(ex.message || ex);
+    if (msg.includes("total_daily_gb") || msg.includes("available_hot") || msg.includes("available_cold") || msg.includes("available_summaries")) {
+      showStep(msg.includes("total_daily_gb") ? 3 : 1);
+    } else {
+      showStep(STEPS - 1);
+    }
   } finally {
     btnCalc?.classList.remove("loading");
   }

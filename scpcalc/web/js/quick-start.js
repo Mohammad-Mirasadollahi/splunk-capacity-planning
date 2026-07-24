@@ -1,6 +1,5 @@
 /**
- * Wizard Quick Start: volume drivers (GB/EPS, avg event size, headroom).
- * Overview tab can seed recommended defaults from those drivers.
+ * Wizard volume drivers (GB/EPS, avg event size, headroom) and Overview Apply defaults.
  */
 import { state } from "./state.js";
 import { t } from "./i18n.js";

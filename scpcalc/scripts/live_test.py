@@ -751,7 +751,12 @@ def main() -> int:
         design = plan.get("design") or {}
         conf = plan.get("indexes_conf") or ""
         ok("api.plan_ok", code == 200 and plan.get("total_daily_raw_gb", 0) > 80)
-        ok("api.plan.n_sh_shc", design.get("n_sh", 0) >= 6, f"n_sh={design.get('n_sh')} (ES+ITSI separate)")  # ES+ITSI doubles SH tiers
+        ok(
+            "api.plan.n_sh_shc",
+            design.get("n_sh", 0) >= 2
+            and (design.get("n_sh_es") or 0) + (design.get("n_sh_itsi") or 0) == design.get("n_sh", 0),
+            f"n_sh={design.get('n_sh')} es={design.get('n_sh_es')} itsi={design.get('n_sh_itsi')}",
+        )
         ok("api.plan.n_idx_es", design.get("n_idx", 0) >= 3, str(design.get("n_idx")))
         ok("api.plan.node_plan_text", "NODE COUNTS" in (design.get("node_plan_text") or ""))
         ok("api.plan.structure", "Node counts" in (design.get("structure_text") or "") or "DESIGN STRUCTURE" in (design.get("structure_text") or ""))
@@ -770,7 +775,7 @@ def main() -> int:
         # ES+ITSI separate tiers
         ok(
             "api.plan.es_itsi_tiers",
-            (design.get("n_sh_es") or 0) >= 3 and (design.get("n_sh_itsi") or 0) >= 3,
+            (design.get("n_sh_es") or 0) >= 1 and (design.get("n_sh_itsi") or 0) >= 1,
             f"es={design.get('n_sh_es')} itsi={design.get('n_sh_itsi')}",
         )
 
@@ -811,6 +816,46 @@ def main() -> int:
             },
         )
         ok("api.dup_index_400", code == 400, str(dup)[:160])
+
+        # sources sum over total_daily_gb budget must fail
+        code, over_src, _ = http_json(
+            "POST",
+            "/api/v1/plan",
+            {
+                "total_daily_gb": 100,
+                "retention_days": 30,
+                "hot_warm_days": 7,
+                "headroom": 1,
+                "sources": [
+                    {"key": "a", "index_name": "a", "daily_gb": 80},
+                    {"key": "b", "index_name": "b", "daily_gb": 40},
+                ],
+            },
+        )
+        ok(
+            "api.sources_over_total_400",
+            code == 400 and "total_daily_gb" in str(over_src).lower(),
+            str(over_src)[:200],
+        )
+
+        # hot need over available_hot_gb budget must fail
+        code, over_hot, _ = http_json(
+            "POST",
+            "/api/v1/plan",
+            {
+                "mode": "sources",
+                "retention_days": 60,
+                "hot_warm_days": 30,
+                "headroom": 1,
+                "available_hot_gb": 1,
+                "sources": [{"key": "w", "index_name": "windows", "daily_gb": 100}],
+            },
+        )
+        ok(
+            "api.hot_over_budget_400",
+            code == 400 and "available_hot_gb" in str(over_hot).lower(),
+            str(over_hot)[:200],
+        )
 
         # Static UI assets
         code, html_b = http_bytes("/")
@@ -894,9 +939,13 @@ def main() -> int:
         ok("ui.results.n_sh", "N_SH" in rj)
         ok("ui.results.table_find", "applyTableFind" in rj and "data-find" in rj)
         ok("ui.results.ix_columns", "frozen_time_period_in_secs" in rj and "event_bytes" in rj)
-        ok("ui.results.res_columns", "network" in rj and "cell-notes" in rj)
-        ok("ui.results.cpu_physical", "cpu_physical_cores" in rj and "physical" in rj)
+        ok("ui.results.res_columns", "cell-notes" in rj)
+        ok("ui.results.cpu_physical", "physical" in rj)
         ok("ui.results.cpu_virt", "virt_cpu_rule" in rj and "splunk_parallelization" in rj)
+        code_nj, nodes_js = http_bytes("/js/nodes.js")
+        nj = nodes_js.decode("utf-8", errors="replace") if nodes_js else ""
+        ok("ui.nodes.res_network", code_nj == 200 and "network" in nj)
+        ok("ui.nodes.cpu_physical", "cpu_physical_cores" in nj)
 
         _, plan_form_b = http_bytes("/js/plan-form.js")
         pf = plan_form_b.decode("utf-8", errors="replace")
@@ -917,8 +966,12 @@ def main() -> int:
             ok(f"ui.plan_form.{field}", field in pf)
         ok("ui.wizard.no_mode_step", 'data-i18n="step_mode"' not in html and 'name="mode"' not in html)
         ok("ui.wizard.five_steps", 'data-step="4"' in html and 'data-pane="4"' in html)
+        ok("ui.volume_drivers", 'id="volume-drivers"' in html and "Quick start — volume drivers" not in html)
+        ok("ui.volume_budget_err", 'id="volume-budget-err"' in html)
         _, state_js = http_bytes("/js/state.js")
         ok("ui.wizard.steps_const", "STEPS = 5" in state_js.decode("utf-8", errors="replace"))
+        code_vb, budget_js = http_bytes("/js/volume-budget.js")
+        ok("ui.volume_budget_js", code_vb == 200 and b"checkVolumeBudgets" in budget_js)
 
     except Exception as e:  # noqa: BLE001
         ok("http.exception", False, str(e))

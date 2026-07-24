@@ -193,8 +193,12 @@
   padding-top: 0;
 }
 
-.quick-start {
+.quick-start,
+#volume-drivers {
   margin-bottom: 1rem;
+}
+
+#volume-drivers {
   border-color: rgba(63, 224, 197, 0.22);
 }
 

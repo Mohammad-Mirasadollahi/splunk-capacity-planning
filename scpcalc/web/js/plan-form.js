@@ -113,7 +113,7 @@ function planningDailyRawGB() {
   return sum;
 }
 
-function planningDailyOnDiskGB() {
+export function planningDailyOnDiskGB() {
   const g = collectGlobals();
   const raw = planningDailyRawGB();
   const comp = estimateCompression({
@@ -545,7 +545,7 @@ export function fillReview() {
     `archive_frozen: ${g.archive_frozen}${g.archive_frozen ? ` → ${g.frozen_path}` : ""}`,
     `paths: ${g.hot_path} | ${g.cold_path} | ${g.frozen_path} | ${g.summaries_path}`,
   ];
-  if (g.total_daily_gb) lines.push(`total_daily_gb: ${g.total_daily_gb} (sources scale to this when both set)`);
+  if (g.total_daily_gb) lines.push(`total_daily_gb: ${g.total_daily_gb} (budget ceiling; under-fill sources scale up)`);
   if (g.available_hot_gb || g.available_cold_gb || g.available_summaries_gb) {
     lines.push(
       `disk GB: hot=${g.available_hot_gb || 0} cold=${g.available_cold_gb || 0} summaries=${g.available_summaries_gb || 0}`
@@ -601,8 +601,12 @@ export function bindPlanFormChrome() {
 
   const wire = (sel, edited) => {
     document.querySelectorAll(sel).forEach((el) => {
-      el.addEventListener("input", () => syncCapacityPair(edited));
-      el.addEventListener("change", () => syncCapacityPair(edited));
+      const run = () => {
+        syncCapacityPair(edited);
+        import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
+      };
+      el.addEventListener("input", run);
+      el.addEventListener("change", run);
     });
   };
   wire('input[name="hot_warm_days"], #hot_warm_days', "hot_days");

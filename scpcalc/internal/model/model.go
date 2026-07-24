@@ -429,6 +429,24 @@ func (p *PlanInput) Validate() error {
 	if !hasSourceVol && !hasTotal && p.AvailableSummariesGB > 0 && !hasDisk {
 		return fmt.Errorf("set available_hot_gb and/or available_cold_gb (summaries alone cannot reverse searchable ingest)")
 	}
+	if hasTotal && hasSourceVol {
+		var sum float64
+		for _, s := range p.Sources {
+			daily := s.DailyGB
+			if daily <= 0 && s.EPS > 0 && s.EventBytes > 0 {
+				daily = s.EPS * 86400.0 * s.EventBytes / (1024.0 * 1024.0 * 1024.0)
+			}
+			if daily > 0 {
+				sum += daily
+			}
+		}
+		if sum > p.TotalDailyGB+0.01 {
+			return fmt.Errorf(
+				"sources daily volume sum (%.3f GB/day) exceeds total_daily_gb budget (%.3f GB/day) — lower per-index volumes or raise the Volume-step total",
+				sum, p.TotalDailyGB,
+			)
+		}
+	}
 	if p.Compression < 0 {
 		return fmt.Errorf("compression must be >= 0")
 	}

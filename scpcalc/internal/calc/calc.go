@@ -219,21 +219,30 @@ func CalculatePlan(p model.PlanInput) (model.PlanResult, error) {
 	if p.AvailableHotGB > 0 {
 		capMB := int64(math.Round(p.AvailableHotGB * 1024))
 		if capMB < calcHot {
-			out.Warnings = append(out.Warnings, "available_hot_gb is smaller than calculated hot/warm need — conf uses available cap; reduce retention/hot_warm_days or add disk")
+			return model.PlanResult{}, fmt.Errorf(
+				"hot/warm disk need (%.0f GB) exceeds available_hot_gb budget (%.0f GB) — raise the Policy disk budget or lower retention / daily volume",
+				float64(calcHot)/1024.0, p.AvailableHotGB,
+			)
 		}
 		out.HotVolumeMB = capMB
 	}
 	if p.AvailableColdGB > 0 {
 		capMB := int64(math.Round(p.AvailableColdGB * 1024))
 		if capMB < calcCold {
-			out.Warnings = append(out.Warnings, "available_cold_gb is smaller than calculated cold need — conf uses available cap")
+			return model.PlanResult{}, fmt.Errorf(
+				"cold disk need (%.0f GB) exceeds available_cold_gb budget (%.0f GB) — raise the Policy disk budget or lower retention / daily volume",
+				float64(calcCold)/1024.0, p.AvailableColdGB,
+			)
 		}
 		out.ColdVolumeMB = capMB
 	}
 	if p.AvailableSummariesGB > 0 {
 		capMB := int64(math.Round(p.AvailableSummariesGB * 1024))
 		if calcSum > 0 && capMB < calcSum {
-			out.Warnings = append(out.Warnings, "available_summaries_gb is smaller than calculated summaries need — conf uses available cap")
+			return model.PlanResult{}, fmt.Errorf(
+				"summaries disk need (%.0f GB) exceeds available_summaries_gb budget (%.0f GB) — raise the Volume summaries budget or lower summary retention / DMA",
+				float64(calcSum)/1024.0, p.AvailableSummariesGB,
+			)
 		}
 		out.SummariesVolumeMB = max64(capMB, 1)
 	}
@@ -359,7 +368,8 @@ func hasAnySummary(out model.PlanResult) bool {
 }
 
 // normalizeSources expands total_daily_gb into a synthetic index when needed,
-// and scales source rows to match total when both are set.
+// and scales source rows up to match total when sources under-fill the budget.
+// Over-budget sources are left unchanged — Validate rejects that case.
 func normalizeSources(p *model.PlanInput) {
 	var sum float64
 	active := make([]model.SourceRow, 0, len(p.Sources))
@@ -387,7 +397,8 @@ func normalizeSources(p *model.PlanInput) {
 			EventBytes: 500,
 		}}
 		sum = p.TotalDailyGB
-	} else if p.TotalDailyGB > 0 && len(active) > 0 && math.Abs(sum-p.TotalDailyGB) > 0.01 {
+	} else if p.TotalDailyGB > 0 && len(active) > 0 && sum < p.TotalDailyGB-0.01 {
+		// Under budget: scale up so planning uses the declared total.
 		factor := p.TotalDailyGB / sum
 		for i := range active {
 			if active[i].DailyGB > 0 {
