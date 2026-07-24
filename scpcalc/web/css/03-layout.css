@@ -47,6 +47,9 @@
 a.nav-docs {
   text-decoration: none;
   white-space: nowrap;
+  align-self: center;
+  height: fit-content;
+  min-height: 2.35rem;
 }
 
 .eyebrow {

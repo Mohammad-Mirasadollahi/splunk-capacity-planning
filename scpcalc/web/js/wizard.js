@@ -17,6 +17,9 @@ function syncWizardBackLabel() {
 }
 
 export function showStep(n) {
+  const body = document.querySelector(".wizard-body");
+  const scrollTop = body instanceof HTMLElement ? body.scrollTop : 0;
+
   state.step = Math.max(0, Math.min(STEPS - 1, n));
   const btnBack = document.getElementById("btn-wiz-back");
   const btnNext = document.getElementById("btn-wiz-next");
@@ -51,6 +54,15 @@ export function showStep(n) {
       .then((m) => m.syncQuickFromGlobals?.())
       .catch(() => {});
   }
+
+  const restore = () => {
+    if (body instanceof HTMLElement) body.scrollTop = scrollTop;
+  };
+  restore();
+  requestAnimationFrame(() => {
+    restore();
+    requestAnimationFrame(restore);
+  });
 }
 
 export function openWizard(atStep) {

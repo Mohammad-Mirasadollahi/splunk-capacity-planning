@@ -208,21 +208,30 @@
 }
 
 .btn-ghost,
-.file-btn {
+.file-btn,
+a.btn-ghost {
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.05);
   color: var(--ink);
   font: inherit;
   font-size: 0.85rem;
   font-weight: 600;
+  line-height: 1.25;
   padding: 0.45rem 0.85rem;
   border-radius: 0.65rem;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  text-decoration: none;
+  vertical-align: middle;
   transition: border-color 0.2s var(--ease), background 0.2s var(--ease), transform 0.2s var(--ease);
 }
 
 .btn-ghost:hover,
-.file-btn:hover {
+.file-btn:hover,
+a.btn-ghost:hover {
   border-color: rgba(63, 224, 197, 0.45);
   background: rgba(63, 224, 197, 0.08);
   transform: translateY(-1px);
