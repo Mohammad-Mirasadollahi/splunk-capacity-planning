@@ -349,9 +349,9 @@ export function collectGlobals() {
   const archiveOn = fd.get("archive_frozen") === "on";
   const smartOn = fd.get("smartstore") === "on";
   const dmaOn = fd.get("enable_dma") === "on";
-  const hotDays = num(fd, "hot_warm_days", 30);
+  const hotDays = num(fd, "hot_warm_days", 7);
   const coldDaysRaw = fd.get("cold_days");
-  let retention = num(fd, "retention_days", 90);
+  let retention = num(fd, "retention_days", 37);
   if (coldDaysRaw != null && String(coldDaysRaw) !== "") {
     const cold = Math.max(0, Math.floor(Number(coldDaysRaw) || 0));
     retention = Math.max(0, Math.floor(hotDays) + cold);
@@ -361,7 +361,7 @@ export function collectGlobals() {
     hot_warm_days: hotDays,
     headroom: num(fd, "headroom", 1.2),
     summary_pct: num(fd, "summary_pct", 0.1),
-    summary_retention_days: num(fd, "summary_retention_days", 90),
+    summary_retention_days: num(fd, "summary_retention_days", 37),
     hot_path: val("hot_path", "/hot") || "/hot",
     cold_path: val("cold_path", "/cold") || "/cold",
     frozen_path: val("frozen_path", "/frozen") || "/frozen",
@@ -441,7 +441,7 @@ export function applyGlobals(g) {
   syncArchiveFields();
 }
 
-/** Migrate wizard step from older 5-step (mode-first) snapshots. */
+/** Migrate wizard step from older snapshots. */
 export function migrateWizardStep(data) {
   let step = typeof data?.step === "number" ? data.step : 0;
   const ver = Number(data?.version) || 0;
@@ -455,12 +455,16 @@ export function migrateWizardStep(data) {
     if (step === 0) step = 1;
     else if (step === 1) step = 0;
   }
-  return Math.max(0, Math.min(3, step));
+  // v8+: Overview inserted at step 0 — shift prior v7 steps up by one.
+  if (ver < 8) {
+    step = Math.min(4, step + 1);
+  }
+  return Math.max(0, Math.min(4, step));
 }
 
 export function snapshot() {
   return {
-    version: 7,
+    version: 8,
     volume_input_mode: readVolumeInputMode(),
     capacity_plan_mode: readCapacityPlanMode(),
     globals: collectGlobals(),

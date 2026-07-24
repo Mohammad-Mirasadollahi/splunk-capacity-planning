@@ -1,33 +1,12 @@
-        <section class="wiz-pane is-active" data-pane="0">
+        <section class="wiz-pane" data-pane="1" hidden>
           <h3 data-i18n="retention">Volume & retention</h3>
 
           <div class="tab-bar tab-bar-sm" role="tablist" data-tabs="reten">
-            <button type="button" class="tab-btn is-active" role="tab" aria-selected="true" data-tab="ret-overview" data-i18n="tab_ret_overview">Overview</button>
-            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="ret-vol" data-i18n="tab_volumes">Volumes</button>
+            <button type="button" class="tab-btn is-active" role="tab" aria-selected="true" data-tab="ret-vol" data-i18n="tab_volumes">Volumes</button>
             <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="ret-policy" data-i18n="tab_policy">Policy</button>
             <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="ret-paths" data-i18n="tab_paths">Paths</button>
           </div>
-          <div class="tab-panel is-active" data-panel="ret-overview" role="tabpanel">
-            <div class="subpanel overview-panel" id="retention-overview" aria-labelledby="overview-title">
-              <header class="form-section-head">
-                <h4 id="overview-title" data-i18n="overview_title">Overview</h4>
-                <p class="hint" data-i18n="overview_lede">This step sets daily volume, retention, and disk paths. Use the tabs above — nothing is locked; you can change any value later.</p>
-              </header>
-              <ul class="overview-points">
-                <li data-i18n="overview_point_volumes">Volumes — set global daily ingest (GB/day ↔ EPS), average event size, safety margin, and summaries disk budget.</li>
-                <li data-i18n="overview_point_policy">Policy — plan searchable retention by time or by disk; hot/cold days and disk caps stay linked.</li>
-                <li data-i18n="overview_point_paths">Paths — hot/warm, cold, and summaries mount points written into indexes.conf.</li>
-              </ul>
-              <p class="hint" data-i18n="overview_defaults_hint">Optional: I can seed recommended defaults (retention, disk budgets, concurrent users/searches, demo sources, and cluster/SHC/SmartStore when volume warrants it) from the drivers on the Volumes tab. You can override anything afterward.</p>
-              <div class="row-actions overview-actions">
-                <button type="button" class="cta" id="btn-apply-defaults">
-                  <span class="cta-label" data-i18n="overview_apply_btn">Fill recommended defaults for me</span>
-                </button>
-              </div>
-              <div id="quick-estimate-out" class="quick-estimate-out callout-note" hidden aria-live="polite"></div>
-            </div>
-          </div>
-          <div class="tab-panel" data-panel="ret-vol" role="tabpanel" hidden>
+          <div class="tab-panel is-active" data-panel="ret-vol" role="tabpanel">
             <div class="subpanel quick-start" id="quick-start" aria-labelledby="quick-start-title">
               <header class="form-section-head">
                 <h4 id="quick-start-title" data-i18n="quick_title">Quick start — volume drivers</h4>

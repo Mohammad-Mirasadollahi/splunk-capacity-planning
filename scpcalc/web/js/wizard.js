@@ -40,13 +40,13 @@ export function showStep(n) {
   const last = state.step === STEPS - 1;
   if (btnNext) btnNext.hidden = last;
   if (btnCalc) btnCalc.hidden = !last;
-  refreshWizardContext(state.step, { remountSources: state.step === 2 });
+  refreshWizardContext(state.step, { remountSources: state.step === 3 });
   if (last) {
     fillReview();
     void loadReviewPreview();
   }
   syncWizardBackLabel();
-  if (state.step === 0) {
+  if (state.step === 0 || state.step === 1) {
     import("./quick-start.js")
       .then((m) => m.syncQuickFromGlobals?.())
       .catch(() => {});

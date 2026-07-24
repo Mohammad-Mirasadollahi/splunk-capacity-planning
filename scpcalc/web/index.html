@@ -368,45 +368,46 @@
       </header>
 
       <ol class="wizard-steps" id="wizard-steps" aria-label="Steps">
-        <li data-step="0" class="is-active"><span>1</span><em data-i18n="step_ret">Volume</em></li>
-        <li data-step="1"><span>2</span><em data-i18n="step_topo">Cluster</em></li>
-        <li data-step="2"><span>3</span><em data-i18n="step_src">Sources</em></li>
-        <li data-step="3"><span>4</span><em data-i18n="step_review">Review</em></li>
+        <li data-step="0" class="is-active"><span>1</span><em data-i18n="step_overview">Overview</em></li>
+        <li data-step="1"><span>2</span><em data-i18n="step_ret">Volume</em></li>
+        <li data-step="2"><span>3</span><em data-i18n="step_topo">Cluster</em></li>
+        <li data-step="3"><span>4</span><em data-i18n="step_src">Sources</em></li>
+        <li data-step="4"><span>5</span><em data-i18n="step_review">Review</em></li>
       </ol>
 
       <aside id="wizard-context" class="wizard-context callout-note" hidden aria-live="polite"></aside>
 
       <form id="form" class="wizard-body">
         <section class="wiz-pane is-active" data-pane="0">
+          <h3 id="overview-title" data-i18n="overview_title">Overview</h3>
+          <div class="subpanel overview-panel" id="retention-overview" aria-labelledby="overview-title">
+            <header class="form-section-head">
+              <p class="hint" data-i18n="overview_lede">Walk through volume, cluster topology, sources, then review. Nothing is locked — change any value later.</p>
+            </header>
+            <ul class="overview-points">
+              <li data-i18n="overview_point_volumes">Volume — set global daily ingest (GB/day ↔ EPS), retention policy, paths, and summaries disk.</li>
+              <li data-i18n="overview_point_policy">Cluster — indexer clustering, search-head clustering, premium apps, and SmartStore.</li>
+              <li data-i18n="overview_point_paths">Sources — per-index volumes and optional retention overrides, then Review & Calculate.</li>
+            </ul>
+            <p class="hint" data-i18n="overview_defaults_hint">Optional: I can seed recommended defaults (retention, disk budgets, concurrent users/searches, demo sources, and cluster/SHC/SmartStore when volume warrants it) from the volume drivers on the Volume step. You can override anything afterward.</p>
+            <div class="row-actions overview-actions">
+              <button type="button" class="cta" id="btn-apply-defaults">
+                <span class="cta-label" data-i18n="overview_apply_btn">Fill recommended defaults for me</span>
+              </button>
+            </div>
+            <div id="quick-estimate-out" class="quick-estimate-out callout-note" hidden aria-live="polite"></div>
+          </div>
+        </section>
+
+        <section class="wiz-pane" data-pane="1" hidden>
           <h3 data-i18n="retention">Volume & retention</h3>
 
           <div class="tab-bar tab-bar-sm" role="tablist" data-tabs="reten">
-            <button type="button" class="tab-btn is-active" role="tab" aria-selected="true" data-tab="ret-overview" data-i18n="tab_ret_overview">Overview</button>
-            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="ret-vol" data-i18n="tab_volumes">Volumes</button>
+            <button type="button" class="tab-btn is-active" role="tab" aria-selected="true" data-tab="ret-vol" data-i18n="tab_volumes">Volumes</button>
             <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="ret-policy" data-i18n="tab_policy">Policy</button>
             <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="ret-paths" data-i18n="tab_paths">Paths</button>
           </div>
-          <div class="tab-panel is-active" data-panel="ret-overview" role="tabpanel">
-            <div class="subpanel overview-panel" id="retention-overview" aria-labelledby="overview-title">
-              <header class="form-section-head">
-                <h4 id="overview-title" data-i18n="overview_title">Overview</h4>
-                <p class="hint" data-i18n="overview_lede">This step sets daily volume, retention, and disk paths. Use the tabs above — nothing is locked; you can change any value later.</p>
-              </header>
-              <ul class="overview-points">
-                <li data-i18n="overview_point_volumes">Volumes — set global daily ingest (GB/day ↔ EPS), average event size, safety margin, and summaries disk budget.</li>
-                <li data-i18n="overview_point_policy">Policy — plan searchable retention by time or by disk; hot/cold days and disk caps stay linked.</li>
-                <li data-i18n="overview_point_paths">Paths — hot/warm, cold, and summaries mount points written into indexes.conf.</li>
-              </ul>
-              <p class="hint" data-i18n="overview_defaults_hint">Optional: I can seed recommended defaults (retention, disk budgets, concurrent users/searches, demo sources, and cluster/SHC/SmartStore when volume warrants it) from the drivers on the Volumes tab. You can override anything afterward.</p>
-              <div class="row-actions overview-actions">
-                <button type="button" class="cta" id="btn-apply-defaults">
-                  <span class="cta-label" data-i18n="overview_apply_btn">Fill recommended defaults for me</span>
-                </button>
-              </div>
-              <div id="quick-estimate-out" class="quick-estimate-out callout-note" hidden aria-live="polite"></div>
-            </div>
-          </div>
-          <div class="tab-panel" data-panel="ret-vol" role="tabpanel" hidden>
+          <div class="tab-panel is-active" data-panel="ret-vol" role="tabpanel">
             <div class="subpanel quick-start" id="quick-start" aria-labelledby="quick-start-title">
               <header class="form-section-head">
                 <h4 id="quick-start-title" data-i18n="quick_title">Quick start — volume drivers</h4>
@@ -543,7 +544,7 @@
           </div>
         </section>
 
-        <section class="wiz-pane" data-pane="1" hidden>
+        <section class="wiz-pane" data-pane="2" hidden>
           <h3 data-i18n="topology">Topology & apps</h3>
           <div class="tab-bar tab-bar-sm" role="tablist" data-tabs="topo">
             <button type="button" class="tab-btn is-active" role="tab" aria-selected="true" data-tab="topo-cluster" data-i18n="tab_cluster">Cluster</button>
@@ -629,7 +630,7 @@
           </div>
         </section>
 
-        <section class="wiz-pane" data-pane="2" hidden>
+        <section class="wiz-pane" data-pane="3" hidden>
           <h3 data-i18n="sources">Log sources / indexes</h3>
           <section class="form-section" aria-labelledby="sec-vol-mode-title">
             <header class="form-section-head">
@@ -691,7 +692,7 @@
           </section>
         </section>
 
-        <section class="wiz-pane wiz-pane--review" data-pane="3" hidden>
+        <section class="wiz-pane wiz-pane--review" data-pane="4" hidden>
           <h3 data-i18n="step_review">Review & calculate</h3>
           <p class="hint" data-i18n="review_hint">Everything from earlier steps is summarized below, with a live preview (metrics + charts). Edit a previous step if needed, then Calculate.</p>
           <p id="review-preview-status" class="hint review-preview-status" hidden></p>

@@ -39,8 +39,8 @@ function buildContextHTML(step) {
   const enabled = state.rows.filter((r) => r.enabled);
   const bits = [];
 
-  // Step order v7+: 0=Volume/Retention, 1=Topology/Cluster, 2=Sources, 3=Review
-  if (step >= 1) {
+  // Step order v8+: 0=Overview, 1=Volume/Retention, 2=Topology/Cluster, 3=Sources, 4=Review
+  if (step >= 2) {
     const coldDays = Math.max(0, (g.retention_days || 0) - (g.hot_warm_days || 0));
     const ret = [
       t("ctx_retention")
@@ -65,7 +65,7 @@ function buildContextHTML(step) {
     bits.push(`<strong>${t("ctx_from_retention")}</strong> ${ret.join(" · ")}`);
   }
 
-  if (step >= 2) {
+  if (step >= 3) {
     const topo = [];
     topo.push(
       g.indexer_cluster
@@ -88,7 +88,7 @@ function buildContextHTML(step) {
     bits.push(`<strong>${t("ctx_from_topology")}</strong> ${topo.join(" · ")}`);
   }
 
-  if (step >= 3) {
+  if (step >= 4) {
     const srcSum = estimateEnabledDailyGB(enabled, mode);
     const src = [
       t("ctx_vol_mode"),
@@ -117,19 +117,19 @@ export function syncLinkedSummaryRetention() {
 export function applyInheritedSourcePlaceholders() {
   const g = collectGlobals();
   document.querySelectorAll('#src-ret-body input[data-f="retention_days"]').forEach((el) => {
-    el.placeholder = String(g.retention_days || 90);
-    setSoftTip(el, t("ctx_inherit_ret").replace("{n}", String(g.retention_days || 90)));
+    el.placeholder = String(g.retention_days || 37);
+    setSoftTip(el, t("ctx_inherit_ret").replace("{n}", String(g.retention_days || 37)));
   });
   document.querySelectorAll('#src-ret-body input[data-f="hot_warm_days"]').forEach((el) => {
-    el.placeholder = String(g.hot_warm_days || 30);
-    setSoftTip(el, t("ctx_inherit_hw").replace("{n}", String(g.hot_warm_days || 30)));
+    el.placeholder = String(g.hot_warm_days || 7);
+    setSoftTip(el, t("ctx_inherit_hw").replace("{n}", String(g.hot_warm_days || 7)));
   });
 }
 
 export function refreshWizardContext(step = state.step, { remountSources = false } = {}) {
   const el = document.getElementById("wizard-context");
   if (!el) return;
-  if (step <= 0) {
+  if (step <= 1) {
     el.hidden = true;
     el.innerHTML = "";
     syncQuickFromGlobals();
@@ -139,12 +139,12 @@ export function refreshWizardContext(step = state.step, { remountSources = false
   const html = buildContextHTML(step);
   el.innerHTML = html;
   el.hidden = !html;
-  if (step >= 2) {
+  if (step >= 3) {
     if (remountSources) renderRows();
     applyInheritedSourcePlaceholders();
     refreshTotalCounterpart();
   }
-  if (step === 3) {
+  if (step === 4) {
     fillReview();
     // Live preview refresh while editing from context updates (debounced inside).
     import("./review-panel.js")
@@ -165,7 +165,7 @@ export function bindWizardContinuity() {
       syncLinkedSummaryRetention();
     }
     if (name === "total_daily_gb") syncQuickFromGlobals();
-    if (state.step >= 1) refreshWizardContext(state.step);
+    if (state.step >= 2) refreshWizardContext(state.step);
   });
   form.addEventListener("input", (e) => {
     const name = e.target?.name || e.target?.dataset?.f;
@@ -174,6 +174,6 @@ export function bindWizardContinuity() {
       syncLinkedSummaryRetention();
     }
     if (name === "total_daily_gb") syncQuickFromGlobals();
-    if (state.step >= 1) refreshWizardContext(state.step);
+    if (state.step >= 2) refreshWizardContext(state.step);
   });
 }

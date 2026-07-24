@@ -24,6 +24,6 @@ export const state = {
 
 export const LANG_KEY = "scpcalc-lang";
 export const SAVE_KEY = "scpcalc-plan";
-export const STEPS = 4;
+export const STEPS = 5;
 
 export const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

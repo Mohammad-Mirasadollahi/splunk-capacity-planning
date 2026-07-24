@@ -1,0 +1,20 @@
+        <section class="wiz-pane is-active" data-pane="0">
+          <h3 id="overview-title" data-i18n="overview_title">Overview</h3>
+          <div class="subpanel overview-panel" id="retention-overview" aria-labelledby="overview-title">
+            <header class="form-section-head">
+              <p class="hint" data-i18n="overview_lede">Walk through volume, cluster topology, sources, then review. Nothing is locked — change any value later.</p>
+            </header>
+            <ul class="overview-points">
+              <li data-i18n="overview_point_volumes">Volume — set global daily ingest (GB/day ↔ EPS), retention policy, paths, and summaries disk.</li>
+              <li data-i18n="overview_point_policy">Cluster — indexer clustering, search-head clustering, premium apps, and SmartStore.</li>
+              <li data-i18n="overview_point_paths">Sources — per-index volumes and optional retention overrides, then Review & Calculate.</li>
+            </ul>
+            <p class="hint" data-i18n="overview_defaults_hint">Optional: I can seed recommended defaults (retention, disk budgets, concurrent users/searches, demo sources, and cluster/SHC/SmartStore when volume warrants it) from the volume drivers on the Volume step. You can override anything afterward.</p>
+            <div class="row-actions overview-actions">
+              <button type="button" class="cta" id="btn-apply-defaults">
+                <span class="cta-label" data-i18n="overview_apply_btn">Fill recommended defaults for me</span>
+              </button>
+            </div>
+            <div id="quick-estimate-out" class="quick-estimate-out callout-note" hidden aria-live="polite"></div>
+          </div>
+        </section>
