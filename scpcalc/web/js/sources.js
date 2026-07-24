@@ -81,8 +81,8 @@ export function syncRowVolumePair(row, rows, edited) {
 }
 
 function volumeCell(r, i, on) {
-  const gbId = `src-vol-${i}-daily_gb`;
-  const epsId = `src-vol-${i}-eps`;
+  const gbId = `src-${i}-daily_gb`;
+  const epsId = `src-${i}-eps`;
   return `<div class="vol-pair" role="group" aria-label="GB/day equals EPS">
     <input type="number" id="${gbId}" data-f="daily_gb" class="vol-gb" min="0" step="any" value="${escapeAttr(String(r.daily_gb ?? ""))}" placeholder="GB/day" ${on ? "" : "disabled"} aria-label="Daily GB" autocomplete="off">
     <span class="vol-eq" aria-hidden="true">=</span>
@@ -123,25 +123,14 @@ export function syncTotalVolumePair(edited) {
 function volumeRowHTML(r, i) {
   const title = r.notes ? ` data-soft-tip="${escapeAttr(r.notes)}" data-soft-tip-title="${escapeAttr(r.label || r.index_name || "Source")}"` : "";
   const on = !!r.enabled;
-  const p = `src-vol-${i}`;
+  const sumOn = !!r.enable_summary;
+  const p = `src-${i}`;
   return `<tr data-i="${i}" class="${on ? "src-row-on" : "src-row-off"}"${title}>
     <td><input type="checkbox" id="${p}-enabled" data-f="enabled" class="src-toggle" ${on ? "checked" : ""} aria-label="Use source"></td>
     <td><input type="text" id="${p}-label" data-f="label" value="${escapeAttr(r.label)}" ${on ? "" : "disabled"} autocomplete="off"></td>
     <td><input type="text" id="${p}-index_name" data-f="index_name" value="${escapeAttr(r.index_name)}" ${on ? "" : "disabled"} autocomplete="off"></td>
     <td class="src-col-event-bytes"><input type="number" id="${p}-event_bytes" data-f="event_bytes" min="1" step="1" value="${r.event_bytes}" ${on ? "" : "disabled"} autocomplete="off"></td>
     <td class="src-col-vol">${volumeCell(r, i, on)}</td>
-    <td><button type="button" class="btn-x" data-rm="${i}" aria-label="Remove">×</button></td>
-  </tr>`;
-}
-
-function retentionRowHTML(r, i) {
-  const on = !!r.enabled;
-  const sumOn = !!r.enable_summary;
-  const p = `src-ret-${i}`;
-  return `<tr data-i="${i}" class="${on ? "src-row-on" : "src-row-off"}">
-    <td><input type="checkbox" id="${p}-enabled" data-f="enabled" class="src-toggle" ${on ? "checked" : ""} aria-label="Use source"></td>
-    <td><input type="text" id="${p}-label" data-f="label" value="${escapeAttr(r.label)}" ${on ? "" : "disabled"} autocomplete="off"></td>
-    <td><input type="text" id="${p}-index_name" data-f="index_name" value="${escapeAttr(r.index_name)}" ${on ? "" : "disabled"} autocomplete="off"></td>
     <td><input type="number" id="${p}-retention_days" data-f="retention_days" min="0" step="1" value="${r.retention_days}" placeholder="glob" ${on ? "" : "disabled"} autocomplete="off"></td>
     <td><input type="number" id="${p}-hot_warm_days" data-f="hot_warm_days" min="0" step="1" value="${r.hot_warm_days}" placeholder="glob" ${on ? "" : "disabled"} autocomplete="off"></td>
     <td><input type="checkbox" id="${p}-enable_summary" data-f="enable_summary" class="src-toggle" ${sumOn ? "checked" : ""} ${on ? "" : "disabled"}></td>
@@ -150,13 +139,13 @@ function retentionRowHTML(r, i) {
         ? `<input type="number" id="${p}-summary_daily_gb" data-f="summary_daily_gb" min="0" step="any" value="${r.summary_daily_gb}" placeholder="auto%" autocomplete="off">`
         : `<span class="src-dep-placeholder">—</span>`
     }</td>
+    <td><button type="button" class="btn-x" data-rm="${i}" aria-label="Remove">×</button></td>
   </tr>`;
 }
 
 export function renderRows() {
   const srcBody = document.getElementById("src-body");
-  const retBody = document.getElementById("src-ret-body");
-  if (!srcBody && !retBody) return;
+  if (!srcBody) return;
 
   // Ensure linked pairs are consistent before paint (prefer GB as planning source of truth).
   state.rows.forEach((r) => {
@@ -164,13 +153,8 @@ export function renderRows() {
     else if (numOr0(r.eps) > 0) syncRowVolumePair(r, state.rows, "eps");
   });
 
-  if (srcBody) {
-    srcBody.innerHTML = state.rows.map((r, i) => volumeRowHTML(r, i)).join("");
-    bindTips(srcBody);
-  }
-  if (retBody) {
-    retBody.innerHTML = state.rows.map((r, i) => retentionRowHTML(r, i)).join("");
-  }
+  srcBody.innerHTML = state.rows.map((r, i) => volumeRowHTML(r, i)).join("");
+  bindTips(srcBody);
   refreshTotalCounterpart();
   import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
 }
@@ -216,11 +200,7 @@ function bindTableBody(srcBody) {
       refreshTotalCounterpart();
       import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
     } else if (f === "label" || f === "index_name") {
-      const other =
-        srcBody.id === "src-body"
-          ? document.querySelector(`#src-ret-body tr[data-i="${i}"] input[data-f="${f}"]`)
-          : document.querySelector(`#src-body tr[data-i="${i}"] input[data-f="${f}"]`);
-      if (other && other !== e.target) other.value = e.target.value;
+      // single merged table — nothing to mirror
     }
   });
   srcBody.addEventListener("click", (e) => {
@@ -253,7 +233,6 @@ function bindTotalVolumePair() {
 
 export function bindSourcesTable() {
   bindTableBody(document.getElementById("src-body"));
-  bindTableBody(document.getElementById("src-ret-body"));
   bindTotalVolumePair();
 
   document.getElementById("btn-add")?.addEventListener("click", () => {

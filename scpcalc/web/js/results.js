@@ -460,8 +460,8 @@ export async function runCalculate() {
       err.dataset.budgetErr = "1";
     }
     const diskBudget = /available_|disk need|دیسک|hot\/warm|hot\+cold|searchable disk/i.test(budget.message);
-    showStep(diskBudget ? 2 : 1);
-    activateTab(diskBudget ? "reten" : "volume", diskBudget ? "ret-policy" : "vol-sources");
+    showStep(1);
+    activateTab("volume", diskBudget ? "vol-policy" : "vol-sources");
     return;
   }
 
@@ -487,9 +487,8 @@ export async function runCalculate() {
       showStep(1);
       activateTab("volume", "vol-sources");
     } else if (msg.includes("available_hot") || msg.includes("available_cold") || msg.includes("available_summaries")) {
-      showStep(msg.includes("available_summaries") ? 1 : 2);
-      if (!msg.includes("available_summaries")) activateTab("reten", "ret-policy");
-      else activateTab("volume", "vol-budget");
+      showStep(1);
+      activateTab("volume", msg.includes("available_summaries") ? "vol-budget" : "vol-policy");
     } else {
       showStep(STEPS - 1);
     }

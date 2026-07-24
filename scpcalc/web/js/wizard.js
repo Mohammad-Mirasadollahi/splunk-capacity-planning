@@ -40,7 +40,7 @@ export function showStep(n) {
   const last = state.step === STEPS - 1;
   if (btnNext) btnNext.hidden = last;
   if (btnCalc) btnCalc.hidden = !last;
-  refreshWizardContext(state.step, { remountSources: state.step === 1 || state.step === 2 });
+  refreshWizardContext(state.step, { remountSources: state.step === 1 });
   if (last) {
     fillReview();
     void loadReviewPreview();

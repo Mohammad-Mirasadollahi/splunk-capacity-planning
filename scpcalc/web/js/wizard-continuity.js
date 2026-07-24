@@ -39,7 +39,7 @@ function buildContextHTML(step) {
   const enabled = state.rows.filter((r) => r.enabled);
   const bits = [];
 
-  // Step order v9+: 0=Overview, 1=Volume(+Sources), 2=Retention, 3=Cluster, 4=Review
+  // Step order v10+: 0=Overview, 1=Volume, 2=Cluster, 3=Review
   if (step >= 2) {
     const vol = [];
     if (g.total_daily_gb > 0) {
@@ -48,35 +48,27 @@ function buildContextHTML(step) {
       if (eps > 0) vol.push(t("ctx_total_eps").replace("{n}", formatEPS(eps)));
     }
     vol.push(t("ctx_headroom").replace("{h}", String(g.headroom)));
-    const srcSum = estimateEnabledDailyGB(enabled, mode);
-    vol.push(t("ctx_sources_on").replace("{n}", String(enabled.length)));
-    if (srcSum > 0) vol.push(t("ctx_sources_sum").replace("{n}", formatDailyGB(srcSum)));
-    if (g.total_daily_gb > 0 && srcSum > 0) {
-      vol.push(t("ctx_scale_note").replace("{t}", formatDailyGB(g.total_daily_gb)));
-    }
-    bits.push(`<strong>${t("ctx_from_sources")}</strong> ${vol.join(" · ")}`);
-  }
-
-  if (step >= 3) {
     const coldDays = Math.max(0, (g.retention_days || 0) - (g.hot_warm_days || 0));
-    const ret = [
+    vol.push(
       t("ctx_retention")
         .replace("{r}", String(g.retention_days))
         .replace("{hw}", String(g.hot_warm_days))
-        .replace("{c}", String(coldDays)),
-    ];
-    if (g.archive_frozen) ret.push(t("ctx_archive_on").replace("{p}", g.frozen_path || "/frozen"));
+        .replace("{c}", String(coldDays))
+    );
+    const srcSum = estimateEnabledDailyGB(enabled, mode);
+    vol.push(t("ctx_sources_on").replace("{n}", String(enabled.length)));
+    if (srcSum > 0) vol.push(t("ctx_sources_sum").replace("{n}", formatDailyGB(srcSum)));
     if (g.available_hot_gb || g.available_cold_gb) {
-      ret.push(
+      vol.push(
         t("ctx_disk")
           .replace("{h}", String(g.available_hot_gb || 0))
           .replace("{c}", String(g.available_cold_gb || 0))
       );
     }
-    bits.push(`<strong>${t("ctx_from_retention")}</strong> ${ret.join(" · ")}`);
+    bits.push(`<strong>${t("ctx_from_sources")}</strong> ${vol.join(" · ")}`);
   }
 
-  if (step >= 4) {
+  if (step >= 3) {
     const topo = [];
     topo.push(
       g.indexer_cluster
@@ -114,11 +106,11 @@ export function syncLinkedSummaryRetention() {
 
 export function applyInheritedSourcePlaceholders() {
   const g = collectGlobals();
-  document.querySelectorAll('#src-ret-body input[data-f="retention_days"]').forEach((el) => {
+  document.querySelectorAll('#src-body input[data-f="retention_days"]').forEach((el) => {
     el.placeholder = String(g.retention_days || 90);
     setSoftTip(el, t("ctx_inherit_ret").replace("{n}", String(g.retention_days || 90)));
   });
-  document.querySelectorAll('#src-ret-body input[data-f="hot_warm_days"]').forEach((el) => {
+  document.querySelectorAll('#src-body input[data-f="hot_warm_days"]').forEach((el) => {
     el.placeholder = String(g.hot_warm_days || 30);
     setSoftTip(el, t("ctx_inherit_hw").replace("{n}", String(g.hot_warm_days || 30)));
   });
@@ -131,7 +123,9 @@ export function refreshWizardContext(step = state.step, { remountSources = false
     el.hidden = true;
     el.innerHTML = "";
     syncQuickFromGlobals();
+    syncLinkedSummaryRetention();
     if (remountSources) renderRows();
+    applyInheritedSourcePlaceholders();
     return;
   }
   syncLinkedSummaryRetention();
@@ -139,13 +133,10 @@ export function refreshWizardContext(step = state.step, { remountSources = false
   el.innerHTML = html;
   el.hidden = !html;
   if (remountSources) renderRows();
-  if (step >= 2) {
-    applyInheritedSourcePlaceholders();
-    refreshTotalCounterpart();
-  }
-  if (step === 4) {
+  applyInheritedSourcePlaceholders();
+  refreshTotalCounterpart();
+  if (step === 3) {
     fillReview();
-    // Live preview refresh while editing from context updates (debounced inside).
     import("./review-panel.js")
       .then((m) => m.scheduleReviewPreview?.())
       .catch(() => {});
@@ -162,6 +153,7 @@ export function bindWizardContinuity() {
     if (name === "summary_retention_days") markSummaryRetentionEdited();
     if (name === "retention_days" || name === "hot_warm_days" || name === "cold_days") {
       syncLinkedSummaryRetention();
+      applyInheritedSourcePlaceholders();
     }
     if (name === "total_daily_gb") syncQuickFromGlobals();
     if (state.step >= 2) refreshWizardContext(state.step);
@@ -171,6 +163,7 @@ export function bindWizardContinuity() {
     if (name === "summary_retention_days") markSummaryRetentionEdited();
     if (name === "retention_days" || name === "hot_warm_days" || name === "cold_days") {
       syncLinkedSummaryRetention();
+      applyInheritedSourcePlaceholders();
     }
     if (name === "total_daily_gb") syncQuickFromGlobals();
     if (state.step >= 2) refreshWizardContext(state.step);

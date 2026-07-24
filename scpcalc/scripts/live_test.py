@@ -965,30 +965,32 @@ def main() -> int:
         ]:
             ok(f"ui.plan_form.{field}", field in pf)
         ok("ui.wizard.no_mode_step", 'data-i18n="step_mode"' not in html and 'name="mode"' not in html)
-        ok("ui.wizard.five_steps", 'data-step="4"' in html and 'data-pane="4"' in html)
+        ok("ui.wizard.four_steps", 'data-step="3"' in html and 'data-pane="3"' in html and 'data-step="4"' not in html)
         ok("ui.volume_drivers", 'id="volume-drivers"' in html and "Quick start — volume drivers" not in html)
         ok("ui.volume_budget_err", 'id="volume-budget-err"' in html)
-        ok("ui.wizard.step_retention", 'data-i18n="step_retention"' in html)
+        ok("ui.wizard.no_top_retention_step", 'data-i18n="step_retention"' not in html)
         ok("ui.wizard.no_top_sources_step", 'data-i18n="step_src"' not in html)
         ok(
-            "ui.wizard.order_volume_retention",
+            "ui.wizard.order_volume_cluster",
             'data-i18n="step_ret"' in html
-            and 'data-i18n="step_retention"' in html
-            and html.index('data-i18n="step_ret"') < html.index('data-i18n="step_retention"')
-            and html.index('data-i18n="step_retention"') < html.index('data-i18n="step_topo"'),
+            and 'data-i18n="step_topo"' in html
+            and html.index('data-i18n="step_ret"') < html.index('data-i18n="step_topo"')
+            and html.index('data-i18n="step_topo"') < html.index('data-i18n="step_review"'),
         )
-        ok("ui.volume_tabs", 'data-tabs="volume"' in html and 'data-tab="vol-sources"' in html)
-        ok("ui.sources_under_volume", 'data-pane="1"' in html and 'id="src-table"' in html)
+        ok("ui.volume_tabs", 'data-tabs="volume"' in html and 'data-tab="vol-sources"' in html and 'data-tab="vol-policy"' in html)
+        ok("ui.sources_under_volume", 'data-pane="1"' in html and 'id="src-table"' in html and "src-table--merged" in html)
+        ok("ui.sources_merged_cols", 'data-i18n="col_ret"' in html and 'id="src-ret-table"' not in html)
         _, state_js = http_bytes("/js/state.js")
-        ok("ui.wizard.steps_const", "STEPS = 5" in state_js.decode("utf-8", errors="replace"))
+        ok("ui.wizard.steps_const", "STEPS = 4" in state_js.decode("utf-8", errors="replace"))
         _, pf_mig = http_bytes("/js/plan-form.js")
-        ok("ui.snapshot_v9", b"version: 9" in pf_mig and b"ver < 9" in pf_mig)
+        ok("ui.snapshot_v10", b"version: 10" in pf_mig and b"ver < 10" in pf_mig)
         code_vb, budget_js = http_bytes("/js/volume-budget.js")
         ok("ui.volume_budget_js", code_vb == 200 and b"checkVolumeBudgets" in budget_js)
         ok("ui.csp_meta", "Content-Security-Policy" in html and "unsafe-eval" in html)
         _, sources_js = http_bytes("/js/sources.js")
         sj = sources_js.decode("utf-8", errors="replace")
-        ok("ui.sources_field_ids", "src-vol-" in sj and "${p}-enabled" in sj)
+        ok("ui.sources_field_ids", "const p = `src-${i}`" in sj or 'src-${i}' in sj)
+        ok("ui.sources_merged_row", 'data-f="retention_days"' in sj and "retentionRowHTML" not in sj)
 
     except Exception as e:  # noqa: BLE001
         ok("http.exception", False, str(e))

@@ -466,12 +466,20 @@ export function migrateWizardStep(data) {
     if (step === 2) step = 3;
     else if (step === 3) step = 1;
   }
-  return Math.max(0, Math.min(4, step));
+  // v10+: Retention nested into Volume; 4 top-level steps.
+  // v9: 0 Overview, 1 Volume, 2 Retention, 3 Cluster, 4 Review
+  // v10: 0 Overview, 1 Volume, 2 Cluster, 3 Review
+  if (ver < 10) {
+    if (step === 2) step = 1;
+    else if (step === 3) step = 2;
+    else if (step === 4) step = 3;
+  }
+  return Math.max(0, Math.min(3, step));
 }
 
 export function snapshot() {
   return {
-    version: 9,
+    version: 10,
     volume_input_mode: readVolumeInputMode(),
     capacity_plan_mode: readCapacityPlanMode(),
     globals: collectGlobals(),
