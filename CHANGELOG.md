@@ -3,6 +3,10 @@
 All notable changes to this repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/)-style sections so GitHub Releases can show what actually changed between versions.
 
+## 0.3.3 — 2026-07-24
+
+- Fixed wizard shell layouts, tip delay, EPS decimals, Hot 7d / Cold 30d / Archive defaults
+
 ## 0.3.2 — 2026-07-21
 
 ### Fixed
