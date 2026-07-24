@@ -65,6 +65,7 @@ export function initTabBars() {
             const on = p.dataset.panel === id;
             p.hidden = !on;
             p.classList.toggle("is-active", on);
+            if (on) p.scrollTop = 0;
           });
           if (id === "charts" && state.lastPlan) {
             setTimeout(() => onChartsTab?.(state.lastPlan), 40);

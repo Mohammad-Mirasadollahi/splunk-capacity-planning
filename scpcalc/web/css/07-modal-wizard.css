@@ -298,20 +298,131 @@ body.modal-open {
 }
 
 .wizard-body {
-  flex: 1 1 auto;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 0.85rem 1.25rem 0.45rem;
+  scrollbar-gutter: stable;
+}
+
+/* Active step fills the fixed shell; tab chrome stays put, panels scroll. */
+.wiz-pane.is-active {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.wiz-pane > h3 {
+  flex-shrink: 0;
+  margin: 0 0 0.55rem;
+  font-family: var(--font-display);
+}
+
+.wiz-pane > .tab-bar {
+  flex-shrink: 0;
+  margin-top: 0;
+}
+
+.wiz-pane > .tab-panel.is-active {
+  flex: 1 1 0;
   min-height: 0;
   overflow: auto;
-  padding: 1rem 1.25rem 0.5rem;
-  scrollbar-gutter: stable;
+  padding-bottom: 0.25rem;
+}
+
+/* Overview / Review (no inner tabs): pane itself scrolls. */
+.wiz-pane.is-active:not(:has(> .tab-bar)) {
+  overflow: auto;
 }
 
 .wiz-pane h3,
 .wiz-pane h4 {
-  margin: 0 0 0.85rem;
+  margin: 0 0 0.55rem;
   font-family: var(--font-display);
 }
 
 .wiz-pane[hidden] { display: none !important; }
+
+/* Denser cards inside fixed shell */
+.wizard-body .form-section {
+  margin-bottom: 0.75rem;
+}
+
+.wizard-body .form-section:last-child {
+  margin-bottom: 0.25rem;
+}
+
+.wizard-body .grid {
+  gap: 0.65rem 0.85rem;
+  margin-bottom: 0.55rem;
+}
+
+.wizard-body .hint {
+  margin-bottom: 0.45rem;
+}
+
+.wizard-body .subpanel {
+  margin-bottom: 0.75rem;
+}
+
+.wizard-body .callout-note {
+  margin-bottom: 0.55rem;
+}
+
+/* Sources: keep actions visible; table scrolls in remaining space */
+.wizard-body .tab-panel[data-panel="vol-sources"] {
+  display: flex;
+  flex-direction: column;
+}
+
+.wizard-body .tab-panel[data-panel="vol-sources"] > .form-section:first-of-type {
+  flex-shrink: 0;
+}
+
+.wizard-body .tab-panel[data-panel="vol-sources"] > .form-section:last-of-type {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-bottom: 0;
+}
+
+.wizard-body .tab-panel[data-panel="vol-sources"] .table-wrap {
+  flex: 1 1 0;
+  min-height: 10rem;
+  overflow: auto;
+  margin-bottom: 0.55rem;
+}
+
+.wizard-body .tab-panel[data-panel="vol-sources"] .row-actions {
+  flex-shrink: 0;
+  margin-bottom: 0.25rem;
+}
+
+/* Review: compact metrics/charts under fixed shell */
+.wiz-pane--review .table-wrap {
+  margin-top: 0.45rem;
+  max-height: min(36vh, 320px);
+  overflow: auto;
+}
+
+.wiz-pane--review .chart-canvas-wrap {
+  height: 180px;
+}
+
+.wiz-pane--review .metrics,
+.wiz-pane--review .review-metrics {
+  margin-bottom: 0.45rem;
+}
+
+.wiz-pane--review .review-subhead {
+  margin: 0.55rem 0 0.35rem;
+}
 
 .wizard-foot {
   display: flex;
@@ -403,10 +514,6 @@ body.modal-open {
 
 .review-preview-status {
   margin: 0.35rem 0 0.15rem;
-}
-
-.wiz-pane--review .table-wrap {
-  margin-top: 0.45rem;
 }
 
 

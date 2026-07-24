@@ -76,7 +76,7 @@ function applyVolumeDefaults(dailyGB) {
     has_itsi: current.has_itsi,
     enable_dma: current.enable_dma,
     dma_pct: current.dma_pct,
-    archive_frozen: current.archive_frozen,
+    archive_frozen: defaults.archive_frozen,
     capacity_plan_mode: current.capacity_plan_mode || "time",
     summary_pct: current.summary_pct || 0.1,
     summary_retention_days: defaults.retention_days,

@@ -17,9 +17,6 @@ function syncWizardBackLabel() {
 }
 
 export function showStep(n) {
-  const body = document.querySelector(".wizard-body");
-  const scrollTop = body instanceof HTMLElement ? body.scrollTop : 0;
-
   state.step = Math.max(0, Math.min(STEPS - 1, n));
   const btnBack = document.getElementById("btn-wiz-back");
   const btnNext = document.getElementById("btn-wiz-next");
@@ -29,6 +26,12 @@ export function showStep(n) {
     const on = Number(p.dataset.pane) === state.step;
     p.hidden = !on;
     p.classList.toggle("is-active", on);
+    if (on) {
+      p.scrollTop = 0;
+      p.querySelectorAll(":scope > .tab-panel.is-active").forEach((panel) => {
+        panel.scrollTop = 0;
+      });
+    }
   });
   document.querySelectorAll("#wizard-steps li").forEach((li) => {
     const i = Number(li.dataset.step);
@@ -54,15 +57,6 @@ export function showStep(n) {
       .then((m) => m.syncQuickFromGlobals?.())
       .catch(() => {});
   }
-
-  const restore = () => {
-    if (body instanceof HTMLElement) body.scrollTop = scrollTop;
-  };
-  restore();
-  requestAnimationFrame(() => {
-    restore();
-    requestAnimationFrame(restore);
-  });
 }
 
 export function openWizard(atStep) {

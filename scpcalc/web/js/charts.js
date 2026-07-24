@@ -31,8 +31,8 @@ function buildChartDatasets(data) {
   const d = data.design || {};
   const indexes = data.indexes || [];
   const g = collectGlobals();
-  const hotDays = g.hot_warm_days || 30;
-  const ret = g.retention_days || 90;
+  const hotDays = g.hot_warm_days || 7;
+  const ret = g.retention_days || 37;
   const coldDays = Math.max(ret - hotDays, 0);
 
   const hotGB = d.hot_need_gb || 0;

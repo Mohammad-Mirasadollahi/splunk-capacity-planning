@@ -3,7 +3,12 @@ import { lang, localizeFlow, t } from "./i18n.js";
 
 const tipPop = document.getElementById("tip-pop");
 let tipHideTimer = null;
+let tipShowTimer = null;
 let tipAnchor = null;
+
+/** Delay before show so a quick mouse pass does not flash the tip. */
+const TIP_SHOW_DELAY_MS = 550;
+const TIP_HIDE_DELAY_MS = 220;
 
 export function tipCatalog() {
   const pack = window.SCP_TIPS || {};
@@ -138,17 +143,30 @@ function showTip(anchor) {
   }
   if (!html) return;
   clearTimeout(tipHideTimer);
+  clearTimeout(tipShowTimer);
+  tipShowTimer = null;
   tipAnchor = anchor;
   tipPop.innerHTML = html;
   positionTip(anchor);
 }
 
+function scheduleShowTip(anchor) {
+  clearTimeout(tipHideTimer);
+  clearTimeout(tipShowTimer);
+  tipShowTimer = setTimeout(() => {
+    tipShowTimer = null;
+    showTip(anchor);
+  }, TIP_SHOW_DELAY_MS);
+}
+
 function scheduleHideTip() {
+  clearTimeout(tipShowTimer);
+  tipShowTimer = null;
   clearTimeout(tipHideTimer);
   tipHideTimer = setTimeout(() => {
     if (tipPop) tipPop.hidden = true;
     tipAnchor = null;
-  }, 220);
+  }, TIP_HIDE_DELAY_MS);
 }
 
 function wireTipEl(el) {
@@ -162,7 +180,7 @@ function wireTipEl(el) {
   } else if (el.hasAttribute("title")) {
     el.removeAttribute("title");
   }
-  el.addEventListener("mouseenter", () => showTip(el));
+  el.addEventListener("mouseenter", () => scheduleShowTip(el));
   el.addEventListener("mouseleave", scheduleHideTip);
   el.addEventListener("focus", () => showTip(el));
   el.addEventListener("blur", scheduleHideTip);

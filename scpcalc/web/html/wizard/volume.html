@@ -48,20 +48,20 @@
                 <div class="grid">
                   <label class="field">
                     <span class="field-copy"><span class="field-label tip-mark" data-tip="hot_warm_days" data-i18n="lbl_hot_warm">Days on fast (hot/warm) disk</span><span class="field-hint" data-i18n="hint_hot_warm">Becomes homePath.maxDataSizeMB after Calculate</span></span>
-                    <input name="hot_warm_days" id="hot_warm_days" type="number" value="30" min="0" step="1">
+                    <input name="hot_warm_days" id="hot_warm_days" type="number" value="7" min="0" step="1">
                   </label>
                   <label class="field">
                     <span class="field-copy"><span class="field-label tip-mark" data-tip="cold_days" data-i18n="lbl_cold_days">Days on cold disk</span><span class="field-hint" data-i18n="hint_cold_days">Cold searchable days before freeze (age)</span></span>
-                    <input name="cold_days" id="cold_days" type="number" value="60" min="0" step="1">
+                    <input name="cold_days" id="cold_days" type="number" value="30" min="0" step="1">
                   </label>
                   <div class="field field-readonly" aria-live="polite">
                     <span class="field-copy"><span class="field-label tip-mark" data-tip="retention_days" data-i18n="lbl_retention_total">Total searchable days</span><span class="field-hint" id="hint_retention_dyn" data-i18n="hint_retention_delete">→ frozenTimePeriodInSecs = days × 86400</span></span>
-                    <output id="retention_total_out" class="readonly-value" for="hot_warm_days cold_days">90</output>
-                    <input type="hidden" name="retention_days" id="retention_days" value="90">
+                    <output id="retention_total_out" class="readonly-value" for="hot_warm_days cold_days">37</output>
+                    <input type="hidden" name="retention_days" id="retention_days" value="37">
                   </div>
                   <div class="field index-volume-field">
                     <span class="field-copy"><span class="field-label tip-mark" data-tip="archive_frozen" data-i18n="lbl_archive_policy">After searchable retention</span><span class="field-hint" data-i18n="hint_archive_short">Archive keeps frozen buckets; off deletes them</span></span>
-                    <label class="field check glass-chip index-volume-freeze"><input name="archive_frozen" type="checkbox" id="archive_frozen"> <span class="tip-mark" data-tip="archive_frozen" data-i18n="lbl_archive">Archive on freeze</span></label>
+                    <label class="field check glass-chip index-volume-freeze"><input name="archive_frozen" type="checkbox" id="archive_frozen" checked> <span class="tip-mark" data-tip="archive_frozen" data-i18n="lbl_archive">Archive on freeze</span></label>
                   </div>
                   <label class="field" data-depends-on="archive_frozen" hidden>
                     <span class="field-copy"><span class="field-label tip-mark" data-tip="frozen_path" data-i18n="lbl_frozen_path">Frozen / archive path</span><span class="field-hint" data-i18n="hint_frozen_path">[volume:frozen] path / coldToFrozenDir</span></span>
@@ -102,7 +102,7 @@
               </label>
               <label class="field">
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="summary_retention_days" data-i18n="lbl_summary_ret">Summary retention (days)</span><span class="field-hint" data-i18n="hint_summary_ret">How long summary indexes stay searchable</span></span>
-                <input name="summary_retention_days" id="summary_retention_days" type="number" value="90" min="1">
+                <input name="summary_retention_days" id="summary_retention_days" type="number" value="37" min="1">
               </label>
             </div>
             <p class="hint" data-i18n="policy_headroom_note">Safety margin (headroom) is set once under Budget — it multiplies size caps (maxTotal / homePath / volumes).</p>

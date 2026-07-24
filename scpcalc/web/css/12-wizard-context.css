@@ -1,8 +1,10 @@
 /* 12-wizard-context.css — Carry-forward banner between wizard steps */
 
 .wizard-context {
-  margin: 0 1.25rem 0.75rem;
+  margin: 0 1.25rem 0.55rem;
   flex-shrink: 0;
+  max-height: 4.75rem;
+  overflow: auto;
 }
 
 .wizard-context-title {

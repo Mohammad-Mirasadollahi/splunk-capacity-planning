@@ -9,6 +9,11 @@ export const DEMO_AVAILABLE_COLD_GB = 20000;
 export const DEMO_AVAILABLE_SUMMARIES_GB = 2000;
 export const DEMO_AVG_EVENT_BYTES = 500;
 export const DEMO_HEADROOM = 1.2;
+/** Default searchable retention: hot 7d + cold 30d = 37d; archive on freeze. */
+export const DEMO_HOT_WARM_DAYS = 7;
+export const DEMO_COLD_DAYS = 30;
+export const DEMO_RETENTION_DAYS = DEMO_HOT_WARM_DAYS + DEMO_COLD_DAYS;
+export const DEMO_ARCHIVE_FROZEN = true;
 
 /** Per-preset default daily_gb (raw). Keys match presets catalog. */
 export const DEMO_SOURCE_DAILY_GB = {
@@ -86,8 +91,10 @@ export function defaultsFromDailyGB(dailyGB, { headroom } = {}) {
     concurrent_users,
     concurrent_searches,
     saved_searches,
-    hot_warm_days: 30,
-    retention_days: 90,
+    hot_warm_days: DEMO_HOT_WARM_DAYS,
+    retention_days: DEMO_RETENTION_DAYS,
+    cold_days: DEMO_COLD_DAYS,
+    archive_frozen: DEMO_ARCHIVE_FROZEN,
     headroom: head,
     n_idx: 0,
     n_sh: 0,

@@ -127,7 +127,7 @@ export function rowFromPreset(p) {
 
 function roundVol(n, kind) {
   if (!(n > 0)) return "";
-  if (kind === "eps") return Math.round(n * 1000) / 1000;
+  if (kind === "eps") return Math.round(n * 10) / 10;
   return Math.round(n * 1000) / 1000;
 }
 

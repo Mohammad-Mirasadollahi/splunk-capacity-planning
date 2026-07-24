@@ -107,12 +107,12 @@ export function syncLinkedSummaryRetention() {
 export function applyInheritedSourcePlaceholders() {
   const g = collectGlobals();
   document.querySelectorAll('#src-body input[data-f="retention_days"]').forEach((el) => {
-    el.placeholder = String(g.retention_days || 90);
-    setSoftTip(el, t("ctx_inherit_ret").replace("{n}", String(g.retention_days || 90)));
+    el.placeholder = String(g.retention_days || 37);
+    setSoftTip(el, t("ctx_inherit_ret").replace("{n}", String(g.retention_days || 37)));
   });
   document.querySelectorAll('#src-body input[data-f="hot_warm_days"]').forEach((el) => {
-    el.placeholder = String(g.hot_warm_days || 30);
-    setSoftTip(el, t("ctx_inherit_hw").replace("{n}", String(g.hot_warm_days || 30)));
+    el.placeholder = String(g.hot_warm_days || 7);
+    setSoftTip(el, t("ctx_inherit_hw").replace("{n}", String(g.hot_warm_days || 7)));
   });
 }
 

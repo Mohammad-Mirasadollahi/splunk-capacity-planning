@@ -7,9 +7,9 @@
   .top { flex-direction: column; }
   .modal { max-height: 96vh; }
   .wizard-modal {
-    height: 96vh;
-    max-height: 96vh;
-    min-height: 96vh;
+    height: min(96vh, calc(100dvh - 2rem));
+    max-height: min(96vh, calc(100dvh - 2rem));
+    min-height: min(96vh, calc(100dvh - 2rem));
   }
   .wizard-steps em { display: none; }
   .tab-btn {

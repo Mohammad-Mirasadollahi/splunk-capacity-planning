@@ -59,9 +59,7 @@ export function epsFromDailyGB(dailyGB, eventBytes) {
 
 export function formatEPS(n) {
   if (!(n > 0)) return "—";
-  if (n >= 1000) return n.toLocaleString(undefined, { maximumFractionDigits: 0 });
-  if (n >= 10) return n.toLocaleString(undefined, { maximumFractionDigits: 1 });
-  return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  return n.toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 0 });
 }
 
 export function formatDailyGB(n) {
@@ -82,7 +80,7 @@ export function fillMissingEPSFromAverage(rows) {
   for (const r of rows || []) {
     if (!r.enabled) continue;
     if (numOr0(r.eps) > 0) continue;
-    r.eps = Math.round(avg * 1000) / 1000;
+    r.eps = Math.round(avg * 10) / 10;
     changed = true;
   }
   return changed;
