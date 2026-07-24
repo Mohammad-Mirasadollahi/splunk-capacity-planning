@@ -41,7 +41,7 @@ export const I18N = {
     overview_point_policy: "Cluster — indexer clustering, search-head clustering, premium apps, and SmartStore.",
     overview_point_paths: "Review — summarize everything, then Calculate.",
     overview_defaults_hint: "Optional: I can seed recommended defaults (retention, disk budgets, concurrent users/searches, demo sources, and cluster/SHC/SmartStore when volume warrants it) from the volume drivers on the Volume step. You can override anything afterward.",
-    overview_apply_btn: "Fill recommended defaults for me",
+    overview_apply_btn: "Fill defaults for me",
     tab_ret_overview: "Overview",
     tab_vol_budget: "Budget",
     tab_vol_sources: "Sources",
