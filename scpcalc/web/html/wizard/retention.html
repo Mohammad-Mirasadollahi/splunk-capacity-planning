@@ -3,7 +3,6 @@
 
           <div class="tab-bar tab-bar-sm" role="tablist" data-tabs="reten">
             <button type="button" class="tab-btn is-active" role="tab" aria-selected="true" data-tab="ret-policy" data-i18n="tab_policy">Policy</button>
-            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="ret-paths" data-i18n="tab_paths">Paths</button>
             <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="ret-per-index" data-i18n="tab_ret_per_index">Per index</button>
           </div>
 
@@ -83,23 +82,6 @@
               <output id="cold_vol_auto" class="readonly-value" for="retention_days hot_warm_days">—</output>
             </div>
             <p class="hint" id="hint_archive_policy" data-i18n="hint_archive_policy_delete">Freeze off: Splunk deletes buckets at freeze — no archive path.</p>
-          </div>
-
-          <div class="tab-panel" data-panel="ret-paths" role="tabpanel" hidden>
-            <div class="grid">
-              <label class="field">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="hot_path" data-i18n="lbl_hot_path">Hot / warm disk path</span><span class="field-hint" data-i18n="hint_hot_path">Local SSD path for recent data</span></span>
-                <input name="hot_path" id="hot_path" type="text" value="/hot">
-              </label>
-              <label class="field">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="cold_path" data-i18n="lbl_cold_path">Cold disk path</span><span class="field-hint" data-i18n="hint_cold_path">Older searchable buckets</span></span>
-                <input name="cold_path" id="cold_path" type="text" value="/cold">
-              </label>
-              <label class="field">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="summaries_path" data-i18n="lbl_sum_path">Summaries / DMA path</span><span class="field-hint" data-i18n="hint_sum_path">Summary indexes and tstats data</span></span>
-                <input name="summaries_path" id="summaries_path" type="text" value="/summaries">
-              </label>
-            </div>
           </div>
 
           <div class="tab-panel" data-panel="ret-per-index" role="tabpanel" hidden>
