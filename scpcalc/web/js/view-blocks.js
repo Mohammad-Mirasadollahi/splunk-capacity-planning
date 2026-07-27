@@ -1,6 +1,9 @@
 import { t } from "./i18n.js";
 import { copyText } from "./share-url.js";
 
+/** Home slot so fullscreen can portal to <body> (escape .glass containing block). */
+const homeMap = new WeakMap();
+
 function flashStatus(block, msg) {
   const el = block.querySelector("[data-view-status]");
   if (!el) return;
@@ -33,9 +36,9 @@ function tableToText(table) {
 }
 
 function blockText(block) {
-  const tables = [...block.querySelectorAll("table")].filter((t) => !t.closest("[hidden]"));
+  const tables = [...block.querySelectorAll("table")].filter((tbl) => !tbl.closest("[hidden]"));
   if (tables.length) {
-    return tables.map((t) => tableToText(t)).filter(Boolean).join("\n\n");
+    return tables.map((tbl) => tableToText(tbl)).filter(Boolean).join("\n\n");
   }
   const pre = block.querySelector("pre");
   if (pre) return pre.textContent || "";
@@ -44,16 +47,61 @@ function blockText(block) {
   return (block.querySelector(".view-block-body")?.innerText || "").trim();
 }
 
-function setExpanded(block, on) {
+function rememberHome(block) {
+  if (homeMap.has(block)) return;
+  homeMap.set(block, {
+    parent: block.parentNode,
+    next: block.nextSibling,
+  });
+}
+
+function restoreHome(block) {
+  const home = homeMap.get(block);
+  if (!home?.parent || !home.parent.isConnected) return;
+  if (home.next && home.next.parentNode === home.parent) {
+    home.parent.insertBefore(block, home.next);
+  } else {
+    home.parent.appendChild(block);
+  }
+}
+
+function syncChrome(block, on) {
   const expandBtn = block.querySelector("[data-view-expand]");
   const closeBtn = block.querySelector("[data-view-collapse]");
-  block.classList.toggle("is-fullscreen", on);
-  if (expandBtn) expandBtn.hidden = on;
-  if (closeBtn) closeBtn.hidden = !on;
+  if (expandBtn) {
+    expandBtn.hidden = on;
+    expandBtn.setAttribute("aria-expanded", on ? "true" : "false");
+  }
+  if (closeBtn) {
+    closeBtn.hidden = !on;
+  }
+  block.setAttribute("aria-modal", on ? "true" : "false");
+  if (on) block.setAttribute("role", "dialog");
+  else block.removeAttribute("role");
+}
+
+function setExpanded(block, on) {
   if (on) {
+    // Close any other fullscreen first
+    document.querySelectorAll(".view-block.is-fullscreen").forEach((b) => {
+      if (b !== block) setExpanded(b, false);
+    });
+    rememberHome(block);
+    // Portal to body so backdrop-filter / overflow on .glass cannot trap position:fixed
+    if (block.parentElement !== document.body) {
+      document.body.appendChild(block);
+    }
+    block.classList.add("is-fullscreen");
     document.body.classList.add("view-fullscreen");
-  } else if (!document.querySelector(".view-block.is-fullscreen")) {
-    document.body.classList.remove("view-fullscreen");
+    syncChrome(block, true);
+    block.querySelector("[data-view-collapse]")?.focus({ preventScroll: true });
+  } else {
+    block.classList.remove("is-fullscreen");
+    syncChrome(block, false);
+    restoreHome(block);
+    if (!document.querySelector(".view-block.is-fullscreen")) {
+      document.body.classList.remove("view-fullscreen");
+    }
   }
 }
 
@@ -80,17 +128,21 @@ export function bindViewBlocks() {
     if (block.dataset.viewBound === "1") return;
     block.dataset.viewBound = "1";
 
-    block.querySelector("[data-view-copy]")?.addEventListener("click", () => {
+    block.querySelector("[data-view-copy]")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       void copyBlock(block);
     });
-    block.querySelector("[data-view-expand]")?.addEventListener("click", () => {
-      collapseAll();
+    block.querySelector("[data-view-expand]")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       setExpanded(block, true);
-      block.querySelector("[data-view-collapse]")?.focus();
     });
-    block.querySelector("[data-view-collapse]")?.addEventListener("click", () => {
+    block.querySelector("[data-view-collapse]")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       setExpanded(block, false);
-      block.querySelector("[data-view-expand]")?.focus();
+      block.querySelector("[data-view-expand]")?.focus({ preventScroll: true });
     });
   });
 
@@ -105,8 +157,17 @@ export function bindViewBlocks() {
       e.preventDefault();
       e.stopImmediatePropagation();
       setExpanded(open, false);
-      open.querySelector("[data-view-expand]")?.focus();
+      open.querySelector("[data-view-expand]")?.focus({ preventScroll: true });
     },
     true
   );
+
+  // Leaving a Results tab while fullscreen must not leave a stranded portal
+  document.querySelectorAll('[data-tabs="results"] [data-tab]').forEach((btn) => {
+    if (btn.dataset.viewFsGuard === "1") return;
+    btn.dataset.viewFsGuard = "1";
+    btn.addEventListener("click", () => collapseAll());
+  });
 }
+
+export { collapseAll as collapseViewBlocks };

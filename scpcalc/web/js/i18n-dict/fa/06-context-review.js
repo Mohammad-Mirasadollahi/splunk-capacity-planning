@@ -55,6 +55,7 @@ export const context_review = {
   review_m_table_baseline: "پایه جدول (SH+IDX · total)",
   review_m_total_storage: "Total Storage",
   review_m_warning: "هشدار",
+  results_ingest_kicker: "حجم روزانه",
   review_combined: "ترکیبی",
   review_indexes_hint: "همان Per-index sizing در Results — مقادیر از موتور زندهٔ پلن می‌آیند.",
   metric_sec_volume: "Volume",

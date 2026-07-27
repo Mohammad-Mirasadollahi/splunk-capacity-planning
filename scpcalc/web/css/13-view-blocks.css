@@ -66,23 +66,41 @@
 }
 
 body.view-fullscreen {
-  overflow: hidden;
+  overflow: hidden !important;
+}
+
+/* Always hide expand/collapse when [hidden] — .btn-ghost { display:inline-flex } otherwise wins */
+.view-block-actions [hidden],
+.view-block [data-view-expand][hidden],
+.view-block [data-view-collapse][hidden],
+button.btn-ghost[hidden],
+.btn-ghost[hidden] {
+  display: none !important;
 }
 
 .view-block.is-fullscreen {
-  position: fixed;
-  inset: 0;
-  z-index: 120;
-  margin: 0;
-  border-radius: 0;
-  border: 0;
-  padding: 1rem clamp(0.85rem, 2vw, 1.5rem) 1.25rem;
-  display: flex;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1000 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border: 0 !important;
+  padding: 1rem clamp(0.85rem, 2vw, 1.5rem) 1.25rem !important;
+  display: flex !important;
   flex-direction: column;
+  overflow: hidden;
   background:
     radial-gradient(ellipse 80% 50% at 50% -10%, rgba(63, 224, 197, 0.12), transparent 55%),
-    linear-gradient(165deg, #0a1c26 0%, #07141c 55%, #0b1f28 100%);
-  box-shadow: none;
+    linear-gradient(165deg, #0a1c26 0%, #07141c 55%, #0b1f28 100%) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: none !important;
+  filter: none !important;
 }
 
 .view-block.is-fullscreen .view-block-bar {

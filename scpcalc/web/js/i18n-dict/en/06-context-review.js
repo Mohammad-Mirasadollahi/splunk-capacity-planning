@@ -55,6 +55,7 @@ export const context_review = {
   review_m_table_baseline: "Table baseline (SH+IDX · total)",
   review_m_total_storage: "Total Storage",
   review_m_warning: "Warning",
+  results_ingest_kicker: "Daily ingest",
   review_combined: "combined",
   review_indexes_hint: "Same Per-index sizing as Results — values come from the live plan engine.",
   metric_sec_volume: "Volume",

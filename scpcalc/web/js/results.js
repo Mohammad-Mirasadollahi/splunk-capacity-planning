@@ -18,6 +18,9 @@ import {
   renderIndexRowsHTML,
 } from "./plan-display.js";
 import { collectGlobals } from "./plan-form.js";
+import { formatDailyGB, formatEPS, epsFromDailyGB, numOr0 } from "./volume-convert.js";
+import { planningAvgEventBytes } from "./sources.js";
+import { collapseViewBlocks } from "./view-blocks.js";
 
 function applyTableFind(inputId, tbodyId, countId) {
   const input = document.getElementById(inputId);
@@ -216,8 +219,26 @@ function renderPlanResult(data) {
 
   const d = data.design || {};
   updateAutoRecBadges(d);
+  collapseViewBlocks();
 
   const g = collectGlobals();
+  const banner = document.getElementById("results-ingest-banner");
+  if (banner) {
+    const rawGB = numOr0(data.total_daily_raw_gb);
+    const bytes = planningAvgEventBytes();
+    const eps = rawGB > 0 && bytes > 0 ? epsFromDailyGB(rawGB, bytes) : 0;
+    banner.hidden = !(rawGB > 0 || eps > 0);
+    banner.innerHTML = `
+      <p class="ingest-banner-kicker">${escapeAttr(t("results_ingest_kicker"))}</p>
+      <div class="ingest-banner-item">
+        <span class="ingest-banner-label">${escapeAttr(t("lbl_total_daily"))}</span>
+        <span class="ingest-banner-value">${rawGB > 0 ? formatDailyGB(rawGB) : "—"}<span class="unit">GB/day</span></span>
+      </div>
+      <div class="ingest-banner-item">
+        <span class="ingest-banner-label">${escapeAttr(t("lbl_total_eps"))}</span>
+        <span class="ingest-banner-value">${eps > 0 ? formatEPS(eps) : "—"}<span class="unit">EPS</span></span>
+      </div>`;
+  }
   const viz = document.getElementById("results-viz");
   if (viz) {
     viz.hidden = false;
