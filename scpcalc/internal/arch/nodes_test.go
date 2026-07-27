@@ -71,6 +71,41 @@ func TestResolveNodeCounts_IndexerClusterRF(t *testing.T) {
 	}
 }
 
+func TestApplyDefaults_ClampsRFSFToNIdx(t *testing.T) {
+	p := model.PlanInput{
+		IndexerCluster: true,
+		NIdx:           2,
+		RF:             3,
+		SF:             3,
+		TotalDailyGB:   10,
+	}
+	p.ApplyDefaults()
+	if p.RF != 2 {
+		t.Fatalf("RF should clamp to n_idx=2, got %d", p.RF)
+	}
+	if p.SF != 2 {
+		t.Fatalf("SF should clamp to RF=2, got %d", p.SF)
+	}
+}
+
+func TestResolveNodeCounts_OverrideKeepsNIdxWhenRFHigher(t *testing.T) {
+	p := model.PlanInput{
+		ConcurrentUsers: 12,
+		IndexerCluster:  true,
+		NIdx:            2,
+		RF:              3,
+		SF:              2,
+	}
+	p.ApplyDefaults()
+	plan := arch.ResolveNodeCounts(p, 800)
+	if plan.NIDX != 2 {
+		t.Fatalf("n_idx override must stick (not raised to old RF), got %d", plan.NIDX)
+	}
+	if p.RF > plan.NIDX {
+		t.Fatalf("RF %d must not exceed peers %d", p.RF, plan.NIDX)
+	}
+}
+
 func TestResolveNodeCounts_UsersAndVolume(t *testing.T) {
 	p := model.PlanInput{ConcurrentUsers: 12, RF: 3, SF: 2}
 	plan := arch.ResolveNodeCounts(p, 800)

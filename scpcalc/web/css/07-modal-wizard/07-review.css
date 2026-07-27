@@ -1,0 +1,120 @@
+/* Review step — summary KV, metrics, sources total */
+
+.review-box {
+  max-height: 220px;
+  margin: 0.5rem 0 0;
+}
+
+.review-subhead {
+  margin: 1rem 0 0.55rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.review-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 0.75rem 0 0.25rem;
+}
+
+.review-summary-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem 1.1rem;
+  align-items: start;
+}
+
+.review-summary-pair .review-block {
+  min-width: 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.14);
+}
+
+.review-summary-pair .review-kv li {
+  grid-template-columns: minmax(7rem, 11rem) 1fr;
+}
+
+@media (max-width: 820px) {
+  .review-summary-pair {
+    grid-template-columns: 1fr;
+  }
+}
+
+.review-block h4 {
+  margin: 0 0 0.4rem;
+  font-size: 0.88rem;
+}
+
+.review-kv {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.review-kv li {
+  display: grid;
+  grid-template-columns: minmax(10rem, 15rem) 1fr;
+  gap: 0.5rem 0.75rem;
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.review-kv li span {
+  color: var(--muted);
+}
+
+.review-kv li strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.review-metrics {
+  margin-bottom: 0.35rem;
+}
+
+.review-charts {
+  margin-bottom: 0.75rem;
+}
+
+.review-details {
+  margin: 0.75rem 0 0.25rem;
+  font-size: 0.86rem;
+}
+
+.review-details summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.review-preview-status {
+  margin: 0.35rem 0 0.15rem;
+}
+
+.review-viz {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  margin: 0.85rem 0 0.35rem;
+}
+
+.review-src-table .review-src-idx-total {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.review-src-table tfoot .review-src-total th,
+.review-src-table tfoot .review-src-total td {
+  font-weight: 700;
+  border-top: 1px dashed var(--line);
+  padding-top: 0.65rem;
+  color: var(--ink);
+}

@@ -1,0 +1,112 @@
+/* Wizard dialog chrome — head, steps, foot */
+
+/* Fixed shell size — tab/step content scrolls inside .wizard-body, not resize the dialog. */
+.wizard-modal {
+  width: min(1176px, 90vw);
+  max-width: 90vw;
+  height: min(92vh, 900px);
+  max-height: min(92vh, 900px);
+  min-height: min(92vh, 900px);
+}
+
+.wizard-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem 0.85rem;
+  border-bottom: 0;
+  flex-shrink: 0;
+}
+
+.wizard-head h2 {
+  margin: 0.15rem 0 0;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+}
+
+.wizard-head .eyebrow {
+  margin: 0;
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.wizard-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  border-bottom: 0;
+  background: rgba(0, 0, 0, 0.18);
+  flex-shrink: 0;
+}
+
+.wizard-steps li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.25;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: background 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.wizard-steps li span {
+  width: 1.25rem;
+  height: 1.25rem;
+  min-width: 1.25rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.wizard-steps li.is-active {
+  color: var(--accent-ink);
+  background: linear-gradient(135deg, var(--accent), #2ec4a8);
+  border-color: transparent;
+}
+
+.wizard-steps li.is-active span {
+  background: rgba(0, 0, 0, 0.18);
+  color: var(--accent-ink);
+}
+
+.wizard-steps li.is-done {
+  color: var(--ink);
+  border-color: rgba(63, 224, 197, 0.35);
+  background: rgba(63, 224, 197, 0.08);
+}
+
+.wizard-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.85rem 1.25rem 1.1rem;
+  border-top: 0;
+  background: rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+.wiz-foot-right {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}

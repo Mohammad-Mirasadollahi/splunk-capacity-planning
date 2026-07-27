@@ -1,0 +1,34 @@
+/* Form sections inside wizard / modals */
+
+.form-section {
+  margin: 0 0 1.15rem;
+  padding: 0.85rem 0.95rem 0.35rem;
+  border-radius: 0.9rem;
+  border: 0;
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.form-section:last-child {
+  margin-bottom: 0.35rem;
+}
+
+.form-section-head {
+  margin: 0 0 0.65rem;
+}
+
+.form-section-head h4 {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.form-section-head .hint {
+  margin: 0;
+}
+
+.form-section .grid {
+  margin-bottom: 0.65rem;
+}

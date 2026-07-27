@@ -19,6 +19,7 @@ import {
 } from "./plan-form.js";
 import { runPlan } from "./engine.js";
 import { renderAllCharts } from "./charts.js";
+import { formatSizeGB, planSourceDiskNeeds } from "./source-sizing.js";
 
 let previewSeq = 0;
 let previewTimer = 0;
@@ -34,9 +35,11 @@ function yn(v) {
   return v ? t("ctx_on") : t("ctx_off");
 }
 
-function countOrAuto(n) {
+/** Show Auto only when clustering is on and count is still unset; standalone always has an explicit count. */
+function countOrAuto(n, clustered) {
   const v = Number(n);
-  return v > 0 ? String(v) : t("review_count_auto");
+  if (v > 0) return String(v);
+  return clustered ? t("review_count_auto") : "1";
 }
 
 function kv(label, value) {
@@ -166,7 +169,10 @@ export function fillReviewSummary() {
   if (!host) return;
   const g = collectGlobals();
   const enabled = state.rows.filter((r) => r.enabled);
+  const sizedPlan = planSourceDiskNeeds(state.rows, g);
+  const sizedByRow = new Map(sizedPlan.rows.map((s) => [s.row, s]));
   let srcSum = 0;
+  let idxTotalGB = 0;
   const srcRows = enabled
     .map((r) => {
       const bytes = resolveEventBytes(r, state.rows);
@@ -184,6 +190,11 @@ export function fillReviewSummary() {
         Number(r.hot_warm_days) > 0
           ? t("review_days").replace("{n}", String(r.hot_warm_days))
           : t("review_days_global").replace("{n}", String(g.hot_warm_days));
+      const sized = sizedByRow.get(r);
+      const idxGB = sized?.maxTotalGB > 0 ? sized.maxTotalGB : 0;
+      if (idxGB > 0) idxTotalGB += idxGB;
+      const idxTotal =
+        idxGB > 0 ? `${formatSizeGB(idxGB)} GB` : "—";
       return `<tr>
         <td>${escapeAttr(r.label)}</td>
         <td>${escapeAttr(r.index_name)}</td>
@@ -192,9 +203,20 @@ export function fillReviewSummary() {
         <td>${escapeAttr(ret)}</td>
         <td>${escapeAttr(hw)}</td>
         <td>${r.enable_summary ? yn(true) : "—"}</td>
+        <td class="review-src-idx-total">${escapeAttr(idxTotal)}</td>
       </tr>`;
     })
     .join("");
+
+  const srcFooter =
+    enabled.length > 0
+      ? `<tr class="review-src-total">
+          <th scope="row" colspan="7">${escapeAttr(t("review_total"))}</th>
+          <td class="review-src-idx-total">${
+            idxTotalGB > 0 ? `${formatSizeGB(idxTotalGB)} GB` : "—"
+          }</td>
+        </tr>`
+      : "";
 
   const coldDays = Math.max(0, Number(g.retention_days) - Number(g.hot_warm_days));
   const archiveVal = g.archive_frozen
@@ -204,44 +226,46 @@ export function fillReviewSummary() {
     g.total_daily_gb > 0 ? `${formatDailyGB(g.total_daily_gb)} GB/day` : t("review_not_set");
 
   host.innerHTML = `
-    <section class="review-block">
-      <h4 data-i18n="ctx_from_topology">${t("ctx_from_topology")}</h4>
-      <ul class="review-kv">
-        ${kv(t("idx_cluster"), yn(g.indexer_cluster))}
-        ${kv(t("lbl_rf"), String(g.rf))}
-        ${kv(t("lbl_sf"), String(g.sf))}
-        ${kv(t("lbl_n_idx"), countOrAuto(g.n_idx))}
-        ${kv(t("shc"), yn(g.search_head_cluster))}
-        ${kv(t("lbl_users"), String(g.concurrent_users))}
-        ${kv(t("lbl_searches"), String(g.concurrent_searches))}
-        ${kv(t("lbl_saved"), String(g.saved_searches))}
-        ${kv(t("lbl_n_sh"), countOrAuto(g.n_sh))}
-        ${kv(t("lbl_has_es"), yn(g.has_es))}
-        ${kv(t("lbl_has_itsi"), yn(g.has_itsi))}
-        ${kv(t("lbl_dma"), yn(g.enable_dma))}
-        ${kv(t("lbl_smartstore"), yn(g.smartstore))}
-      </ul>
-    </section>
-    <section class="review-block">
-      <h4 data-i18n="ctx_from_retention">${t("ctx_from_retention")}</h4>
-      <ul class="review-kv">
-        ${kv(t("lbl_retention"), t("review_days").replace("{n}", String(g.retention_days)))}
-        ${kv(t("lbl_hot_warm"), t("review_days").replace("{n}", String(g.hot_warm_days)))}
-        ${kv(t("lbl_cold_days"), t("review_days").replace("{n}", String(coldDays)))}
-        ${kv(t("lbl_archive_days"), g.archive_frozen ? t("review_days").replace("{n}", String(g.archive_days || 0)) : yn(false))}
-        ${kv(t("lbl_headroom"), String(g.headroom))}
-        ${kv(t("lbl_summary_ret"), t("review_days").replace("{n}", String(g.summary_retention_days)))}
-        ${kv(t("lbl_archive"), archiveVal)}
-        ${kv(t("lbl_hot_path"), escapeAttr(g.hot_path))}
-        ${kv(t("lbl_cold_path"), escapeAttr(g.cold_path))}
-        ${kv(t("lbl_frozen_path"), escapeAttr(g.frozen_path))}
-        ${kv(t("lbl_sum_path"), escapeAttr(g.summaries_path))}
-        ${kv(t("lbl_total_daily"), totalDaily)}
-        ${kv(t("lbl_avail_hot"), `${g.available_hot_gb || 0} GB`)}
-        ${kv(t("lbl_avail_cold"), `${g.available_cold_gb || 0} GB`)}
-        ${kv(t("lbl_avail_sum"), `${g.available_summaries_gb || 0} GB`)}
-      </ul>
-    </section>
+    <div class="review-summary-pair">
+      <section class="review-block">
+        <h4 data-i18n="ctx_from_topology">${t("ctx_from_topology")}</h4>
+        <ul class="review-kv">
+          ${kv(t("idx_cluster"), yn(g.indexer_cluster))}
+          ${kv(t("lbl_rf"), String(g.rf))}
+          ${kv(t("lbl_sf"), String(g.sf))}
+          ${kv(t("lbl_n_idx"), countOrAuto(g.n_idx, g.indexer_cluster))}
+          ${kv(t("shc"), yn(g.search_head_cluster))}
+          ${kv(t("lbl_users"), String(g.concurrent_users))}
+          ${kv(t("lbl_searches"), String(g.concurrent_searches))}
+          ${kv(t("lbl_saved"), String(g.saved_searches))}
+          ${kv(t("lbl_n_sh"), countOrAuto(g.n_sh, g.search_head_cluster))}
+          ${kv(t("lbl_has_es"), yn(g.has_es))}
+          ${kv(t("lbl_has_itsi"), yn(g.has_itsi))}
+          ${kv(t("lbl_dma"), yn(g.enable_dma))}
+          ${kv(t("lbl_smartstore"), yn(g.smartstore))}
+        </ul>
+      </section>
+      <section class="review-block">
+        <h4 data-i18n="ctx_from_retention">${t("ctx_from_retention")}</h4>
+        <ul class="review-kv">
+          ${kv(t("lbl_retention"), t("review_days").replace("{n}", String(g.retention_days)))}
+          ${kv(t("lbl_hot_warm"), t("review_days").replace("{n}", String(g.hot_warm_days)))}
+          ${kv(t("lbl_cold_days"), t("review_days").replace("{n}", String(coldDays)))}
+          ${kv(t("lbl_archive_days"), g.archive_frozen ? t("review_days").replace("{n}", String(g.archive_days || 0)) : yn(false))}
+          ${kv(t("lbl_headroom"), String(g.headroom))}
+          ${kv(t("lbl_summary_ret"), t("review_days").replace("{n}", String(g.summary_retention_days)))}
+          ${kv(t("lbl_archive"), archiveVal)}
+          ${kv(t("lbl_hot_path"), escapeAttr(g.hot_path))}
+          ${kv(t("lbl_cold_path"), escapeAttr(g.cold_path))}
+          ${kv(t("lbl_frozen_path"), escapeAttr(g.frozen_path))}
+          ${kv(t("lbl_sum_path"), escapeAttr(g.summaries_path))}
+          ${kv(t("lbl_total_daily"), totalDaily)}
+          ${kv(t("lbl_avail_hot"), `${g.available_hot_gb || 0} GB`)}
+          ${kv(t("lbl_avail_cold"), `${g.available_cold_gb || 0} GB`)}
+          ${kv(t("lbl_avail_sum"), `${g.available_summaries_gb || 0} GB`)}
+        </ul>
+      </section>
+    </div>
     <section class="review-block">
       <h4 data-i18n="ctx_from_sources">${t("ctx_from_sources")}</h4>
       <p class="hint">${t("ctx_vol_mode")} · ${t("ctx_sources_on").replace("{n}", String(enabled.length))} · Σ ≈ ${formatDailyGB(srcSum)} GB/day${
@@ -258,9 +282,11 @@ export function fillReviewSummary() {
               <th>${t("col_ret")}</th>
               <th>${t("col_hw")}</th>
               <th>${t("col_summary")}</th>
+              <th title="${escapeAttr(t("ix_tip_max_total"))}">${t("review_total")}</th>
             </tr>
           </thead>
-          <tbody>${srcRows || `<tr><td colspan="7">${t("review_no_sources")}</td></tr>`}</tbody>
+          <tbody>${srcRows || `<tr><td colspan="8">${t("review_no_sources")}</td></tr>`}</tbody>
+          ${srcFooter ? `<tfoot>${srcFooter}</tfoot>` : ""}
         </table>
       </div>
     </section>`;
@@ -269,7 +295,12 @@ export function fillReviewSummary() {
 function renderPreviewMetrics(data) {
   const host = document.getElementById("review-metrics");
   if (!host) return;
+  const g = collectGlobals();
   const d = data.design || {};
+  const nIdx = Math.max(1, Math.floor(numOr0(d.n_idx) || numOr0(data?.indexer_peers) || 1));
+  const hotAll = numOr0(d.hot_need_gb);
+  const coldAll = numOr0(d.cold_need_gb);
+  const archAll = g.archive_frozen ? numOr0(d.archive_need_gb) : 0;
   const rows = [
     [t("review_m_daily_raw"), data.total_daily_raw_gb],
     [t("review_m_compression"), data.compression_factor],
@@ -278,11 +309,19 @@ function renderPreviewMetrics(data) {
     [t("review_m_auto_sh"), d.auto_n_sh || d.n_sh],
     [t("review_m_auto_idx"), d.auto_n_idx || d.n_idx],
     [t("lbl_n_sh"), d.n_sh],
-    [t("lbl_n_idx"), d.n_idx],
-    [t("lbl_need_hot"), d.hot_need_gb],
-    [t("lbl_need_cold"), d.cold_need_gb],
-    [t("review_m_need_sum"), d.summaries_need_gb],
+    [t("lbl_n_idx"), nIdx],
+    [t("lbl_need_hot"), formatStorageAmt(hotAll)],
+    [t("lbl_need_cold"), formatStorageAmt(coldAll)],
   ];
+  if (g.archive_frozen) {
+    rows.push([t("review_m_need_archive"), formatStorageAmt(archAll)]);
+  }
+  rows.push(
+    [t("review_m_need_sum"), d.summaries_need_gb != null ? formatStorageAmt(d.summaries_need_gb) : "—"],
+    [t("review_m_hot_per_idx"), formatStorageAmt(hotAll / nIdx)],
+    [t("review_m_cold_per_idx"), formatStorageAmt(coldAll / nIdx)],
+    [t("review_m_archive_per_idx"), g.archive_frozen ? formatStorageAmt(archAll / nIdx) : "—"]
+  );
   if (d.cluster_manager) rows.push([t("review_m_cm"), 1]);
   if (d.shc_deployer) rows.push([t("review_m_deployer"), 1]);
   if (d.max_daily_gb_from_disk) rows.push([t("review_m_max_daily_disk"), d.max_daily_gb_from_disk]);

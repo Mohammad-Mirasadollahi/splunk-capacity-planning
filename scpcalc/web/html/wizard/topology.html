@@ -14,16 +14,16 @@
               <div class="grid">
                 <label class="field check glass-chip"><input name="indexer_cluster" type="checkbox" id="indexer_cluster"> <span class="tip-mark" data-tip="indexer_cluster" data-i18n="idx_cluster">Indexer cluster</span></label>
                 <label class="field" data-depends-on="indexer_cluster" hidden>
-                  <span class="field-copy"><span class="field-label tip-mark" data-tip="rf" data-i18n="lbl_rf">Replication factor</span><span class="field-hint" data-i18n="hint_rf">Raw data copies in the cluster</span></span>
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="rf" data-i18n="lbl_rf">Replication factor</span><span class="field-hint" data-i18n="hint_rf">Rawdata copies — must be ≤ number of indexers (each copy on a separate peer)</span></span>
                   <input name="rf" id="rf" type="number" value="3" min="1">
                 </label>
                 <label class="field" data-depends-on="indexer_cluster" hidden>
-                  <span class="field-copy"><span class="field-label tip-mark" data-tip="sf" data-i18n="lbl_sf">Search factor</span><span class="field-hint" data-i18n="hint_sf">Searchable copies with TSIDX</span></span>
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="sf" data-i18n="lbl_sf">Search factor</span><span class="field-hint" data-i18n="hint_sf">Searchable copies with TSIDX — must be ≤ replication factor</span></span>
                   <input name="sf" id="sf" type="number" value="2" min="1">
                 </label>
                 <label class="field">
-                  <span class="field-copy"><span class="field-label tip-mark" data-tip="n_idx" data-i18n="lbl_n_idx">Number of indexers</span><span class="field-hint" data-i18n="hint_n_idx">Defaults to the recommended count — change it if you want a different number</span></span>
-                  <input name="n_idx" id="n_idx" type="number" value="0" min="0" placeholder="0">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="n_idx" data-i18n="lbl_n_idx">Number of indexers</span><span class="field-hint" data-i18n="hint_n_idx">Cluster off: how many independent indexers (min 1). Cluster on: defaults to 3, minimum 2 peers</span></span>
+                  <input name="n_idx" id="n_idx" type="number" value="1" min="1" placeholder="1">
                   <span class="auto-rec" id="auto-n-idx" hidden></span>
                 </label>
               </div>
@@ -48,8 +48,8 @@
                   <input name="saved_searches" id="saved_searches" type="number" value="20" min="0" required>
                 </label>
                 <label class="field">
-                  <span class="field-copy"><span class="field-label tip-mark" data-tip="n_sh" data-i18n="lbl_n_sh">Number of search heads</span><span class="field-hint" data-i18n="hint_n_sh">Defaults to the recommended count from users × volume × searches — change if needed</span></span>
-                  <input name="n_sh" id="n_sh" type="number" value="0" min="0" placeholder="0">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="n_sh" data-i18n="lbl_n_sh">Number of search heads</span><span class="field-hint" data-i18n="hint_n_sh">Cluster off: independent search heads (min 1), SHC optional. SHC on: defaults to 1; never 0; use 1 or ≥3 (not 2)</span></span>
+                  <input name="n_sh" id="n_sh" type="number" value="1" min="1" placeholder="1">
                   <span class="auto-rec" id="auto-n-sh" hidden></span>
                   <span class="field-hint shc-n-sh-hint" id="shc-n-sh-hint" hidden data-i18n="hint_shc_n_sh">With SHC: use 1 (single-member interim) or ≥3 — Splunk does not support 2 members for HA.</span>
                 </label>

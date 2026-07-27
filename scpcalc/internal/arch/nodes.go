@@ -104,7 +104,8 @@ func ResolveNodeCounts(p model.PlanInput, dailyGB float64) NodePlan {
 		plan.Warnings = append(plan.Warnings, "high saved/scheduled search count (≥200) — consider Search Head Cluster for schedule stability (see ITSI/SHC guidance; platform Dimensions: saved searches need more capacity)")
 	}
 
-	// Indexer cluster: never keep combined; peers ≥ RF (and typically ≥3)
+	// Indexer cluster: never keep combined; peers ≥ RF when peer count is auto.
+	// When n_idx is set, RF/SF are clamped to ≤ n_idx in ApplyDefaults (Splunk: one copy per peer).
 	if p.IndexerCluster {
 		plan.ClusterManager = true
 		if plan.CombinedInstance {
@@ -117,7 +118,7 @@ func ResolveNodeCounts(p model.PlanInput, dailyGB float64) NodePlan {
 			}
 			plan.Steps = append(plan.Steps, "Indexer cluster enabled → split combined instance; floor indexers to ≥3")
 		}
-		if plan.NIDX < p.RF {
+		if p.NIdx <= 0 && plan.NIDX < p.RF {
 			plan.Steps = append(plan.Steps, fmt.Sprintf("Indexer cluster RF=%d → raise N_IDX from %d to %d", p.RF, plan.NIDX, p.RF))
 			plan.NIDX = p.RF
 		} else {
@@ -192,10 +193,7 @@ func ResolveNodeCounts(p model.PlanInput, dailyGB float64) NodePlan {
 		plan.Steps = append(plan.Steps, fmt.Sprintf("Override n_idx=%d (auto was %d)", p.NIdx, autoNIDX))
 		plan.NIDX = p.NIdx
 		plan.CombinedInstance = false
-		if p.IndexerCluster && plan.NIDX < p.RF {
-			plan.Warnings = append(plan.Warnings, fmt.Sprintf("n_idx raised from %d to RF=%d (peers must be ≥ replication factor)", p.NIdx, p.RF))
-			plan.NIDX = p.RF
-		}
+		// Do not raise n_idx to RF — RF/SF must fit the peer count (clamped in ApplyDefaults).
 	}
 	if p.NSh > 0 {
 		if p.NSh < autoNSH {

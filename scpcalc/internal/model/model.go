@@ -319,6 +319,17 @@ func (p *PlanInput) ApplyDefaults() {
 		if p.SF <= 0 {
 			p.SF = 2
 		}
+		// Splunk: each bucket copy on a separate peer → RF ≤ peer count; SF ≤ RF.
+		// Prefer clamping RF/SF to n_idx over silently raising peer count.
+		if p.NIdx > 0 && p.RF > p.NIdx {
+			p.RF = p.NIdx
+		}
+		if p.SF > p.RF {
+			p.SF = p.RF
+		}
+		if p.SF < 1 {
+			p.SF = 1
+		}
 	}
 	if p.Headroom <= 0 {
 		p.Headroom = 1.2

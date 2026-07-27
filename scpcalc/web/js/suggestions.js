@@ -131,10 +131,13 @@ export function updateAutoRecBadges(design) {
   }
 }
 
-/** Put recommended count into the field when it is still on auto (0) or last seeded value. */
+/** Seed recommended count only while clustering is on (and field still empty/last-seeded).
+ *  Standalone (cluster off): no Auto fill — user sets an explicit independent node count. */
 function maybeSeedCount(inputName, recommended) {
   const el = document.querySelector(`input[name="${inputName}"]`);
   if (!el || !(recommended > 0)) return;
+  if (inputName === "n_idx" && !document.getElementById("indexer_cluster")?.checked) return;
+  if (inputName === "n_sh" && !document.getElementById("search_head_cluster")?.checked) return;
   const cur = Number(el.value);
   const stamped = Number(el.dataset.autoSeeded || 0);
   if (!(cur > 0) || (stamped > 0 && cur === stamped)) {
@@ -145,7 +148,11 @@ function maybeSeedCount(inputName, recommended) {
 function applyRecommendedCount(inputName, recommended, { silent = false } = {}) {
   const el = document.querySelector(`input[name="${inputName}"]`);
   if (!el || !(recommended > 0)) return;
-  const next = String(recommended);
+  let nextN = recommended;
+  if (inputName === "n_idx" && document.getElementById("indexer_cluster")?.checked) {
+    nextN = Math.max(2, nextN);
+  }
+  const next = String(nextN);
   if (el.value === next && el.dataset.autoSeeded === next) return;
   el.value = next;
   el.dataset.autoSeeded = next;
