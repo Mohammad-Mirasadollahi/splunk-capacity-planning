@@ -88,6 +88,10 @@ export function syncArchiveFields() {
     policyHint.setAttribute("data-i18n", policyKey);
     policyHint.textContent = t(policyKey);
   }
+  const daysEl = document.getElementById("archive_days");
+  if (daysEl && on && !(Number(daysEl.value) > 0)) {
+    daysEl.value = "90";
+  }
   syncCapacityPair(null);
   refreshOpenTip();
 }
@@ -137,7 +141,7 @@ function setCapSidesLinked() {
     box.classList.add("is-primary");
     box.classList.remove("is-counterpart");
     box.querySelectorAll("input:not([type=hidden]):not([type=checkbox])").forEach((el) => {
-      if (el.name === "frozen_path") return;
+      if (el.name === "frozen_path" || el.name === "archive_days") return;
       el.readOnly = false;
       el.classList.remove("is-counterpart-input");
     });
@@ -196,12 +200,14 @@ function updateTimeScenario(hot, cold, total) {
   const el = document.getElementById("cap-time-scenario");
   if (!el) return;
   const archive = !!document.getElementById("archive_frozen")?.checked;
+  const archDays = archive ? Math.max(0, readIntDays(document.getElementById("archive_days"))) : 0;
   const key = archive ? "cap_scenario_archive" : "cap_scenario_delete";
   el.setAttribute("data-i18n", key);
   el.textContent = t(key)
     .replace("{hot}", String(hot))
     .replace("{cold}", String(cold))
-    .replace("{total}", String(total));
+    .replace("{total}", String(total))
+    .replace("{arch}", String(archDays));
 }
 
 function updateDiskScenario(hotGB, coldGB, totalGB, summariesGB) {
@@ -375,6 +381,7 @@ export function collectGlobals() {
     has_itsi: fd.get("has_itsi") === "on",
     enable_dma: dmaOn,
     archive_frozen: archiveOn,
+    archive_days: archiveOn ? Math.max(0, Math.floor(num(fd, "archive_days", 0))) : 0,
     concurrent_users: num(fd, "concurrent_users", 8),
     concurrent_searches: num(fd, "concurrent_searches", 8),
     saved_searches: num(fd, "saved_searches", 0),
@@ -420,6 +427,7 @@ export function applyGlobals(g) {
     "available_hot_gb",
     "available_cold_gb",
     "available_summaries_gb",
+    "archive_days",
   ]) {
     const el = form.elements.namedItem(k);
     if (el && g[k] != null) el.value = g[k];
@@ -555,7 +563,7 @@ export function fillReview() {
   const lines = [
     `— From volume & retention —`,
     `plan by: ${g.capacity_plan_mode} | hot: ${g.hot_warm_days}d + cold: ${coldDays}d = total ${g.retention_days}d | headroom: ${g.headroom} | summary_ret: ${g.summary_retention_days}d`,
-    `archive_frozen: ${g.archive_frozen}${g.archive_frozen ? ` → ${g.frozen_path}` : ""}`,
+    `archive_frozen: ${g.archive_frozen}${g.archive_frozen ? ` → ${g.frozen_path} · archive_days=${g.archive_days || 0}` : ""}`,
     `paths: ${g.hot_path} | ${g.cold_path} | ${g.frozen_path} | ${g.summaries_path}`,
   ];
   if (g.total_daily_gb) lines.push(`total_daily_gb: ${g.total_daily_gb} (budget ceiling; under-fill sources scale up)`);
@@ -626,6 +634,11 @@ export function bindPlanFormChrome() {
   wire('input[name="cold_days"], #cold_days', "cold_days");
   wire('input[name="available_hot_gb"], #available_hot_gb', "hot_gb");
   wire('input[name="available_cold_gb"], #available_cold_gb', "cold_gb");
+  document.querySelectorAll('input[name="archive_days"], #archive_days').forEach((el) => {
+    const run = () => syncCapacityPair(null);
+    el.addEventListener("input", run);
+    el.addEventListener("change", run);
+  });
   document.querySelectorAll('input[name="available_summaries_gb"], #available_summaries_gb').forEach((el) => {
     const run = () => {
       const hot = numOr0(document.getElementById("available_hot_gb")?.value);

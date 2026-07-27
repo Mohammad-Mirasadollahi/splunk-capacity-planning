@@ -136,13 +136,6 @@ body.view-fullscreen {
   }
 }
 
-.node-detail-title {
-  margin: 1rem 0 0.45rem;
-  font-family: var(--font-display);
-  font-size: 0.98rem;
-  font-weight: 700;
-}
-
 .node-label-pill {
   display: inline-block;
   padding: 0.12rem 0.45rem;
@@ -153,6 +146,11 @@ body.view-fullscreen {
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.02em;
+}
+
+.node-pick-table {
+  min-width: 1180px;
+  width: 100%;
 }
 
 .node-pick-table tbody tr {

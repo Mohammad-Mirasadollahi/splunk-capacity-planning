@@ -478,7 +478,7 @@ body.modal-open {
 
 .review-kv li {
   display: grid;
-  grid-template-columns: minmax(7rem, 9.5rem) 1fr;
+  grid-template-columns: minmax(10rem, 15rem) 1fr;
   gap: 0.5rem 0.75rem;
   font-size: 0.84rem;
   line-height: 1.4;
@@ -516,6 +516,157 @@ body.modal-open {
   margin: 0.35rem 0 0.15rem;
 }
 
+.review-viz {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  margin: 0.85rem 0 0.35rem;
+}
+
+.review-retention h4,
+.review-storage h4 {
+  margin: 0 0 0.55rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.retention-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.retention-bar {
+  display: flex;
+  flex: 1 1 14rem;
+  min-width: 12rem;
+  height: 1.35rem;
+  border-radius: 0.35rem;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.retention-seg {
+  display: block;
+  min-width: 0;
+  flex-shrink: 1;
+  flex-basis: 0;
+}
+
+.retention-seg--hot {
+  background: linear-gradient(180deg, #6fe39a 0%, #3cb86e 55%, #2f9a5a 100%);
+}
+
+.retention-seg--cold {
+  background: linear-gradient(180deg, #9fd4f5 0%, #6bb8e8 55%, #4a9fd4 100%);
+}
+
+.retention-seg--archived {
+  background: linear-gradient(180deg, #c5c9ce 0%, #9ea4ab 55%, #858b93 100%);
+}
+
+.retention-total {
+  flex: 0 0 auto;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.retention-legend {
+  list-style: none;
+  margin: 0.55rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1.25rem;
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+
+.retention-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.retention-swatch {
+  display: inline-block;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 0.2rem;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.retention-swatch--hot {
+  background: #3cb86e;
+}
+
+.retention-swatch--cold {
+  background: #6bb8e8;
+}
+
+.retention-swatch--archived {
+  background: #9ea4ab;
+}
+
+.review-storage-hint {
+  margin: 0 0 0.55rem;
+  font-style: italic;
+  font-size: 0.82rem;
+}
+
+.review-storage-table-wrap {
+  overflow-x: auto;
+}
+
+.review-storage-table {
+  width: 100%;
+  max-width: 36rem;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.review-storage-table thead th {
+  font-weight: 600;
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-align: right;
+  padding: 0.35rem 0.5rem 0.55rem;
+  border-bottom: 1px dashed var(--line);
+}
+
+.review-storage-table thead th:first-child {
+  text-align: left;
+  border-bottom-color: transparent;
+}
+
+.review-storage-table tbody th {
+  font-weight: 500;
+  text-align: left;
+  color: var(--ink);
+  padding: 0.4rem 0.5rem 0.4rem 0;
+}
+
+.review-storage-table tbody td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  padding: 0.4rem 0.5rem;
+  color: var(--ink);
+}
+
+.review-storage-table .review-storage-total th,
+.review-storage-table .review-storage-total td {
+  font-weight: 700;
+  font-size: 1.02rem;
+  padding-top: 0.65rem;
+}
 
 .modal-pre {
   margin: 0.75rem 1.1rem 0;

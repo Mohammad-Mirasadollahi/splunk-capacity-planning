@@ -224,13 +224,31 @@ func RecommendResources(p model.PlanInput, d model.Design, dailyGB float64) []mo
 	}
 
 	if p.ArchiveFrozen {
+		archDays := p.ArchiveDays
+		if archDays < 0 {
+			archDays = 0
+		}
+		diskHint := 0.0
+		if archDays > 0 && d.ArchiveNeedGB > 0 {
+			diskHint = d.ArchiveNeedGB
+		} else if archDays > 0 && dailyGB > 0 {
+			comp := d.CompressionFactor
+			if comp <= 0 {
+				comp = 0.5
+			}
+			diskHint = round1(dailyGB * comp * float64(archDays))
+		}
+		notes := fmt.Sprintf("coldToFrozenDir path=%s — not for active search; thaw to restore", p.FrozenPath)
+		if archDays > 0 {
+			notes = fmt.Sprintf("%s; keep ≈%d days in archive (≈%.0f GB)", notes, archDays, diskHint)
+		}
 		out = append(out, model.LayerSpec{
 			Role: "Frozen / archive", Count: 1, Tier: "archive",
 			CPUCores: 0, VCPU: 0, RAMGB: 0,
-			StorageType: "SAN / NAS / NFS / HDD / object", DiskGBHint: 0,
+			StorageType: "SAN / NAS / NFS / HDD / object", DiskGBHint: diskHint,
 			Network: "backup network OK", IOPSHint: "Sequential / archive class OK",
 			RAIDHint: "RAID 5/6 or object-store durability for long-term retention",
-			Notes:    fmt.Sprintf("coldToFrozenDir path=%s — not for active search; thaw to restore", p.FrozenPath),
+			Notes:    notes,
 		})
 	}
 
@@ -383,7 +401,11 @@ func renderStructure(p model.PlanInput, d model.Design, out model.PlanResult) st
 	fmt.Fprintf(&b, "  - cold:         need ~%.1f GB  path=%s\n", d.ColdNeedGB, p.ColdPath)
 	fmt.Fprintf(&b, "  - summaries:    need ~%.1f GB  path=%s (DMA/tstats + summary indexes)\n", d.SummariesNeedGB, p.SummariesPath)
 	if p.ArchiveFrozen {
-		fmt.Fprintf(&b, "  - frozen archive: path=%s\n", p.FrozenPath)
+		fmt.Fprintf(&b, "  - frozen archive: path=%s", p.FrozenPath)
+		if p.ArchiveDays > 0 {
+			fmt.Fprintf(&b, " · keep ≈%d days", p.ArchiveDays)
+		}
+		b.WriteByte('\n')
 	} else {
 		fmt.Fprintf(&b, "  - frozen: default DELETE (archive_frozen=false)\n")
 	}

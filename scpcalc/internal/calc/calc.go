@@ -297,7 +297,7 @@ func applyPerPeer(out *model.PlanResult, d *model.Design) {
 	}
 	d.PerPeerMB = true
 	out.Warnings = append(out.Warnings, fmt.Sprintf(
-		"indexes.conf size fields and volume caps are per peer (÷ N_IDX=%d); cluster totals kept in *_cluster_mb", nidx))
+		"Size limits in indexes.conf are set per indexer (cluster total ÷ %d indexers). Storage Required and other review figures still show the full cluster total.", nidx))
 	for i := range out.Indexes {
 		ix := &out.Indexes[i]
 		ix.MaxTotalDataSizeMB = ceilDiv(ix.MaxTotalDataSizeMB, nidx)

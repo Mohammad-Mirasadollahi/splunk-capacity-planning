@@ -988,6 +988,7 @@ def main() -> int:
         ok("ui.cap_mode_hint_linked", 'data-i18n="cap_mode_hint_linked"' in html)
         ok("ui.cap_disk_scenario", 'id="cap-disk-scenario"' in html and 'id="cap-time-scenario"' in html)
         ok("ui.disk_total_mirrors_retention", 'id="disk_total_out"' in html and 'id="retention_total_out"' in html)
+        ok("ui.archive_days", 'id="archive_days"' in html and 'data-i18n="lbl_archive_days"' in html)
         ok("ui.policy_index_size_note", 'data-i18n="policy_index_size_note"' in html or "maxTotalDataSizeMB" in html)
         ok("ui.paths_hint", 'data-i18n="paths_hint"' in html)
         ok("ui.summaries_on_policy", 'data-panel="vol-policy"' in html and html.find('id="available_summaries_gb"') > html.find('data-panel="vol-policy"'))
@@ -996,6 +997,14 @@ def main() -> int:
         ok("ui.sources_idx_size_col", 'data-i18n="col_idx_size"' in html and 'data-tip="max_total"' in html)
         _, state_js = http_bytes("/js/state.js")
         ok("ui.wizard.steps_const", "STEPS = 4" in state_js.decode("utf-8", errors="replace"))
+        ok("ui.review_viz", 'id="review-viz"' in html)
+        _, review_js = http_bytes("/js/review-panel.js")
+        ok(
+            "ui.review_viz_render",
+            b"renderReviewViz" in review_js
+            and b"review_retention_title" in review_js
+            and b"review_storage_title" in review_js,
+        )
         _, pf_mig = http_bytes("/js/plan-form.js")
         ok("ui.snapshot_v10", b"version: 10" in pf_mig and b"ver < 10" in pf_mig)
         code_vb, budget_js = http_bytes("/js/volume-budget.js")

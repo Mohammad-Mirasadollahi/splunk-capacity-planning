@@ -43,6 +43,9 @@ func mergePlan(base, flags model.PlanInput, clusterSet, shcSet, dmaSet, dmaVal, 
 	if flags.ArchiveFrozen {
 		out.ArchiveFrozen = true
 	}
+	if flags.ArchiveDays > 0 {
+		out.ArchiveDays = flags.ArchiveDays
+	}
 	if flags.Compression > 0 {
 		out.Compression = flags.Compression
 	}

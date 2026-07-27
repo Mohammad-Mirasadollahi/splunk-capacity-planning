@@ -52,29 +52,19 @@ export function bindResultTableFind() {
   wire("node-find", "node-pick-body", "node-find-count");
 }
 
-function renderNodeDetail() {
-  const nodes = state.planNodes || [];
-  const selected = nodes.filter((n) => n.selected);
-  const body = document.getElementById("node-detail-body");
-  const wrap = document.getElementById("node-detail-wrap");
-  const empty = document.getElementById("node-detail-empty");
+function renderNodePicker() {
+  const body = document.getElementById("node-pick-body");
   if (!body) return;
-  if (!selected.length) {
-    body.innerHTML = "";
-    if (wrap) wrap.hidden = true;
-    if (empty) empty.hidden = false;
-    return;
-  }
-  if (wrap) wrap.hidden = false;
-  if (empty) empty.hidden = true;
-  body.innerHTML = selected
-    .map((n) => {
+  const nodes = state.planNodes || [];
+  body.innerHTML = nodes
+    .map((n, i) => {
       const s = formatLayerSpecs(n.layer || {});
-      const find = [n.label, n.id, n.role, n.tier, s.cpuPhys, s.cpuLog, s.ram, s.iops, s.raid, s.storage, s.disk, s.net, s.virt, s.para, s.notes]
+      const find = [n.label, n.id, n.role, n.tier, s.cpuPhys, s.cpuLog, s.ram, s.iops, s.raid, s.storage, s.disk, s.net, s.virt, s.para, s.notes, "peer", "node"]
         .filter(Boolean)
         .join(" ");
-      return `<tr data-find="${escapeAttr(find)}">
-        <td><strong>${escapeAttr(n.label)}</strong></td>
+      return `<tr data-node-idx="${i}" data-find="${escapeAttr(find)}" class="${n.selected ? "is-node-selected" : ""}">
+        <td class="col-check"><input type="checkbox" id="node-sel-${i}" name="node_sel_${i}" data-node-check ${n.selected ? "checked" : ""} aria-label="${escapeAttr(n.id)}"></td>
+        <td><span class="node-label-pill">${escapeAttr(n.label)}</span></td>
         <td><code>${escapeAttr(n.id)}</code></td>
         <td>${escapeAttr(n.role)}</td>
         <td>${escapeAttr(n.tier)}</td>
@@ -92,31 +82,8 @@ function renderNodeDetail() {
       </tr>`;
     })
     .join("");
-  bindTips(body);
-}
-
-function renderNodePicker() {
-  const body = document.getElementById("node-pick-body");
-  if (!body) return;
-  const nodes = state.planNodes || [];
-  body.innerHTML = nodes
-    .map((n, i) => {
-      const s = formatLayerSpecs(n.layer || {});
-      const find = [n.label, n.id, n.role, n.tier, s.ram, s.cpuPhys, s.disk, "peer", "node"].filter(Boolean).join(" ");
-      return `<tr data-node-idx="${i}" data-find="${escapeAttr(find)}" class="${n.selected ? "is-node-selected" : ""}">
-        <td class="col-check"><input type="checkbox" id="node-sel-${i}" name="node_sel_${i}" data-node-check ${n.selected ? "checked" : ""} aria-label="${escapeAttr(n.id)}"></td>
-        <td><span class="node-label-pill">${escapeAttr(n.label)}</span></td>
-        <td><code>${escapeAttr(n.id)}</code></td>
-        <td>${escapeAttr(n.role)}</td>
-        <td>${escapeAttr(n.tier)}</td>
-        <td>${escapeAttr(s.ram)}</td>
-        <td>${escapeAttr(s.cpuPhys)}</td>
-        <td>${escapeAttr(s.disk)}</td>
-      </tr>`;
-    })
-    .join("");
   applyTableFind("node-find", "node-pick-body", "node-find-count");
-  renderNodeDetail();
+  bindTips(body);
 }
 
 export function bindNodePicker() {
@@ -131,7 +98,6 @@ export function bindNodePicker() {
       if (!Number.isFinite(idx) || !state.planNodes?.[idx]) return;
       state.planNodes[idx].selected = !!cb.checked;
       tr.classList.toggle("is-node-selected", !!cb.checked);
-      renderNodeDetail();
     });
     body.addEventListener("click", (e) => {
       if (e.target?.closest?.("[data-node-check]")) return;
@@ -143,7 +109,6 @@ export function bindNodePicker() {
       cb.checked = !cb.checked;
       state.planNodes[idx].selected = cb.checked;
       tr.classList.toggle("is-node-selected", cb.checked);
-      renderNodeDetail();
     });
   }
   const allBtn = document.getElementById("btn-node-select-all");

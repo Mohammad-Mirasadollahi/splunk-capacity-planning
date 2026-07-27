@@ -585,6 +585,21 @@ func BuildDesign(p model.PlanInput, out model.PlanResult) model.Design {
 	d.ColdNeedGB = round1(d.ColdNeedGB)
 	d.SummariesNeedGB = round1(d.SummariesNeedGB)
 
+	if p.ArchiveFrozen && p.ArchiveDays > 0 {
+		d.ArchiveDays = p.ArchiveDays
+		dailyOnDisk := out.TotalDailyOnDiskGB
+		if dailyOnDisk <= 0 {
+			comp := out.CompressionFactor
+			if comp <= 0 {
+				comp = 0.5
+			}
+			dailyOnDisk = out.TotalDailyRawGB * comp
+		}
+		if dailyOnDisk > 0 {
+			d.ArchiveNeedGB = round1(dailyOnDisk * float64(p.ArchiveDays))
+		}
+	}
+
 	if p.AvailableHotGB > 0 {
 		ok := d.HotNeedGB <= p.AvailableHotGB
 		d.HotFits = &ok

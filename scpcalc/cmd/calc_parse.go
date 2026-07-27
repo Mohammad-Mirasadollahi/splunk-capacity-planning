@@ -164,6 +164,10 @@ func parseCalcArgs(args []string) (calcOptions, int) {
 			p.SummariesPath = s
 		case "--archive-frozen":
 			p.ArchiveFrozen = true
+		case "--archive-days":
+			if c := needInt(a, &p.ArchiveDays); c >= 0 {
+				return opts, c
+			}
 		case "--compression":
 			if c := needFloat(a, &p.Compression); c >= 0 {
 				return opts, c

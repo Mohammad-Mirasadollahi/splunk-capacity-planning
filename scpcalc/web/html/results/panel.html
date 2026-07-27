@@ -68,30 +68,12 @@
             </div>
           </div>
           <div class="view-block-body">
-            <p class="hint" data-i18n="node_table_hint">Each planning role is expanded into labeled nodes (e.g. Indexer → Peer). Select rows to see full specs below.</p>
+            <p class="hint" data-i18n="node_table_hint">Each planning role is expanded into labeled nodes (e.g. Indexer → Peer). Full hardware specs are in this table — select rows to highlight.</p>
             <div class="table-wrap modal-table">
               <table class="src-table result-table node-pick-table" id="node-pick-table">
                 <thead>
                   <tr>
                     <th class="col-check"><span class="sr-only" data-i18n="node_select">Select</span></th>
-                    <th data-i18n="node_label">Label</th>
-                    <th data-i18n="node_name">Node</th>
-                    <th data-i18n="res_role">Role</th>
-                    <th data-i18n="res_tier">Tier</th>
-                    <th>RAM</th>
-                    <th data-i18n="res_cpu_phys">CPU physical</th>
-                    <th data-i18n="res_disk">Disk/node</th>
-                  </tr>
-                </thead>
-                <tbody id="node-pick-body"></tbody>
-              </table>
-            </div>
-            <h4 class="node-detail-title" data-i18n="node_detail_title">Selected node specs</h4>
-            <p class="hint" id="node-detail-empty" data-i18n="node_detail_empty">Select one or more nodes above to show full hardware specs.</p>
-            <div class="table-wrap modal-table" id="node-detail-wrap" hidden>
-              <table class="src-table result-table" id="node-detail-table">
-                <thead>
-                  <tr>
                     <th data-i18n="node_label">Label</th>
                     <th data-i18n="node_name">Node</th>
                     <th data-i18n="res_role">Role</th>
@@ -109,7 +91,7 @@
                     <th data-i18n="res_notes">Notes</th>
                   </tr>
                 </thead>
-                <tbody id="node-detail-body"></tbody>
+                <tbody id="node-pick-body"></tbody>
               </table>
             </div>
           </div>

@@ -92,18 +92,73 @@ export function askSuggestions(design) {
 }
 
 export function updateAutoRecBadges(design) {
+  wireAutoSeedGuards();
   const sh = document.getElementById("auto-n-sh");
   const idx = document.getElementById("auto-n-idx");
   if (sh) {
     if (design?.auto_n_sh > 0) {
       sh.hidden = false;
       sh.textContent = `${t("auto_rec_prefix")} ${design.auto_n_sh}`;
+      sh.setAttribute("role", "button");
+      sh.setAttribute("tabindex", "0");
+      sh.title = t("auto_rec_apply");
+      sh.onclick = () => applyRecommendedCount("n_sh", design.auto_n_sh);
+      sh.onkeydown = (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          applyRecommendedCount("n_sh", design.auto_n_sh);
+        }
+      };
+      maybeSeedCount("n_sh", design.auto_n_sh);
     } else sh.hidden = true;
   }
   if (idx) {
     if (design?.auto_n_idx > 0) {
       idx.hidden = false;
       idx.textContent = `${t("auto_rec_prefix")} ${design.auto_n_idx}`;
+      idx.setAttribute("role", "button");
+      idx.setAttribute("tabindex", "0");
+      idx.title = t("auto_rec_apply");
+      idx.onclick = () => applyRecommendedCount("n_idx", design.auto_n_idx);
+      idx.onkeydown = (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          applyRecommendedCount("n_idx", design.auto_n_idx);
+        }
+      };
+      maybeSeedCount("n_idx", design.auto_n_idx);
     } else idx.hidden = true;
+  }
+}
+
+/** Put recommended count into the field when it is still on auto (0) or last seeded value. */
+function maybeSeedCount(inputName, recommended) {
+  const el = document.querySelector(`input[name="${inputName}"]`);
+  if (!el || !(recommended > 0)) return;
+  const cur = Number(el.value);
+  const stamped = Number(el.dataset.autoSeeded || 0);
+  if (!(cur > 0) || (stamped > 0 && cur === stamped)) {
+    applyRecommendedCount(inputName, recommended, { silent: true });
+  }
+}
+
+function applyRecommendedCount(inputName, recommended, { silent = false } = {}) {
+  const el = document.querySelector(`input[name="${inputName}"]`);
+  if (!el || !(recommended > 0)) return;
+  const next = String(recommended);
+  if (el.value === next && el.dataset.autoSeeded === next) return;
+  el.value = next;
+  el.dataset.autoSeeded = next;
+  if (!silent) el.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+function wireAutoSeedGuards() {
+  for (const name of ["n_idx", "n_sh"]) {
+    const el = document.querySelector(`input[name="${name}"]`);
+    if (!el || el.dataset.autoSeedGuard === "1") continue;
+    el.dataset.autoSeedGuard = "1";
+    el.addEventListener("input", () => {
+      delete el.dataset.autoSeeded;
+    });
   }
 }

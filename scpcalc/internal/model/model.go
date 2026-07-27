@@ -67,6 +67,8 @@ type PlanInput struct {
 
 	// Archive frozen buckets instead of delete (docs/en/05 — coldToFrozenDir optional).
 	ArchiveFrozen bool `json:"archive_frozen"`
+	// ArchiveDays is how long frozen/archived data is kept after freeze (capacity planning; 0 = not sized).
+	ArchiveDays int `json:"archive_days"`
 	// EnableDMA: nil = default (true when HasES). Emits tstatsHomePath + DMA sizing on summaries.
 	EnableDMA *bool  `json:"enable_dma,omitempty"`
 	DMAPct    float64 `json:"dma_pct"` // fraction of searchable on-disk for DMA estimate; default 0.10
@@ -169,6 +171,8 @@ type Design struct {
 	HotNeedGB            float64     `json:"hot_need_gb"`
 	ColdNeedGB           float64     `json:"cold_need_gb"`
 	SummariesNeedGB      float64     `json:"summaries_need_gb"`
+	ArchiveNeedGB        float64     `json:"archive_need_gb,omitempty"`
+	ArchiveDays          int         `json:"archive_days,omitempty"`
 	HotAvailableGB       float64     `json:"hot_available_gb,omitempty"`
 	ColdAvailableGB      float64     `json:"cold_available_gb,omitempty"`
 	SummariesAvailableGB float64     `json:"summaries_available_gb,omitempty"`

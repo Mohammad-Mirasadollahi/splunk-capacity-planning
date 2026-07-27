@@ -39,6 +39,7 @@ Retention & paths:
   --summary-retention-days INT
   --hot-path --cold-path --frozen-path --summaries-path STRING
   --archive-frozen         coldToFrozenDir instead of delete
+  --archive-days INT       days to keep data in archive after freeze (with --archive-frozen)
   --compression FLOAT      measured C; 0 = derive from RF/SF
 
 Topology (users × searches × volume → N_SH / N_IDX):

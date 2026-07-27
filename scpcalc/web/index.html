@@ -124,30 +124,12 @@
             </div>
           </div>
           <div class="view-block-body">
-            <p class="hint" data-i18n="node_table_hint">Each planning role is expanded into labeled nodes (e.g. Indexer → Peer). Select rows to see full specs below.</p>
+            <p class="hint" data-i18n="node_table_hint">Each planning role is expanded into labeled nodes (e.g. Indexer → Peer). Full hardware specs are in this table — select rows to highlight.</p>
             <div class="table-wrap modal-table">
               <table class="src-table result-table node-pick-table" id="node-pick-table">
                 <thead>
                   <tr>
                     <th class="col-check"><span class="sr-only" data-i18n="node_select">Select</span></th>
-                    <th data-i18n="node_label">Label</th>
-                    <th data-i18n="node_name">Node</th>
-                    <th data-i18n="res_role">Role</th>
-                    <th data-i18n="res_tier">Tier</th>
-                    <th>RAM</th>
-                    <th data-i18n="res_cpu_phys">CPU physical</th>
-                    <th data-i18n="res_disk">Disk/node</th>
-                  </tr>
-                </thead>
-                <tbody id="node-pick-body"></tbody>
-              </table>
-            </div>
-            <h4 class="node-detail-title" data-i18n="node_detail_title">Selected node specs</h4>
-            <p class="hint" id="node-detail-empty" data-i18n="node_detail_empty">Select one or more nodes above to show full hardware specs.</p>
-            <div class="table-wrap modal-table" id="node-detail-wrap" hidden>
-              <table class="src-table result-table" id="node-detail-table">
-                <thead>
-                  <tr>
                     <th data-i18n="node_label">Label</th>
                     <th data-i18n="node_name">Node</th>
                     <th data-i18n="res_role">Role</th>
@@ -165,7 +147,7 @@
                     <th data-i18n="res_notes">Notes</th>
                   </tr>
                 </thead>
-                <tbody id="node-detail-body"></tbody>
+                <tbody id="node-pick-body"></tbody>
               </table>
             </div>
           </div>
@@ -465,6 +447,10 @@
                     <label class="field check glass-chip index-volume-freeze"><input name="archive_frozen" type="checkbox" id="archive_frozen" checked> <span class="tip-mark" data-tip="archive_frozen" data-i18n="lbl_archive">Archive on freeze</span></label>
                   </div>
                   <label class="field" data-depends-on="archive_frozen" hidden>
+                    <span class="field-copy"><span class="field-label tip-mark" data-tip="archive_days" data-i18n="lbl_archive_days">Days kept in archive</span><span class="field-hint" data-i18n="hint_archive_days">How long frozen buckets stay in the archive path after freeze (capacity planning)</span></span>
+                    <input name="archive_days" id="archive_days" type="number" value="90" min="0" step="1">
+                  </label>
+                  <label class="field" data-depends-on="archive_frozen" hidden>
                     <span class="field-copy"><span class="field-label tip-mark" data-tip="frozen_path" data-i18n="lbl_frozen_path">Frozen / archive path</span><span class="field-hint" data-i18n="hint_frozen_path">[volume:frozen] path / coldToFrozenDir</span></span>
                     <input name="frozen_path" id="frozen_path" type="text" value="/frozen">
                   </label>
@@ -601,7 +587,7 @@
                   <input name="sf" id="sf" type="number" value="2" min="1">
                 </label>
                 <label class="field">
-                  <span class="field-copy"><span class="field-label tip-mark" data-tip="n_idx" data-i18n="lbl_n_idx">Number of indexers</span><span class="field-hint" data-i18n="hint_n_idx">Leave 0 to calculate automatically</span></span>
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="n_idx" data-i18n="lbl_n_idx">Number of indexers</span><span class="field-hint" data-i18n="hint_n_idx">Defaults to the recommended count — change it if you want a different number</span></span>
                   <input name="n_idx" id="n_idx" type="number" value="0" min="0" placeholder="0">
                   <span class="auto-rec" id="auto-n-idx" hidden></span>
                 </label>
@@ -627,7 +613,7 @@
                   <input name="saved_searches" id="saved_searches" type="number" value="20" min="0" required>
                 </label>
                 <label class="field">
-                  <span class="field-copy"><span class="field-label tip-mark" data-tip="n_sh" data-i18n="lbl_n_sh">Number of search heads</span><span class="field-hint" data-i18n="hint_n_sh">Leave 0 to calculate from users × volume × searches</span></span>
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="n_sh" data-i18n="lbl_n_sh">Number of search heads</span><span class="field-hint" data-i18n="hint_n_sh">Defaults to the recommended count from users × volume × searches — change if needed</span></span>
                   <input name="n_sh" id="n_sh" type="number" value="0" min="0" placeholder="0">
                   <span class="auto-rec" id="auto-n-sh" hidden></span>
                   <span class="field-hint shc-n-sh-hint" id="shc-n-sh-hint" hidden data-i18n="hint_shc_n_sh">With SHC: use 1 (single-member interim) or ≥3 — Splunk does not support 2 members for HA.</span>
@@ -667,6 +653,7 @@
           <h3 data-i18n="step_review">Review & calculate</h3>
           <p class="hint" data-i18n="review_hint">Everything from earlier steps is summarized below, with a live preview (metrics + charts). Edit a previous step if needed, then Calculate.</p>
           <p id="review-preview-status" class="hint review-preview-status" hidden></p>
+          <div id="review-viz" class="review-viz" hidden></div>
           <div id="review-summary" class="review-summary"></div>
           <h4 class="review-subhead" data-i18n="review_metrics_title">Preview metrics</h4>
           <div id="review-metrics" class="metrics review-metrics"></div>
