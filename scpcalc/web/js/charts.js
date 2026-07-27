@@ -208,10 +208,16 @@ export function ensureChartCards(hostId = "charts-inline", idPrefix = "charts-in
     sel.dataset.bound = "1";
     sel.addEventListener("change", () => {
       const id = sel.getAttribute("data-chart-type");
-      const prefix = sel.getAttribute("data-chart-host") || "charts-inline";
       chartTypes[id] = sel.value;
-      if (state.lastPlan) renderAllCharts(state.lastPlan, { hostId, idPrefix: prefix });
-      if (state.reviewPreview) renderAllCharts(state.reviewPreview, { hostId: "review-charts", idPrefix: "review" });
+      if (state.lastPlan) {
+        renderAllCharts(state.lastPlan, { hostId: "charts-inline", idPrefix: "charts-inline" });
+        if (document.getElementById("results-charts")) {
+          renderAllCharts(state.lastPlan, { hostId: "results-charts", idPrefix: "results" });
+        }
+      }
+      if (state.reviewPreview) {
+        renderAllCharts(state.reviewPreview, { hostId: "review-charts", idPrefix: "review" });
+      }
     });
   });
 }

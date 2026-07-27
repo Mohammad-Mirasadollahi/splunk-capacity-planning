@@ -22,7 +22,11 @@
       </div>
 
       <div class="tab-panel is-active" data-panel="overview" role="tabpanel">
-        <div id="metrics" class="metrics"></div>
+        <div id="results-viz" class="review-viz results-viz" hidden></div>
+        <h4 class="review-subhead" data-i18n="review_metrics_title">Preview metrics</h4>
+        <div id="metrics" class="metrics-sections"></div>
+        <h4 class="review-subhead" data-i18n="review_charts_title">Preview charts</h4>
+        <div id="results-charts" class="charts-grid"></div>
       </div>
 
       <div class="tab-panel" data-panel="charts" role="tabpanel" hidden>
@@ -68,7 +72,7 @@
             </div>
           </div>
           <div class="view-block-body">
-            <p class="hint" data-i18n="node_table_hint">Each planning role is expanded into labeled nodes (e.g. Indexer → Peer). Full hardware specs are in this table — select rows to highlight.</p>
+            <p class="hint" data-i18n="node_table_hint">Each planning role is expanded into labeled nodes (e.g. Indexer → Peer) with full hardware specs — this is the single hardware table. Select rows to highlight.</p>
             <div class="table-wrap modal-table">
               <table class="src-table result-table node-pick-table" id="node-pick-table">
                 <thead>
@@ -92,50 +96,6 @@
                   </tr>
                 </thead>
                 <tbody id="node-pick-body"></tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <section class="view-block" data-view-block="res-table">
-          <div class="view-block-bar">
-            <div class="view-block-bar-start">
-              <h3 class="view-block-title" data-i18n="res_table_title">Hardware by role</h3>
-              <label class="table-find">
-                <span data-i18n="table_find">Find in table</span>
-                <input type="search" id="res-find" name="res_find" data-i18n-placeholder="table_find_ph" placeholder="role, tier, RAM…" autocomplete="off">
-              </label>
-              <span class="table-find-count" id="res-find-count" hidden></span>
-            </div>
-            <div class="view-block-actions">
-              <span class="view-block-status" data-view-status hidden></span>
-              <button type="button" class="btn-ghost" data-view-copy data-i18n="copy">Copy</button>
-              <button type="button" class="btn-ghost" data-view-expand data-i18n="fullscreen">Fullscreen</button>
-              <button type="button" class="btn-ghost" data-view-collapse hidden data-i18n="exit_fullscreen">Exit fullscreen</button>
-            </div>
-          </div>
-          <div class="view-block-body">
-            <div class="table-wrap modal-table">
-              <table class="src-table result-table" id="res-table">
-                <thead>
-                  <tr>
-                    <th data-i18n="res_role">Role</th>
-                    <th>×</th>
-                    <th data-i18n="res_tier">Tier</th>
-                    <th data-i18n="res_cpu_phys">CPU physical</th>
-                    <th data-i18n="res_cpu_logical">CPU logical / vCPU</th>
-                    <th>RAM</th>
-                    <th data-i18n="res_iops">IOPS</th>
-                    <th data-i18n="res_raid">RAID</th>
-                    <th data-i18n="res_storage">Storage</th>
-                    <th data-i18n="res_disk">Disk/node</th>
-                    <th data-i18n="res_network">Network</th>
-                    <th data-i18n="res_virt">Virtualization</th>
-                    <th data-i18n="res_parallel">Splunk parallelization</th>
-                    <th data-i18n="res_notes">Notes</th>
-                  </tr>
-                </thead>
-                <tbody id="res-body"></tbody>
               </table>
             </div>
           </div>

@@ -19,7 +19,14 @@ import {
 } from "./plan-form.js";
 import { runPlan } from "./engine.js";
 import { renderAllCharts } from "./charts.js";
-import { formatSizeGB, planSourceDiskNeeds } from "./source-sizing.js";
+import { formatSizeGB } from "./source-sizing.js";
+import {
+  buildMetricSections,
+  renderMetricSectionsHTML,
+  renderRetentionStorageHTML,
+  renderIndexRowsHTML,
+  indexesTableHeaderHTML,
+} from "./plan-display.js";
 
 let previewSeq = 0;
 let previewTimer = 0;
@@ -46,115 +53,11 @@ function kv(label, value) {
   return `<li><span>${escapeAttr(label)}</span><strong>${value}</strong></li>`;
 }
 
-/** Format GB for Storage Required (matches sizing-tool style: 482.8 GB / 1.9 TB / 0.0). */
-function formatStorageAmt(gb) {
-  const n = Number(gb);
-  if (!Number.isFinite(n) || n <= 0) return "0.0";
-  if (n >= 1024) return `${(n / 1024).toFixed(1)} TB`;
-  return `${n.toFixed(1)} GB`;
-}
-
-function retentionSegments(g) {
-  const hot = Math.max(0, Math.floor(numOr0(g.hot_warm_days)));
-  const ret = Math.max(0, Math.floor(numOr0(g.retention_days)));
-  const cold = Math.max(0, ret - hot);
-  const archived = g.archive_frozen ? Math.max(0, Math.floor(numOr0(g.archive_days))) : 0;
-  const total = hot + cold + archived;
-  return { hot, cold, archived, total: total || ret };
-}
-
 function renderReviewViz(data) {
   const host = document.getElementById("review-viz");
   if (!host) return;
-  const g = collectGlobals();
-  const seg = retentionSegments(g);
-  const d = data?.design || {};
-  const nIdx = Math.max(1, Math.floor(numOr0(d.n_idx) || numOr0(data?.indexer_peers) || 1));
-
-  const hotAll = numOr0(d.hot_need_gb);
-  const coldAll = numOr0(d.cold_need_gb);
-  const archAll = g.archive_frozen ? numOr0(d.archive_need_gb) : 0;
-  const totalAll = hotAll + coldAll + archAll;
-  const hotPer = hotAll / nIdx;
-  const coldPer = coldAll / nIdx;
-  const archPer = archAll / nIdx;
-  const totalPer = totalAll / nIdx;
-
-  const pct = (days) => (seg.total > 0 ? (100 * days) / seg.total : 0);
-  const hotPct = pct(seg.hot);
-  const coldPct = pct(seg.cold);
-  const archPct = pct(seg.archived);
-
   host.hidden = false;
-  host.innerHTML = `
-    <section class="review-retention" aria-label="${escapeAttr(t("review_retention_title"))}">
-      <h4 data-i18n="review_retention_title">${t("review_retention_title")}</h4>
-      <div class="retention-bar-row">
-        <div class="retention-bar" role="img" aria-label="${escapeAttr(
-          t("review_retention_total").replace("{n}", String(seg.total))
-        )}">
-          <span class="retention-seg retention-seg--hot" style="flex-grow:${seg.hot}" title="${escapeAttr(
-            t("review_tier_hot")
-          )}: ${seg.hot}d"></span>
-          <span class="retention-seg retention-seg--cold" style="flex-grow:${seg.cold}" title="${escapeAttr(
-            t("review_tier_cold")
-          )}: ${seg.cold}d"></span>
-          <span class="retention-seg retention-seg--archived" style="flex-grow:${Math.max(
-            seg.archived,
-            0
-          )}" title="${escapeAttr(t("review_tier_archived"))}: ${seg.archived}d"></span>
-        </div>
-        <div class="retention-total">${t("review_retention_total").replace("{n}", String(seg.total))}</div>
-      </div>
-      <ul class="retention-legend">
-        <li><i class="retention-swatch retention-swatch--hot" aria-hidden="true"></i><span>${t("review_tier_hot")}${
-          hotPct > 0 ? ` · ${seg.hot}d` : ""
-        }</span></li>
-        <li><i class="retention-swatch retention-swatch--cold" aria-hidden="true"></i><span>${t("review_tier_cold")}${
-          coldPct > 0 ? ` · ${seg.cold}d` : ""
-        }</span></li>
-        <li><i class="retention-swatch retention-swatch--archived" aria-hidden="true"></i><span>${t(
-          "review_tier_archived"
-        )}${archPct > 0 ? ` · ${seg.archived}d` : ""}</span></li>
-      </ul>
-    </section>
-    <section class="review-storage" aria-label="${escapeAttr(t("review_storage_title"))}">
-      <h4 data-i18n="review_storage_title">${t("review_storage_title")}</h4>
-      <p class="hint review-storage-hint" data-i18n="review_storage_hint">${t("review_storage_hint")}</p>
-      <div class="review-storage-table-wrap">
-        <table class="review-storage-table">
-          <thead>
-            <tr>
-              <th scope="col"></th>
-              <th scope="col">${t("review_per_indexer")}</th>
-              <th scope="col">${t("review_all_indexers")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row">${t("review_tier_hot")}</th>
-              <td>${formatStorageAmt(hotPer)}</td>
-              <td>${formatStorageAmt(hotAll)}</td>
-            </tr>
-            <tr>
-              <th scope="row">${t("review_tier_cold")}</th>
-              <td>${formatStorageAmt(coldPer)}</td>
-              <td>${formatStorageAmt(coldAll)}</td>
-            </tr>
-            <tr>
-              <th scope="row">${t("review_tier_archived")}</th>
-              <td>${formatStorageAmt(archPer)}</td>
-              <td>${formatStorageAmt(archAll)}</td>
-            </tr>
-            <tr class="review-storage-total">
-              <th scope="row">${t("review_total")}</th>
-              <td>${formatStorageAmt(totalPer)}</td>
-              <td>${formatStorageAmt(totalAll)}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>`;
+  host.innerHTML = renderRetentionStorageHTML(data, collectGlobals());
 }
 
 function clearReviewViz() {
@@ -169,8 +72,8 @@ export function fillReviewSummary() {
   if (!host) return;
   const g = collectGlobals();
   const enabled = state.rows.filter((r) => r.enabled);
-  const sizedPlan = planSourceDiskNeeds(state.rows, g);
-  const sizedByRow = new Map(sizedPlan.rows.map((s) => [s.row, s]));
+  const planIndexes = state.reviewPreview?.indexes || [];
+  const byIndex = new Map(planIndexes.map((ix) => [String(ix.index_name || ""), ix]));
   let srcSum = 0;
   let idxTotalGB = 0;
   const archiveDays = g.archive_frozen ? Math.max(0, Math.floor(numOr0(g.archive_days))) : 0;
@@ -200,8 +103,8 @@ export function fillReviewSummary() {
       const archiveTxt = g.archive_frozen
         ? t("review_days").replace("{n}", String(archiveDays))
         : yn(false);
-      const sized = sizedByRow.get(r);
-      const idxGB = sized?.maxTotalGB > 0 ? sized.maxTotalGB : 0;
+      const ix = byIndex.get(String(r.index_name || ""));
+      const idxGB = ix?.max_total_data_size_mb > 0 ? Number(ix.max_total_data_size_mb) / 1024 : 0;
       if (idxGB > 0) idxTotalGB += idxGB;
       const idxTotal =
         idxGB > 0 ? `${formatSizeGB(idxGB)} GB` : "—";
@@ -309,50 +212,28 @@ export function fillReviewSummary() {
 function renderPreviewMetrics(data) {
   const host = document.getElementById("review-metrics");
   if (!host) return;
-  const g = collectGlobals();
-  const d = data.design || {};
-  const nIdx = Math.max(1, Math.floor(numOr0(d.n_idx) || numOr0(data?.indexer_peers) || 1));
-  const hotAll = numOr0(d.hot_need_gb);
-  const coldAll = numOr0(d.cold_need_gb);
-  const archAll = g.archive_frozen ? numOr0(d.archive_need_gb) : 0;
-  const rows = [
-    [t("review_m_daily_raw"), data.total_daily_raw_gb],
-    [t("review_m_compression"), data.compression_factor],
-    [t("review_m_daily_ondisk"), data.total_daily_on_disk_gb],
-    [t("review_m_searchable_tb"), data.total_searchable_tb],
-    [t("review_m_auto_sh"), d.auto_n_sh || d.n_sh],
-    [t("review_m_auto_idx"), d.auto_n_idx || d.n_idx],
-    [t("lbl_n_sh"), d.n_sh],
-    [t("lbl_n_idx"), nIdx],
-    [t("lbl_need_hot"), formatStorageAmt(hotAll)],
-    [t("lbl_need_cold"), formatStorageAmt(coldAll)],
-  ];
-  if (g.archive_frozen) {
-    rows.push([t("review_m_need_archive"), formatStorageAmt(archAll)]);
+  host.innerHTML = renderMetricSectionsHTML(buildMetricSections(data, collectGlobals()));
+}
+
+function renderPreviewIndexes(data) {
+  const host = document.getElementById("review-indexes");
+  if (!host) return;
+  const indexes = data?.indexes || [];
+  if (!indexes.length) {
+    host.hidden = true;
+    host.innerHTML = "";
+    return;
   }
-  rows.push(
-    [t("review_m_need_sum"), d.summaries_need_gb != null ? formatStorageAmt(d.summaries_need_gb) : "—"],
-    [t("review_m_hot_per_idx"), formatStorageAmt(hotAll / nIdx)],
-    [t("review_m_cold_per_idx"), formatStorageAmt(coldAll / nIdx)],
-    [t("review_m_archive_per_idx"), g.archive_frozen ? formatStorageAmt(archAll / nIdx) : "—"]
-  );
-  if (d.cluster_manager) rows.push([t("review_m_cm"), 1]);
-  if (d.shc_deployer) rows.push([t("review_m_deployer"), 1]);
-  if (d.max_daily_gb_from_disk) rows.push([t("review_m_max_daily_disk"), d.max_daily_gb_from_disk]);
-  host.innerHTML = rows
-    .map(
-      ([k, v]) =>
-        `<article class="metric-card"><span class="k">${escapeAttr(k)}</span><span class="v">${v ?? "—"}</span></article>`
-    )
-    .join("");
-  if (data.warnings?.length) {
-    host.innerHTML += data.warnings
-      .map(
-        (w) =>
-          `<article class="metric-card warn"><span class="k">${escapeAttr(t("review_m_warning"))}</span><span class="v">${escapeAttr(w)}</span></article>`
-      )
-      .join("");
-  }
+  host.hidden = false;
+  host.innerHTML = `
+    <h4 class="review-subhead">${t("ix_table_title")}</h4>
+    <p class="hint">${t("review_indexes_hint")}</p>
+    <div class="table-wrap">
+      <table class="src-table review-src-table review-ix-table">
+        <thead>${indexesTableHeaderHTML()}</thead>
+        <tbody>${renderIndexRowsHTML(indexes)}</tbody>
+      </table>
+    </div>`;
 }
 
 export async function loadReviewPreview() {
@@ -369,8 +250,10 @@ export async function loadReviewPreview() {
     const data = await runPlan(buildPlanBody());
     if (seq !== previewSeq) return;
     state.reviewPreview = data;
+    fillReviewSummary();
     renderReviewViz(data);
     renderPreviewMetrics(data);
+    renderPreviewIndexes(data);
     renderAllCharts(data, { hostId: "review-charts", idPrefix: "review" });
     if (status) {
       status.textContent = t("review_preview_ready");
@@ -382,6 +265,8 @@ export async function loadReviewPreview() {
     clearReviewViz();
     const host = document.getElementById("review-metrics");
     if (host) host.innerHTML = "";
+    const ix = document.getElementById("review-indexes");
+    if (ix) { ix.hidden = true; ix.innerHTML = ""; }
     if (status) {
       status.textContent = t("review_preview_error");
     }

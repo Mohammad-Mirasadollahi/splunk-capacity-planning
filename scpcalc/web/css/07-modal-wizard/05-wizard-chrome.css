@@ -110,3 +110,10 @@
   gap: 0.5rem;
   align-items: center;
 }
+
+.wiz-foot-right > [hidden],
+#btn-wiz-next[hidden],
+#btn-wiz-calc[hidden],
+#btn-wiz-back[hidden] {
+  display: none !important;
+}

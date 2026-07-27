@@ -44,7 +44,7 @@ export const results_charts = {
   node_select: "Select",
   node_select_all: "Select all",
   node_select_none: "Clear",
-  node_table_hint: "Each planning role is expanded into labeled nodes (e.g. Indexer → Peer). Full hardware specs are in this table — select rows to highlight.",
+  node_table_hint: "Each planning role is expanded into labeled nodes (e.g. Indexer → Peer) with full hardware specs — this is the single hardware table. Select rows to highlight.",
   node_table_title: "Nodes",
   res_cpu_logical: "CPU logical / vCPU",
   res_cpu_phys: "CPU physical",

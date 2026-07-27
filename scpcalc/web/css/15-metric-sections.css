@@ -1,0 +1,35 @@
+/* Sectioned metrics (Review Preview + Results Overview) */
+
+.metrics-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 0.35rem 0 0.75rem;
+}
+
+.metric-section-title {
+  margin: 0 0 0.45rem;
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.metric-section-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
+  gap: 0.55rem 0.65rem;
+}
+
+.metric-section .metric-card.wide {
+  grid-column: 1 / -1;
+}
+
+.review-indexes {
+  margin: 0.75rem 0 0.35rem;
+}
+
+.results-viz {
+  margin-bottom: 0.85rem;
+}

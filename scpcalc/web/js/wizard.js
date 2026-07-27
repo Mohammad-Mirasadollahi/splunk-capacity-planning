@@ -44,8 +44,15 @@ export function showStep(n) {
     btnBack.disabled = state.step === 0;
   }
   const last = state.step === STEPS - 1;
-  if (btnNext) btnNext.hidden = last;
-  if (btnCalc) btnCalc.hidden = !last;
+  if (btnNext) {
+    btnNext.hidden = last;
+    btnNext.disabled = last;
+    btnNext.setAttribute("aria-hidden", last ? "true" : "false");
+  }
+  if (btnCalc) {
+    btnCalc.hidden = !last;
+    btnCalc.disabled = !last;
+  }
   refreshWizardContext(state.step, { remountSources: state.step === 1 });
   if (last) {
     fillReview();

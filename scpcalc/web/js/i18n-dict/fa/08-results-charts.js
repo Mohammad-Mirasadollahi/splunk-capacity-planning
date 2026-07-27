@@ -44,7 +44,7 @@ export const results_charts = {
   node_select: "انتخاب",
   node_select_all: "انتخاب همه",
   node_select_none: "پاک کردن",
-  node_table_hint: "هر نقش به نودهای برچسب‌دار باز می‌شود (مثلاً Indexer → Peer). مشخصات کامل سخت‌افزار در همین جدول است — ردیف را برای برجسته شدن انتخاب کنید.",
+  node_table_hint: "هر نقش به نودهای برچسب‌دار باز می‌شود (مثلاً Indexer → Peer) با مشخصات کامل سخت‌افزار — همین جدول سخت‌افزار واحد است. ردیف را برای برجسته شدن انتخاب کنید.",
   node_table_title: "نودها",
   res_cpu_logical: "CPU منطقی / vCPU",
   res_cpu_phys: "CPU فیزیکی",
