@@ -589,7 +589,6 @@
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="n_idx" data-i18n="lbl_n_idx">Number of indexers</span><span class="field-hint" data-i18n="hint_n_idx">Cluster off: how many independent indexers (min 1). Cluster on: defaults to 3, minimum 2 peers</span></span>
                   <input name="n_idx" id="n_idx" type="number" value="1" min="1" placeholder="1">
-                  <span class="auto-rec" id="auto-n-idx" hidden></span>
                 </label>
               </div>
             </section>
@@ -615,7 +614,6 @@
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="n_sh" data-i18n="lbl_n_sh">Number of search heads</span><span class="field-hint" data-i18n="hint_n_sh">Cluster off: independent search heads (min 1), SHC optional. SHC on: defaults to 1; never 0; use 1 or ≥3 (not 2)</span></span>
                   <input name="n_sh" id="n_sh" type="number" value="1" min="1" placeholder="1">
-                  <span class="auto-rec" id="auto-n-sh" hidden></span>
                   <span class="field-hint shc-n-sh-hint" id="shc-n-sh-hint" hidden data-i18n="hint_shc_n_sh">With SHC: use 1 (single-member interim) or ≥3 — Splunk does not support 2 members for HA.</span>
                 </label>
               </div>

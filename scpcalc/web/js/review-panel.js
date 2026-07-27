@@ -173,6 +173,7 @@ export function fillReviewSummary() {
   const sizedByRow = new Map(sizedPlan.rows.map((s) => [s.row, s]));
   let srcSum = 0;
   let idxTotalGB = 0;
+  const archiveDays = g.archive_frozen ? Math.max(0, Math.floor(numOr0(g.archive_days))) : 0;
   const srcRows = enabled
     .map((r) => {
       const bytes = resolveEventBytes(r, state.rows);
@@ -182,14 +183,23 @@ export function fillReviewSummary() {
       if (!(eps > 0) && gb > 0) eps = epsFromDailyGB(gb, bytes);
       srcSum += gb;
       const vol = `${formatDailyGB(gb)} GB/d = ${formatEPS(eps)} EPS`;
+      const retDays =
+        Number(r.retention_days) > 0
+          ? Math.floor(Number(r.retention_days))
+          : Math.max(0, Math.floor(numOr0(g.retention_days)));
       const ret =
         Number(r.retention_days) > 0
-          ? t("review_days").replace("{n}", String(r.retention_days))
-          : t("review_days_global").replace("{n}", String(g.retention_days));
+          ? t("review_days").replace("{n}", String(retDays))
+          : t("review_days_global").replace("{n}", String(retDays));
       const hw =
         Number(r.hot_warm_days) > 0
           ? t("review_days").replace("{n}", String(r.hot_warm_days))
           : t("review_days_global").replace("{n}", String(g.hot_warm_days));
+      const totalTimeDays = retDays + archiveDays;
+      const totalTime = t("review_days").replace("{n}", String(totalTimeDays));
+      const archiveTxt = g.archive_frozen
+        ? t("review_days").replace("{n}", String(archiveDays))
+        : yn(false);
       const sized = sizedByRow.get(r);
       const idxGB = sized?.maxTotalGB > 0 ? sized.maxTotalGB : 0;
       if (idxGB > 0) idxTotalGB += idxGB;
@@ -202,6 +212,8 @@ export function fillReviewSummary() {
         <td>${r.event_bytes}</td>
         <td>${escapeAttr(ret)}</td>
         <td>${escapeAttr(hw)}</td>
+        <td>${escapeAttr(totalTime)}</td>
+        <td>${escapeAttr(archiveTxt)}</td>
         <td>${r.enable_summary ? yn(true) : "—"}</td>
         <td class="review-src-idx-total">${escapeAttr(idxTotal)}</td>
       </tr>`;
@@ -211,7 +223,7 @@ export function fillReviewSummary() {
   const srcFooter =
     enabled.length > 0
       ? `<tr class="review-src-total">
-          <th scope="row" colspan="7">${escapeAttr(t("review_total"))}</th>
+          <th scope="row" colspan="9">${escapeAttr(t("review_total"))}</th>
           <td class="review-src-idx-total">${
             idxTotalGB > 0 ? `${formatSizeGB(idxTotalGB)} GB` : "—"
           }</td>
@@ -281,11 +293,13 @@ export function fillReviewSummary() {
               <th>${t("col_event_bytes")}</th>
               <th>${t("col_ret")}</th>
               <th>${t("col_hw")}</th>
+              <th>${t("col_total_time")}</th>
+              <th>${t("col_archive")}</th>
               <th>${t("col_summary")}</th>
               <th title="${escapeAttr(t("ix_tip_max_total"))}">${t("review_total")}</th>
             </tr>
           </thead>
-          <tbody>${srcRows || `<tr><td colspan="8">${t("review_no_sources")}</td></tr>`}</tbody>
+          <tbody>${srcRows || `<tr><td colspan="10">${t("review_no_sources")}</td></tr>`}</tbody>
           ${srcFooter ? `<tfoot>${srcFooter}</tfoot>` : ""}
         </table>
       </div>

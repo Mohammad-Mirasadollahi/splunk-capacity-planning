@@ -1,5 +1,7 @@
 /**
- * Replace native number spinners with glass-styled +/- controls.
+ * Replace native number spinners with in-frame +/- controls.
+ * DOM: .num-stepper > (input.num-stepper-input + .num-stepper-btns)
+ * Layout is CSS flex (see 14-number-stepper.css) — never absolute positioning.
  */
 function stepValue(input, dir) {
   const step = Number(input.step) > 0 ? Number(input.step) : 1;
@@ -8,7 +10,6 @@ function stepValue(input, dir) {
   const raw = input.value === "" ? 0 : Number(input.value);
   const base = Number.isFinite(raw) ? raw : 0;
   let next = base + dir * step;
-  // Avoid float noise for integer-ish steps
   if (Number.isInteger(step) || step >= 1) next = Math.round(next / step) * step;
   else next = Math.round(next * 1e6) / 1e6;
   next = Math.min(max, Math.max(min, next));
@@ -17,13 +18,27 @@ function stepValue(input, dir) {
   input.dispatchEvent(new Event("change", { bubbles: true }));
 }
 
+function syncStepperDisabled(wrap, input) {
+  if (!wrap || !input) return;
+  const off = !!(input.disabled || input.readOnly);
+  wrap.classList.toggle("is-disabled", off);
+  wrap.querySelectorAll(".num-step-btn").forEach((b) => {
+    b.disabled = off;
+  });
+}
+
 export function enhanceNumberInput(input) {
   if (!input || input.type !== "number" || input.dataset.stepper === "1") return;
   if (input.closest(".num-stepper")) {
     input.dataset.stepper = "1";
+    input.classList.add("num-stepper-input");
     return;
   }
   input.dataset.stepper = "1";
+  input.classList.add("num-stepper-input");
+  // Extra belt-and-suspenders against native spinners in WebKit/Blink
+  input.style.MozAppearance = "textfield";
+  input.style.appearance = "textfield";
 
   const wrap = document.createElement("div");
   wrap.className = "num-stepper";
@@ -58,12 +73,16 @@ export function enhanceNumberInput(input) {
   btns.appendChild(mkBtn(1, "Increase"));
   btns.appendChild(mkBtn(-1, "Decrease"));
   wrap.appendChild(btns);
+  syncStepperDisabled(wrap, input);
+
+  // Keep +/- in sync if script toggles disabled on the input
+  const mo = new MutationObserver(() => syncStepperDisabled(wrap, input));
+  mo.observe(input, { attributes: true, attributeFilter: ["disabled", "readonly"] });
 }
 
 export function bindNumberSteppers(root = document) {
   root.querySelectorAll('input[type="number"]').forEach(enhanceNumberInput);
 
-  // Sources table rows are re-rendered — observe tbody additions
   const bodies = root.querySelectorAll("#src-body, #src-ret-body, .src-table tbody");
   bodies.forEach((tbody) => {
     if (tbody.dataset.stepperObs === "1") return;

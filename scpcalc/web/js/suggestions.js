@@ -1,6 +1,5 @@
 import { openModal, closeModal } from "./modal.js";
 import { syncClusterFields, syncToggleUI } from "./plan-form.js";
-import { t } from "./i18n.js";
 import { escapeAttr } from "./util.js";
 
 const suggestModal = () => document.getElementById("suggest-modal");
@@ -93,42 +92,27 @@ export function askSuggestions(design) {
 
 export function updateAutoRecBadges(design) {
   wireAutoSeedGuards();
+  // No Recommended badges under n_idx / n_sh — seed the field only.
   const sh = document.getElementById("auto-n-sh");
   const idx = document.getElementById("auto-n-idx");
   if (sh) {
-    if (design?.auto_n_sh > 0) {
-      sh.hidden = false;
-      sh.textContent = `${t("auto_rec_prefix")} ${design.auto_n_sh}`;
-      sh.setAttribute("role", "button");
-      sh.setAttribute("tabindex", "0");
-      sh.title = t("auto_rec_apply");
-      sh.onclick = () => applyRecommendedCount("n_sh", design.auto_n_sh);
-      sh.onkeydown = (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          applyRecommendedCount("n_sh", design.auto_n_sh);
-        }
-      };
-      maybeSeedCount("n_sh", design.auto_n_sh);
-    } else sh.hidden = true;
+    sh.hidden = true;
+    sh.textContent = "";
+    sh.removeAttribute("role");
+    sh.removeAttribute("tabindex");
+    sh.onclick = null;
+    sh.onkeydown = null;
   }
   if (idx) {
-    if (design?.auto_n_idx > 0) {
-      idx.hidden = false;
-      idx.textContent = `${t("auto_rec_prefix")} ${design.auto_n_idx}`;
-      idx.setAttribute("role", "button");
-      idx.setAttribute("tabindex", "0");
-      idx.title = t("auto_rec_apply");
-      idx.onclick = () => applyRecommendedCount("n_idx", design.auto_n_idx);
-      idx.onkeydown = (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          applyRecommendedCount("n_idx", design.auto_n_idx);
-        }
-      };
-      maybeSeedCount("n_idx", design.auto_n_idx);
-    } else idx.hidden = true;
+    idx.hidden = true;
+    idx.textContent = "";
+    idx.removeAttribute("role");
+    idx.removeAttribute("tabindex");
+    idx.onclick = null;
+    idx.onkeydown = null;
   }
+  if (design?.auto_n_sh > 0) maybeSeedCount("n_sh", design.auto_n_sh);
+  if (design?.auto_n_idx > 0) maybeSeedCount("n_idx", design.auto_n_idx);
 }
 
 /** Seed recommended count only while clustering is on (and field still empty/last-seeded).

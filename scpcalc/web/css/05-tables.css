@@ -160,7 +160,7 @@
 }
 
 .src-table input[type="text"],
-.src-table input[type="number"] {
+.src-table td > input[type="number"] {
   width: 100%;
   min-width: 4.5rem;
   border: 1px solid transparent;
@@ -173,28 +173,9 @@
   font-size: 0.8rem;
 }
 
-.src-table .num-stepper > input[type="number"] {
-  padding-inline-end: 1.85rem;
-  min-width: 4.5rem;
-}
+/* Nested stepper inputs: chrome is on .num-stepper (see 14-number-stepper.css) */
 
-.src-table .num-step-btn {
-  width: 1.2rem;
-  height: 0.88rem;
-  border-radius: 0.28rem;
-}
-
-.src-table .num-step-btn svg {
-  width: 0.52rem;
-  height: 0.34rem;
-}
-
-.src-table .num-stepper-btns {
-  inset-inline-end: 0.22rem;
-  gap: 0.08rem;
-}
-
-.src-table input:focus {
+.src-table td > input:focus {
   outline: none;
   border-color: rgba(63, 224, 197, 0.55);
   box-shadow: 0 0 0 2px rgba(63, 224, 197, 0.15);

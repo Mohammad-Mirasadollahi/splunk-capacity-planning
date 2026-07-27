@@ -1,0 +1,203 @@
+/**
+ * Number steppers — single source of truth (imported last in app.css).
+ * Layout is flex row (input | +/-), never absolute — buttons cannot escape the frame.
+ * Chrome (border/background) lives only on .num-stepper, never on the nested input.
+ */
+
+/* Kill native browser spin buttons everywhere */
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  margin: 0 !important;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.num-stepper {
+  --num-stepper-btn-w: 1.7rem;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  direction: ltr; /* number + controls stay LTR inside any RTL page */
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 2.65rem;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--ink);
+  transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease), background 0.25s var(--ease);
+}
+
+.num-stepper:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(0, 0, 0, 0.34);
+}
+
+.field:focus-within > .num-stepper,
+.num-stepper:focus-within {
+  border-color: rgba(63, 224, 197, 0.65);
+  box-shadow: 0 0 0 3px rgba(63, 224, 197, 0.18), 0 0 24px rgba(63, 224, 197, 0.15);
+  background: rgba(8, 28, 34, 0.55);
+}
+
+/* Nested input: no second frame — only text area */
+.num-stepper > input[type="number"],
+.num-stepper > input.num-stepper-input {
+  flex: 1 1 auto;
+  align-self: stretch;
+  box-sizing: border-box;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none;
+  height: auto !important;
+  min-height: 0;
+  margin: 0 !important;
+  padding: 0.68rem 0.8rem !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: inherit;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.35;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.num-stepper > input[type="number"]:hover,
+.num-stepper > input[type="number"]:focus,
+.num-stepper > input.num-stepper-input:hover,
+.num-stepper > input.num-stepper-input:focus {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.num-stepper-btns {
+  flex: 0 0 var(--num-stepper-btn-w);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+  box-sizing: border-box;
+  width: var(--num-stepper-btn-w);
+  min-width: var(--num-stepper-btn-w);
+  max-width: var(--num-stepper-btn-w);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-inline-start: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.22);
+  /* deliberately NOT position:absolute — stays inside the flex frame */
+  position: static;
+  inset: auto;
+  top: auto;
+  transform: none;
+  z-index: auto;
+  gap: 0;
+}
+
+.num-step-btn {
+  box-sizing: border-box;
+  flex: 1 1 50%;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  box-shadow: none;
+  line-height: 0;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+.num-step-btn + .num-step-btn {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.num-step-btn svg {
+  width: 0.62rem;
+  height: 0.4rem;
+  display: block;
+  pointer-events: none;
+}
+
+.num-step-btn:hover:not(:disabled) {
+  background: rgba(63, 224, 197, 0.22);
+  color: var(--ink);
+  transform: none;
+}
+
+.num-step-btn:active:not(:disabled) {
+  background: rgba(63, 224, 197, 0.4);
+  color: var(--accent-ink);
+  transform: none;
+}
+
+.num-step-btn:disabled,
+.num-stepper.is-disabled .num-step-btn {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.num-stepper.is-disabled {
+  opacity: 0.55;
+}
+
+/* —— Compact: Sources / any .src-table —— */
+.src-table .num-stepper {
+  --num-stepper-btn-w: 1.3rem;
+  min-height: 1.85rem;
+  min-width: 4.5rem;
+  border-radius: 0.45rem;
+  width: 100%;
+}
+
+.src-table .num-stepper > input[type="number"],
+.src-table .num-stepper > input.num-stepper-input {
+  padding: 0.3rem 0.4rem !important;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+
+.src-table .num-step-btn svg {
+  width: 0.48rem;
+  height: 0.3rem;
+}
+
+.src-table .vol-pair .num-stepper {
+  flex: 0 0 5.75rem;
+  width: 5.75rem;
+  max-width: 5.75rem;
+  min-width: 5.75rem;
+}
+
+.src-table .vol-pair .num-stepper > input[type="number"] {
+  width: auto !important;
+  min-width: 0 !important;
+}
