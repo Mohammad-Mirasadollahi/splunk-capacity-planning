@@ -3,6 +3,31 @@
 All notable changes to this repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/)-style sections so GitHub Releases can show what actually changed between versions.
 
+## 0.3.4 — 2026-07-27
+
+### Fixed
+
+- **Results fullscreen** — Per index / Nodes / Design / Settings / Resources: expand now portals the panel to `document.body` so `.glass` `backdrop-filter` / `overflow` no longer traps `position:fixed`. Expand/collapse buttons honor `[hidden]` again.
+- **Number steppers** — +/- controls stay inside the input chrome (flex frame, not absolute overlays).
+
+### Added
+
+- **Overview ingest banner** — Results Overview leads with total daily volume (GB/day) and EPS.
+- **Total Storage** metric plus sectioned Preview / Overview metrics; shared Retention / Storage / Per-index rendering so Preview and Results stay identical.
+- Review: hide Next on last step; Sources Total Time + Archive columns.
+
+### Changed
+
+- Hardware-by-role table removed; single Nodes table carries full hardware specs.
+- Modular wizard CSS / i18n / plan-form barrels; RF/SF clamped to indexer count.
+
+### Commits since 0.3.3
+
+- `fix(ui): portal Results fullscreen; show Overview ingest banner`
+- `feat(ui): unify Review Preview with Results Overview`
+- `fix(ui): contain number steppers inside input chrome`
+- `feat(ui): modular wizard assets, RF/SF clamps, Review totals`
+
 ## 0.3.3 — 2026-07-24
 
 - Fixed wizard shell layouts, tip delay, EPS decimals, Hot 7d / Cold 30d / Archive defaults
