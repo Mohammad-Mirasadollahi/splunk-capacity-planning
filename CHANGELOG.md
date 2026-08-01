@@ -3,6 +3,23 @@
 All notable changes to this repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/)-style sections so GitHub Releases can show what actually changed between versions.
 
+## 0.4.0 — 2026-08-01
+
+### Added
+
+- **Official node-count modal** — Results button “How many servers do I need?” opens guidance from Splunk Capacity Planning tables; separate Apply for Indexers and Search Heads.
+- **Search load section** — Topology form requires concurrent Search Head users and searches running at the same moment (default 8); drives CPU/RAM and node counts per Reference hardware.
+
+### Changed
+
+- **Hardware SKUs (CPU/RAM)** — Indexer and Search Head tiers follow official Reference hardware / ES 8.5 / ITSI 5.0: per-peer ingest, concurrent searches, concurrent users, and app floors (ES/ITSI ≥ 16c/32GB — not automatic High).
+- **ES indexer floors** — Overlapping ES scaling bands take the higher peer count (625 GB–&lt;15 TB → 24; 15 TB → 150).
+- Clearer user-facing labels (no `N_IDX` / `N_SH` jargon in the official sizing UI).
+
+### Commits since 0.3.4
+
+- `release: SCPcalc 0.4.0 — official hardware sizing, search load, node-count Apply modal`
+
 ## 0.3.4 — 2026-07-27
 
 ### Fixed

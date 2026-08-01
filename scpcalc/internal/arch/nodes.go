@@ -504,12 +504,19 @@ var table = [5][6][3]int{
 	{{1, 2, 0}, {1, 2, 0}, {2, 4, 0}, {2, 7, 0}, {3, 14, 0}, {3, 21, 0}},
 }
 
-// ESMinIndexers is a floor from ES scaling table (doc 01 §6.4).
+// ESMinIndexers is a floor from ES scaling table (doc 01 §6.4 / ES 8.5 considerations for scaling).
+// Overlapping bands take the higher peer count (conservative).
+//
+//	≤300 GB/day              → 3   (Small)
+//	>300 and <625 GB/day     → 10  (Mid-range sample at 1 TB)
+//	625 GB/day … <15 TB/day  → 24  (Mid-range to large)
+//	15 TB/day                → 150 (Large)
+//	>15 TB/day               → 240 (SHC) or 300 (single SH)
 func ESMinIndexers(dailyGB float64, shc bool) int {
 	switch {
 	case dailyGB <= 300:
 		return 3
-	case dailyGB <= 1024:
+	case dailyGB < 625:
 		return 10
 	case dailyGB < 15360:
 		return 24

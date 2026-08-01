@@ -65,4 +65,23 @@ export const results_charts = {
   share_loaded: "پلن از URL بارگذاری شد.",
   share_too_large: "پلن برای URL خیلی بزرگ است — از خروجی .json استفاده کنید.",
   share_url: "خروجی لینک",
+  official_sizing_btn: "چند سرور لازم دارم؟",
+  official_sizing_eyebrow: "راهنمای رسمی Splunk",
+  official_sizing_title: "تعداد سرور پیشنهادی",
+  official_sizing_hint:
+    "بر اساس مستندات رسمی Capacity Planning اسپلانک برای حجم روزانه لاگ، کاربران همزمان، سرچ‌های همزمان و اپ‌هایی مثل ES یا ITSI. هر نقش را جدا اعمال کنید — بعد از اعمال، سخت‌افزار دوباره حساب می‌شود.",
+  official_sizing_close: "بستن",
+  official_sizing_apply: "همین تعداد را بگذار",
+  official_sizing_recommended: "تعداد پیشنهادی",
+  official_sizing_already: "با پلن فعلی یکی است",
+  official_sizing_diff: "الان: {cur} → پیشنهاد: {rec}",
+  official_sizing_na: "پیشنهادی نیست",
+  official_sizing_idx_title: "چند Indexer؟",
+  official_sizing_sh_title: "چند Search Head؟",
+  official_sizing_idx_reason:
+    "برای حدود {d} گیگابایت لاگ در روز و {u} کاربر همزمان، جدول عملکرد اسپلانک (به‌همراه حداقل‌های کلاستر یا اپ) این تعداد Indexer را پیشنهاد می‌دهد.",
+  official_sizing_idx_es: "با Enterprise Security حداقل تعداد Indexer برای این حجم بالاتر می‌رود.",
+  official_sizing_idx_itsi: "با ITSI تقریباً به‌ازای هر ۱۰۰ گیگابایت در روز یک Indexer هم لازم است.",
+  official_sizing_sh_reason:
+    "برای {u} کاربر همزمان، حدود {d} گیگابایت در روز، و {s} سرچ هم‌زمان، راهنمای اسپلانک تعداد Search Head را طوری می‌چیند که برای هر سرچ فعال CPU کافی باشد (حدود یک هسته به‌ازای هر سرچ فعال).",
 };

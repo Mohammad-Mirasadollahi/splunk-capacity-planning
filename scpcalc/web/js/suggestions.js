@@ -129,7 +129,8 @@ function maybeSeedCount(inputName, recommended) {
   }
 }
 
-function applyRecommendedCount(inputName, recommended, { silent = false } = {}) {
+/** Apply a recommended n_idx / n_sh into the wizard field (cluster floor rules applied). */
+export function applyRecommendedCount(inputName, recommended, { silent = false } = {}) {
   const el = document.querySelector(`input[name="${inputName}"]`);
   if (!el || !(recommended > 0)) return;
   let nextN = recommended;

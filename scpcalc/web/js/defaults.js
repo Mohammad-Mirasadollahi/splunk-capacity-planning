@@ -32,6 +32,9 @@ export function demoGlobals() {
     available_cold_gb: DEMO_AVAILABLE_COLD_GB,
     available_summaries_gb: DEMO_AVAILABLE_SUMMARIES_GB,
     headroom: DEMO_HEADROOM,
+    concurrent_users: 8,
+    concurrent_searches: 8, // peak jobs at one moment — drives SH CPU / N_SH (1 search ≤ 1 core)
+    saved_searches: 20,
   };
 }
 

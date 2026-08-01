@@ -13,7 +13,10 @@ func TestESMinIndexersTable(t *testing.T) {
 		want int
 	}{
 		{300, false, 3},
-		{1024, false, 10},
+		{500, false, 10},
+		{624, false, 10},
+		{625, false, 24},
+		{1024, false, 24}, // overlaps Mid-range sample; Mid-to-large wins
 		{5000, false, 24},
 		{15359, false, 24},
 		{15360, false, 150},

@@ -4,6 +4,8 @@ import { openModal, closeModal } from "./modal.js";
 import { fillReview } from "./plan-form.js";
 import { bindWizardContinuity, refreshWizardContext } from "./wizard-continuity.js";
 import { loadReviewPreview } from "./review-panel.js";
+import { validateSearchLoad, focusSearchLoadField } from "./search-load.js";
+import { activateTab } from "./tabs.js";
 import { state, STEPS, reduceMotion } from "./state.js";
 
 const wizardModal = () => document.getElementById("wizard-modal");
@@ -91,9 +93,46 @@ export function bindWizard() {
     if (state.step <= 0) return;
     showStep(state.step - 1);
   });
-  document.getElementById("btn-wiz-next")?.addEventListener("click", () => showStep(state.step + 1));
+  document.getElementById("btn-wiz-next")?.addEventListener("click", () => {
+    // Topology step: require peak concurrent searches before leaving.
+    if (state.step === 2) {
+      const check = validateSearchLoad();
+      if (!check.ok) {
+        const err = document.getElementById("err");
+        if (err) {
+          err.hidden = false;
+          err.textContent = check.message;
+        }
+        activateTab("topo", "topo-cluster");
+        focusSearchLoadField();
+        return;
+      }
+      const err = document.getElementById("err");
+      if (err?.textContent === t("err_concurrent_searches")) {
+        err.hidden = true;
+        err.textContent = "";
+      }
+    }
+    showStep(state.step + 1);
+  });
   document.querySelectorAll("#wizard-steps li").forEach((li) => {
-    li.addEventListener("click", () => showStep(Number(li.dataset.step)));
+    li.addEventListener("click", () => {
+      const target = Number(li.dataset.step);
+      if (state.step === 2 && target > 2) {
+        const check = validateSearchLoad();
+        if (!check.ok) {
+          const err = document.getElementById("err");
+          if (err) {
+            err.hidden = false;
+            err.textContent = check.message;
+          }
+          activateTab("topo", "topo-cluster");
+          focusSearchLoadField();
+          return;
+        }
+      }
+      showStep(target);
+    });
   });
 }
 

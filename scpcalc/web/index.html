@@ -60,6 +60,10 @@
         <h2 data-i18n="results">Results</h2>
         <div class="row-actions" style="margin:0">
           <button type="button" class="btn-ghost" id="btn-reopen-wizard" data-i18n="edit_wizard">Edit in wizard</button>
+          <button type="button" class="cta" id="btn-official-sizing" hidden>
+            <span class="cta-label" data-i18n="official_sizing_btn">How many servers do I need?</span>
+            <span class="cta-glow" aria-hidden="true"></span>
+          </button>
           <button type="button" class="btn-ghost" id="btn-export-url-out" data-i18n="export_url">Export URL</button>
           <button type="button" class="btn-ghost" id="btn-dl-conf" data-i18n="download_conf">Download indexes.conf</button>
           <button type="button" class="btn-ghost" id="btn-copy-conf-home" data-i18n="copy">Copy indexes.conf</button>
@@ -553,25 +557,34 @@
                 </label>
               </div>
             </section>
+            <section class="form-section form-section-required" aria-labelledby="sec-search-load-title">
+              <header class="form-section-head">
+                <h4 id="sec-search-load-title"><span data-i18n="sec_search_load">Search load</span> <span class="req-badge" data-i18n="req_badge">Required</span></h4>
+                <p class="hint" data-i18n="sec_search_load_hint">You must enter how many searches run at the same moment — this drives Search Head CPU/RAM and how many Search Heads you need (about one CPU core per active search).</p>
+                <p id="search-load-err" class="err" hidden></p>
+              </header>
+              <div class="grid">
+                <label class="field">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="concurrent_users" data-i18n="lbl_users">Concurrent search users</span><span class="field-hint" data-i18n="hint_users">How many people search at the same time</span></span>
+                  <input name="concurrent_users" id="concurrent_users" type="number" value="8" min="1" required>
+                </label>
+                <label class="field field-emphasis">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="concurrent_searches" data-i18n="lbl_searches">Searches running at the same moment</span><span class="field-hint" data-i18n="hint_searches">Default 8. Peak scheduled + ad-hoc jobs active together — drives Search Head CPU/RAM and count (about 1 search = 1 CPU core per official Reference hardware)</span></span>
+                  <input name="concurrent_searches" id="concurrent_searches" type="number" value="8" min="1" step="1" required placeholder="e.g. 16" data-i18n-placeholder="ph_searches" aria-required="true">
+                </label>
+                <label class="field">
+                  <span class="field-copy"><span class="field-label tip-mark" data-tip="saved_searches" data-i18n="lbl_saved">Saved / scheduled searches (total)</span><span class="field-hint" data-i18n="hint_saved">How many saved searches are enabled in total — not the same as “running at once”</span></span>
+                  <input name="saved_searches" id="saved_searches" type="number" value="20" min="0" required>
+                </label>
+              </div>
+            </section>
             <section class="form-section" aria-labelledby="sec-shc-title">
               <header class="form-section-head">
                 <h4 id="sec-shc-title" data-i18n="sec_shc">Search head cluster</h4>
-                <p class="hint" data-i18n="sec_shc_hint">Set concurrent users and searches — Splunk sizes Search Heads from users × daily volume, then raises SH count so total cores cover peak concurrent searches.</p>
+                <p class="hint" data-i18n="sec_shc_hint">Optional clustering for Search Heads. Set how many Search Heads you want; sizing also uses the search-load numbers above.</p>
               </header>
               <div class="grid">
                 <label class="field check glass-chip"><input name="search_head_cluster" type="checkbox" id="search_head_cluster"> <span class="tip-mark" data-tip="shc" data-i18n="shc">Search head cluster</span></label>
-                <label class="field">
-                  <span class="field-copy"><span class="field-label tip-mark" data-tip="concurrent_users" data-i18n="lbl_users">Concurrent search users</span><span class="field-hint" data-i18n="hint_users">People searching at the same time (official SH×IDX table)</span></span>
-                  <input name="concurrent_users" id="concurrent_users" type="number" value="8" min="1" required>
-                </label>
-                <label class="field">
-                  <span class="field-copy"><span class="field-label tip-mark" data-tip="concurrent_searches" data-i18n="lbl_searches">Peak concurrent searches</span><span class="field-hint" data-i18n="hint_searches">Scheduled + ad-hoc jobs at peak (1 search ≈ 1 CPU core)</span></span>
-                  <input name="concurrent_searches" id="concurrent_searches" type="number" value="8" min="1" required>
-                </label>
-                <label class="field">
-                  <span class="field-copy"><span class="field-label tip-mark" data-tip="saved_searches" data-i18n="lbl_saved">Saved / scheduled searches</span><span class="field-hint" data-i18n="hint_saved">Total enabled saved searches (Dimensions sizing input)</span></span>
-                  <input name="saved_searches" id="saved_searches" type="number" value="20" min="0" required>
-                </label>
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="n_sh" data-i18n="lbl_n_sh">Number of search heads</span><span class="field-hint" data-i18n="hint_n_sh">Cluster off: independent search heads (min 1), SHC optional. SHC on: defaults to 1; never 0; use 1 or ≥3 (not 2)</span></span>
                   <input name="n_sh" id="n_sh" type="number" value="1" min="1" placeholder="1">
@@ -696,6 +709,28 @@
           <span class="cta-label" data-i18n="suggest_accept">Accept & recalculate</span>
           <span class="cta-glow" aria-hidden="true"></span>
         </button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Official Splunk node-count advice (separate Apply for SH / IDX) -->
+  <div class="modal-root" id="official-sizing-modal" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal glass suggest-modal official-sizing-modal" role="dialog" aria-modal="true" aria-labelledby="official-sizing-title">
+      <div class="panel-shine" aria-hidden="true"></div>
+      <header class="wizard-head">
+        <div>
+          <p class="eyebrow" data-i18n="official_sizing_eyebrow">Official Splunk guidance</p>
+          <h2 id="official-sizing-title" data-i18n="official_sizing_title">Recommended server counts</h2>
+        </div>
+        <button type="button" class="btn-x" data-close-modal aria-label="Close">×</button>
+      </header>
+      <div class="suggest-modal-body">
+        <p class="hint" data-i18n="official_sizing_hint">Based on official Splunk Capacity Planning docs for your daily log volume, concurrent users, concurrent searches, and apps (such as ES or ITSI). Apply each role separately — hardware updates after you apply.</p>
+        <div id="official-sizing-list" class="suggest-list official-sizing-list"></div>
+      </div>
+      <footer class="wizard-foot">
+        <button type="button" class="btn-ghost" data-close-modal data-i18n="official_sizing_close">Close</button>
       </footer>
     </div>
   </div>

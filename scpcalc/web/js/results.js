@@ -10,6 +10,8 @@ import { closeWizard, showStep } from "./wizard.js";
 import { runPlan } from "./engine.js";
 import { t } from "./i18n.js";
 import { askSuggestions, updateAutoRecBadges, pendingSuggestions } from "./suggestions.js";
+import { bindOfficialSizingButton, syncOfficialSizingButton } from "./official-sizing.js";
+import { validateSearchLoad, focusSearchLoadField } from "./search-load.js";
 import { expandResourceNodes, formatLayerSpecs } from "./nodes.js";
 import {
   buildMetricSections,
@@ -219,6 +221,7 @@ function renderPlanResult(data) {
 
   const d = data.design || {};
   updateAutoRecBadges(d);
+  syncOfficialSizingButton(d);
   collapseViewBlocks();
 
   const g = collectGlobals();
@@ -292,6 +295,15 @@ function renderPlanResult(data) {
   }
 }
 
+export function bindOfficialSizing() {
+  bindOfficialSizingButton(
+    () => state.lastPlan?.design || null,
+    (data) => {
+      if (data) renderPlanResult(data);
+    }
+  );
+}
+
 export async function runCalculate() {
   const err = document.getElementById("err");
   const btnCalc = document.getElementById("btn-wiz-calc");
@@ -310,6 +322,18 @@ export async function runCalculate() {
     const diskBudget = /available_|disk need|دیسک|hot\/warm|hot\+cold|searchable disk/i.test(budget.message);
     showStep(1);
     activateTab("volume", diskBudget ? "vol-policy" : "vol-sources");
+    return;
+  }
+
+  const searchLoad = validateSearchLoad();
+  if (!searchLoad.ok) {
+    if (err) {
+      err.hidden = false;
+      err.textContent = searchLoad.message;
+    }
+    showStep(2);
+    activateTab("topo", "topo-cluster");
+    focusSearchLoadField();
     return;
   }
 
@@ -337,6 +361,10 @@ export async function runCalculate() {
     } else if (msg.includes("available_hot") || msg.includes("available_cold") || msg.includes("available_summaries")) {
       showStep(1);
       activateTab("volume", "vol-policy");
+    } else if (msg.includes("concurrent_searches")) {
+      showStep(2);
+      activateTab("topo", "topo-cluster");
+      focusSearchLoadField();
     } else {
       showStep(STEPS - 1);
     }

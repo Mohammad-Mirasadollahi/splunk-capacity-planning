@@ -55,6 +55,39 @@
   line-height: 1.45;
 }
 
+.official-sizing-card {
+  align-items: center;
+  cursor: default;
+}
+
+.official-sizing-card-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.official-sizing-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: 0.45rem;
+  font-size: 0.8rem;
+  color: var(--ink);
+}
+
+.official-sizing-meta b {
+  font-variant-numeric: tabular-nums;
+}
+
+.official-sizing-apply {
+  flex: 0 0 auto;
+  margin-inline-start: 0.35rem;
+}
+
+.official-sizing-apply:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .import-modal-body {
   padding: 1rem 1.25rem 1.25rem;
   display: grid;

@@ -33,3 +33,35 @@
 .form-section .grid {
   margin-bottom: 0.65rem;
 }
+
+.form-section-required {
+  border-color: rgba(63, 224, 197, 0.42);
+  background: rgba(63, 224, 197, 0.07);
+}
+
+.form-section-required .req-badge {
+  display: inline-block;
+  margin-inline-start: 0.4rem;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  font-family: var(--font-ui, inherit);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+  color: #06241f;
+  background: rgba(63, 224, 197, 0.9);
+}
+
+.field-emphasis {
+  grid-column: 1 / -1;
+}
+
+.field-emphasis .field-label {
+  font-weight: 700;
+}
+
+.field-emphasis input:invalid:not(:placeholder-shown),
+.field-emphasis input:invalid:focus {
+  border-color: rgba(255, 120, 120, 0.75);
+}

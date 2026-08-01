@@ -13,7 +13,7 @@ import { bindPlanFormChrome, snapshot, applySnapshot, applyGlobals, fillReview, 
 import { bindConfEditor, getConfText, copyConf } from "./js/conf-editor.js";
 import { renderAllCharts } from "./js/charts.js";
 import { bindWizard, openWizard, closeWizard, showStep, syncWizardBackLabel } from "./js/wizard.js";
-import { runCalculate, bindResultTableFind, bindTableSort, bindNodePicker } from "./js/results.js";
+import { runCalculate, bindResultTableFind, bindTableSort, bindNodePicker, bindOfficialSizing } from "./js/results.js";
 import { bindViewBlocks } from "./js/view-blocks.js";
 import { downloadText } from "./js/util.js";
 import { initEngine, fetchPresets, engineMode } from "./js/engine.js";
@@ -242,6 +242,7 @@ bindCalculate();
 bindResultTableFind();
 bindTableSort("ix-table");
 bindNodePicker();
+bindOfficialSizing();
 bindViewBlocks();
 
 boot().catch((ex) => {

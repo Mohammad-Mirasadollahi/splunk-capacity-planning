@@ -65,4 +65,23 @@ export const results_charts = {
   share_loaded: "Plan loaded from URL.",
   share_too_large: "Plan too large for URL — use Export .json.",
   share_url: "Export URL",
+  official_sizing_btn: "How many servers do I need?",
+  official_sizing_eyebrow: "Official Splunk guidance",
+  official_sizing_title: "Recommended server counts",
+  official_sizing_hint:
+    "Based on official Splunk Capacity Planning docs for your daily log volume, concurrent users, concurrent searches, and apps (such as ES or ITSI). Apply each role separately — hardware updates after you apply.",
+  official_sizing_close: "Close",
+  official_sizing_apply: "Use this count",
+  official_sizing_recommended: "Suggested count",
+  official_sizing_already: "Already matches your plan",
+  official_sizing_diff: "Yours: {cur} → suggested: {rec}",
+  official_sizing_na: "No suggestion",
+  official_sizing_idx_title: "How many Indexers?",
+  official_sizing_sh_title: "How many Search Heads?",
+  official_sizing_idx_reason:
+    "For about {d} GB of logs per day and {u} concurrent users, Splunk’s performance table (plus clustering or app minimums) suggests this many Indexers.",
+  official_sizing_idx_es: "Enterprise Security raises the minimum Indexer count for this volume.",
+  official_sizing_idx_itsi: "ITSI also requires roughly one Indexer per 100 GB/day.",
+  official_sizing_sh_reason:
+    "For {u} concurrent users, about {d} GB/day, and {s} searches running at once, Splunk guidance sizes Search Heads so each active search has enough CPU (about one core per active search).",
 };

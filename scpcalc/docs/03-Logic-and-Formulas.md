@@ -139,7 +139,7 @@ MaxRetentionDays ≈ AvailableSearchable / (Daily_OnDisk)     # if ingest known
 - **Concurrent search volume** (Reference hardware Search Head + Dimensions): each active search consumes up to **1 CPU core**. With reference SH = **16 physical cores**, raise `N_SH` to `ceil(concurrent_searches / 16)` when that exceeds the users×volume baseline. Combined instances use a ~12-core budget before splitting.
 - **Saved / scheduled searches** (Dimensions): required planning input; high counts (≥200) warn toward SHC / more capacity. Does not replace peak concurrent searches for the core floor.
 - Defaults: if `concurrent_searches` unset → equal to `concurrent_users`; `saved_searches` default 0.
-- ES floors from doc 01 §6.4 (300→3, 1TB→10, &lt;15TB→24, 15TB→150, &gt;15TB→300 single-SH or 240 SHC).
+- ES floors from doc 01 §6.4 (≤300→3; &lt;625→10; 625–&lt;15TB→24; 15TB→150; &gt;15TB→300 single-SH or 240 SHC). Overlapping bands take the higher count.
 - ITSI: `N_IDX ≥ ceil(D/100)` (KPI tables not automated — HLD non-goal).
 - Indexer cluster: peers ≥ RF; add cluster manager.
 - SHC: deployer + members = 1 (single-member interim) or ≥3 (never 2).
@@ -147,9 +147,16 @@ MaxRetentionDays ≈ AvailableSearchable / (Daily_OnDisk)     # if ingest known
 - ES+ITSI: separate SH tiers (`n_sh_es` + `n_sh_itsi`); resources list both.
 - SmartStore: local cache `0.5 × D × (30|90 if ES)`; remote `Remote_Store_GB ≈ D × R × Comp`.
 
+**Hardware SKU (CPU/RAM) — depends on volume, searches, apps, and node counts:**
+
+- Indexer tier from **per-peer** `D / N_IDX` + search pressure `S / N_IDX` → Minimum (12c/12GB) / Mid (24c/64GB) / High (48c/128GB).
+- ES/ITSI indexer floor = **16 physical / 32 GB / 32 vCPU** (not automatic High); then Mid/High as per-peer ingest or search pressure grows.
+- Search Head: each active search ≤ **1 CPU core**; per-node cores ≈ `ceil(S / N_SH)` (min 16). Platform RAM 12 GB (32 GB when heavy). ES SH ≥ 16c/32GB; ITSI SH ≥ 16c/12GB (16+ GB recommended, 24+ cores when heavy).
+- Raising `n_idx` / `n_sh` lowers per-node load and can reduce the recommended SKU.
+
 Official sources: [Summary of performance recommendations](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Summaryofperformancerecommendations), [Reference hardware](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware), [Dimensions of a Splunk Enterprise deployment](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/DimensionsofaSplunkEnterprisedeployment).
 
-Hardware tiers per role: Reference hardware minimum / mid / high (and ES floors). See `internal/arch`.
+Hardware tiers per role: Reference hardware minimum / mid / high (and ES/ITSI floors). See `internal/arch`.
 
 **CPU (official):**
 - Sizing basis = **physical cores** (`cpu_cores` / `cpu_physical_cores`).

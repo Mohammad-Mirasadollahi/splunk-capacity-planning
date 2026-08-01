@@ -31,26 +31,163 @@ var (
 	tierCombined = hwTier{"minimum (S1 combined)", 12, 24, 12}
 	tierSHMin    = hwTier{"minimum", 16, 32, 12}
 	tierSHES     = hwTier{"es-minimum", 16, 32, 32}
-	tierSHITSI   = hwTier{"itsi / mid-range", 16, 32, 32}
+	tierSHITSI   = hwTier{"itsi-minimum+", 16, 32, 16} // ITSI: 12 GB required, 16+ recommended
 	tierIDXMin   = hwTier{"minimum", 12, 24, 12}
+	tierIDXES    = hwTier{"es/itsi-minimum", 16, 32, 32} // ES 8.5 / ITSI 5.0 production floor
 	tierIDXMid   = hwTier{"mid-range", 24, 48, 64}
 	tierIDXHigh  = hwTier{"high-performance", 48, 96, 128}
 	tierMgmt     = hwTier{"management", 12, 24, 12}
 )
 
-func pickIndexerTier(dailyGB float64, nidx int, hasES, hasITSI bool) hwTier {
-	per := dailyGB
-	if nidx > 0 {
-		per = dailyGB / float64(nidx)
+// pickIndexerTier selects Reference hardware indexer SKU from per-peer ingest,
+// concurrent search pressure, and premium-app floors (ES/ITSI ≥ 16c/32GB — not automatic High).
+// N_IDX matters: more peers → lower per-peer GB/day → often a lower tier.
+func pickIndexerTier(dailyGB float64, nidx, searches, users int, hasES, hasITSI bool) hwTier {
+	n := nidx
+	if n < 1 {
+		n = 1
 	}
+	per := dailyGB / float64(n)
+	searchPressure := 0
+	if searches > 0 {
+		searchPressure = int(math.Ceil(float64(searches) / float64(n)))
+	}
+
+	// Platform base (Reference hardware + Summary ~300 GB/day per min indexer with search load).
+	// Mid-range adds headroom for higher search concurrency — correlates with concurrent users too.
+	tier := tierIDXMin
 	switch {
-	case hasES || hasITSI || per >= 250 || dailyGB >= 1024:
-		return tierIDXHigh
-	case per >= 120 || dailyGB >= 300:
-		return tierIDXMid
-	default:
-		return tierIDXMin
+	case per >= 250 || dailyGB >= 1024 || searchPressure >= 8 || users >= 24:
+		tier = tierIDXHigh
+	case per >= 100 || dailyGB >= 300 || searchPressure >= 4 || searches >= 16 || users >= 16:
+		tier = tierIDXMid
 	}
+
+	if !hasES && !hasITSI {
+		return tier
+	}
+
+	// Premium apps: raise to ES/ITSI floor (16 physical / 32 GB / 32 vCPU), then Mid/High as load grows.
+	// Docs: prefer Mid-range or High-performance as load grows — do NOT jump straight to High for every ES plan.
+	if tier.cores < tierIDXES.cores || tier.ram < tierIDXES.ram {
+		tier = tierIDXES
+	}
+	if per >= 80 || dailyGB >= 300 || searchPressure >= 3 || searches >= 12 || users >= 16 {
+		if tier.cores < tierIDXMid.cores {
+			tier = tierIDXMid
+		}
+	}
+	if per >= 250 || dailyGB >= 1024 || searchPressure >= 6 || users >= 24 {
+		tier = tierIDXHigh
+	}
+	return tier
+}
+
+func searchesPerNode(searches, nodes int) int {
+	n := nodes
+	if n < 1 {
+		n = 1
+	}
+	s := searches
+	if s < 1 {
+		s = 1
+	}
+	per := int(math.Ceil(float64(s) / float64(n)))
+	if per < 1 {
+		return 1
+	}
+	return per
+}
+
+func peakSearches(p model.PlanInput) int {
+	s := p.ConcurrentSearches
+	if s <= 0 {
+		s = p.ConcurrentUsers
+	}
+	if s <= 0 {
+		return 8
+	}
+	return s
+}
+
+// peakUsers is concurrent SH users (official Performance Recommendations “Total users” row).
+func peakUsers(p model.PlanInput) int {
+	u := p.ConcurrentUsers
+	if u <= 0 {
+		return 8
+	}
+	return u
+}
+
+// shLoadPerNode is the per-SH planning load from concurrent searches AND concurrent users.
+// Official: more active users and higher concurrent search loads both need more CPU
+// (Reference hardware Search Head; Dimensions: concurrent users + concurrent search volume).
+func shLoadPerNode(p model.PlanInput, nsh int) (searchesPerSH, usersPerSH, loadPerSH int) {
+	searchesPerSH = searchesPerNode(peakSearches(p), nsh)
+	usersPerSH = searchesPerNode(peakUsers(p), nsh)
+	loadPerSH = searchesPerSH
+	if usersPerSH > loadPerSH {
+		loadPerSH = usersPerSH
+	}
+	return searchesPerSH, usersPerSH, loadPerSH
+}
+
+// pickESSearchHeadTier — ES production floor 16c/32GB/32vCPU; scale with users + searches (ES §6.5).
+func pickESSearchHeadTier(p model.PlanInput, nsh int) hwTier {
+	_, usersPerSH, loadPerSH := shLoadPerNode(p, nsh)
+	cores := 16
+	if loadPerSH > cores {
+		cores = loadPerSH
+	}
+	ram := 32
+	// ES §6.5: many concurrent logins / detections → more RAM (and CPU).
+	if p.SavedSearches >= 100 || peakUsers(p) >= 24 || usersPerSH > 12 || loadPerSH > 12 {
+		ram = 64
+	}
+	if cores > 16 || ram > 32 {
+		return hwTier{"es-scaled", cores, cores * 2, ram}
+	}
+	return tierSHES
+}
+
+// pickITSISearchHeadTier — ITSI: 16c/12GB required, 24+/16+ recommended.
+func pickITSISearchHeadTier(p model.PlanInput, nsh int, dailyGB float64) hwTier {
+	_, _, loadPerSH := shLoadPerNode(p, nsh)
+	if loadPerSH > 16 || p.SavedSearches >= 200 || peakUsers(p) >= 16 || dailyGB >= 500 {
+		cores := 24
+		if loadPerSH > cores {
+			cores = loadPerSH
+		}
+		return hwTier{"itsi-recommended", cores, cores * 2, 32}
+	}
+	return tierSHITSI
+}
+
+// pickPlatformSearchHeadTier — Reference hardware SH minimum; bump when user/search/volume load is high.
+// Official: "A search request uses up to 1 CPU core while the search is active";
+// "More active users and higher concurrent search loads require additional CPU cores."
+func pickPlatformSearchHeadTier(p model.PlanInput, nsh int, dailyGB float64) hwTier {
+	searches := peakSearches(p)
+	users := peakUsers(p)
+	searchesPerSH, usersPerSH, loadPerSH := shLoadPerNode(p, nsh)
+	cores := 16
+	if loadPerSH > cores {
+		cores = loadPerSH
+	}
+	ram := 12
+	// Higher concurrent users / searches → more RAM (Reference hardware + Dimensions).
+	heavy := dailyGB >= 600 || users >= 16 || searches > 16 || p.SavedSearches >= 100 ||
+		searchesPerSH > 12 || usersPerSH >= 8
+	if heavy {
+		ram = 32
+	}
+	if cores > 16 {
+		return hwTier{"scaled SH (users + search concurrency)", cores, cores * 2, ram}
+	}
+	if heavy {
+		return hwTier{"mid-range SH", 16, 32, ram}
+	}
+	return tierSHMin
 }
 
 // applyCPUGuidance fills official Physical vs Logical (vCPU), virtualization, and Splunk parallelization notes.
@@ -112,55 +249,68 @@ func RecommendResources(p model.PlanInput, d model.Design, dailyGB float64) []mo
 	coldPer := round1(d.ColdNeedGB / float64(nidx))
 	sumPer := round1(d.SummariesNeedGB / float64(nidx))
 
-	// Platform / ES / ITSI search tiers — never double-count.
+	searches := peakSearches(p)
+	users := peakUsers(p)
+	// Platform / ES / ITSI search tiers — specs scale with users + searches per SH.
 	switch {
 	case d.HasES && d.HasITSI:
+		esN := maxInt(d.NSHES, 1)
+		itsiN := maxInt(d.NSHITSI, 1)
+		esTier := pickESSearchHeadTier(p, esN)
+		itsiTier := pickITSISearchHeadTier(p, itsiN, dailyGB)
+		_, uES, loadES := shLoadPerNode(p, esN)
+		_, uIT, loadIT := shLoadPerNode(p, itsiN)
 		out = append(out, hwLayer(
-			"ES search head / SHC", maxInt(d.NSHES, 1), tierSHES, "search",
+			"ES search head / SHC", esN, esTier, "search",
 			"SSD (preferred) or HDD ≥800 IOPS", net, "≥800 sustained IOPS (install + search)",
 			raidSH,
-			"Dedicated ES SH/SHC; CIM-compatible apps only; do not colocate with ITSI. Floor: 16 physical / 32 vCPU / 32 GB RAM.",
+			fmt.Sprintf("Dedicated ES SH/SHC; CIM-compatible apps only; do not colocate with ITSI. Floor 16 physical / 32 vCPU / 32 GB. Concurrent users=%d (≈%d/SH), peak searches=%d → load ≈%d/SH.", users, uES, searches, loadES),
 			300, 800,
 		))
 		out = append(out, hwLayer(
-			"ITSI search head / SHC", maxInt(d.NSHITSI, 1), tierSHITSI, "search",
+			"ITSI search head / SHC", itsiN, itsiTier, "search",
 			"SSD; ≥30 GB free in $SPLUNK_HOME", net, "≥800 sustained IOPS (install + search)",
 			raidSH,
-			"Separate tier from ES; KPI load may require more SH — validate with ITSI tables. Prefer 24+ physical cores when shared/heavy.",
+			fmt.Sprintf("Separate tier from ES; 16c/12GB required (24+/16+ recommended). Users=%d (≈%d/SH), peak S=%d → load ≈%d/SH. Validate KPI tables.", users, uIT, searches, loadIT),
 			300, 800,
 		))
 	case d.HasES:
+		shN := maxInt(d.NSH, 1)
+		sh := pickESSearchHeadTier(p, shN)
+		_, usersPerSH, loadPerSH := shLoadPerNode(p, shN)
 		out = append(out, hwLayer(
-			"ES search head / SHC", maxInt(d.NSH, 1), tierSHES, "search",
+			"ES search head / SHC", shN, sh, "search",
 			"SSD (preferred) or HDD ≥800 IOPS", net, "≥800 sustained IOPS (install + search)",
 			raidSH,
-			fmt.Sprintf("ES production min 16 physical CPU cores / 32 GB RAM / 32 vCPU; dedicated SH/SHC. Peak concurrent searches=%d (1 search ≤1 core); saved/detections≈%d — scale CPU/RAM for ad-hoc and detection load (ES §6.5).", p.ConcurrentSearches, p.SavedSearches),
+			fmt.Sprintf("ES production min 16 physical / 32 GB / 32 vCPU; dedicated SH/SHC. Concurrent users=%d (≈%d/SH), peak searches=%d (load ≈%d/SH, 1 search ≤1 core); saved/detections≈%d — CPU/RAM scale with logins and detection load (ES §6.5).", users, usersPerSH, searches, loadPerSH, p.SavedSearches),
 			300, 800,
 		))
 	case d.HasITSI:
+		shN := maxInt(d.NSH, 1)
+		sh := pickITSISearchHeadTier(p, shN, dailyGB)
+		_, usersPerSH, loadPerSH := shLoadPerNode(p, shN)
 		out = append(out, hwLayer(
-			"ITSI search head / SHC", maxInt(d.NSH, 1), tierSHITSI, "search",
+			"ITSI search head / SHC", shN, sh, "search",
 			"SSD; ≥30 GB free in $SPLUNK_HOME", net, "≥800 sustained IOPS (install + search)",
 			raidSH,
-			fmt.Sprintf("ITSI dedicated SH; 16 physical required (24+ recommended). Peak concurrent searches=%d; saved/KPI searches≈%d — KPI count ≠ search count; validate with ITSI tables.", p.ConcurrentSearches, p.SavedSearches),
+			fmt.Sprintf("ITSI dedicated SH; 16 physical required (24+ recommended), RAM 12 required / 16+ recommended. Users=%d (≈%d/SH), peak S=%d (load ≈%d/SH); saved/KPI≈%d.", users, usersPerSH, searches, loadPerSH, p.SavedSearches),
 			300, 800,
 		))
 	default:
-		sh := tierSHMin
-		if dailyGB >= 600 || p.ConcurrentUsers >= 16 || p.ConcurrentSearches > 16 || p.SavedSearches >= 100 {
-			sh = hwTier{"mid-range SH", 16, 32, 32}
-		}
+		shN := maxInt(d.NSH, 1)
+		sh := pickPlatformSearchHeadTier(p, shN, dailyGB)
+		_, usersPerSH, loadPerSH := shLoadPerNode(p, shN)
 		searchNote := fmt.Sprintf(
-			"Each active search ≤1 physical CPU core (Reference hardware). Peak concurrent searches=%d → need ≥%d cores across SH tier; saved/scheduled=%d (Dimensions). Prefer SSD when ad-hoc/scheduled load is high; min 300 GB dedicated.",
-			p.ConcurrentSearches, p.ConcurrentSearches, p.SavedSearches)
+			"Reference hardware: more active users and higher concurrent search loads need more CPU; each active search ≤1 core. Concurrent users=%d (≈%d/SH), peak searches=%d, load≈%d/SH across %d SH; saved/scheduled=%d. Raising Search Head count lowers per-node load. Prefer SSD when ad-hoc/scheduled load is high; min 300 GB dedicated.",
+			users, usersPerSH, searches, loadPerSH, shN, p.SavedSearches)
 		out = append(out, hwLayer(
-			"Search head", maxInt(d.NSH, 1), sh, "search",
+			"Search head", shN, sh, "search",
 			"SSD (preferred) or HDD ≥800 IOPS", net, "≥800 sustained IOPS on install/search volume",
 			raidSH, searchNote, 300, 800,
 		))
 	}
 
-	idx := pickIndexerTier(dailyGB, d.NIDX, d.HasES, d.HasITSI)
+	idx := pickIndexerTier(dailyGB, d.NIDX, searches, users, d.HasES, d.HasITSI)
 	diskPer := hotPer + coldPer + sumPer + 50
 	stor := "Hot/warm+DMA: SSD; Cold: HDD/SAN; never hot/warm on NFS"
 	iops := fmt.Sprintf("Install ≥800 IOPS/node; shared array example ≈4000 IOPS × %d indexers = %d concurrent IOPS", nidx, 4000*nidx)
@@ -173,11 +323,12 @@ func RecommendResources(p model.PlanInput, d model.Design, dailyGB float64) []mo
 		raidIDX = raidOS + "; local cache NVMe/SSD (RAID 10 or single NVMe with redundancy via cluster); remote = object store (no RAID)"
 		iopsMin = 4000
 	}
+	perPeerGB := dailyGB / float64(nidx)
 	idxNotes := fmt.Sprintf(
-		"CPU %d physical / %d vCPU / RAM %d GB per indexer. Per peer ≈ hot %.0f + cold %.0f + summaries %.0f GB (before OS/headroom). Keep ≥5 GB free or indexing stops.",
-		idx.cores, idx.vcpu, idx.ram, hotPer, coldPer, sumPer)
-	if d.HasES {
-		idxNotes += " ES indexer floor also 16 physical / 32 vCPU / 32 GB — this tier meets or exceeds that."
+		"CPU %d physical / %d vCPU / RAM %d GB per indexer (tier from ≈%.0f GB/day per peer, concurrent users=%d, peak searches=%d, apps). Per peer disk ≈ hot %.0f + cold %.0f + summaries %.0f GB (before OS/headroom). Keep ≥5 GB free or indexing stops.",
+		idx.cores, idx.vcpu, idx.ram, perPeerGB, users, searches, hotPer, coldPer, sumPer)
+	if d.HasES || d.HasITSI {
+		idxNotes += " Premium-app indexer floor is 16 physical / 32 vCPU / 32 GB; Mid/High only when per-peer ingest or search pressure warrants it."
 	}
 	out = append(out, hwLayer(
 		"Indexer", nidx, idx, "indexer",

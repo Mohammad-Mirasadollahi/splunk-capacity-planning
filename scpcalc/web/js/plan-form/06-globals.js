@@ -50,7 +50,14 @@ export function collectGlobals() {
     archive_frozen: archiveOn,
     archive_days: archiveOn ? Math.max(0, Math.floor(num(fd, "archive_days", 0))) : 0,
     concurrent_users: num(fd, "concurrent_users", 8),
-    concurrent_searches: num(fd, "concurrent_searches", 8),
+    // Peak searches at one moment (Reference hardware: 1 active search ≤ 1 CPU core).
+    // Default 8 matches the field default / concurrent_users demo baseline.
+    concurrent_searches: (() => {
+      const raw = val("concurrent_searches", "").trim();
+      if (raw === "") return 8;
+      const n = Math.floor(Number(raw));
+      return Number.isFinite(n) && n > 0 ? n : 8;
+    })(),
     saved_searches: num(fd, "saved_searches", 0),
     n_idx: (() => {
       let n = num(fd, "n_idx", 0);
