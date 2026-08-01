@@ -28,7 +28,7 @@ export const misc = {
   sources: "Log sources / indexes",
   tab_advanced_hint: "SmartStore and your measured compression ratio (optional).",
   tab_apps_hint: "Turn on premium apps if you use them. DMA stores accelerated data-model summaries.",
-  tab_cluster_hint: "Configure indexer clustering and search-head clustering in their own sections below.",
+  tab_cluster_hint: "Configure the Indexer section and the Search Head section (including search load) below.",
   tab_overview: "Overview",
   tab_paths: "Paths",
   tab_policy: "Global Policy",

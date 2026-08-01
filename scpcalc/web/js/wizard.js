@@ -1,5 +1,4 @@
 import { t } from "./i18n.js";
-import { setSoftTip } from "./tips-ui.js";
 import { openModal, closeModal } from "./modal.js";
 import { fillReview } from "./plan-form.js";
 import { bindWizardContinuity, refreshWizardContext } from "./wizard-continuity.js";
@@ -15,7 +14,10 @@ function syncWizardBackLabel() {
   if (!btnBack) return;
   btnBack.setAttribute("data-i18n", "back");
   btnBack.textContent = t("back");
-  setSoftTip(btnBack, t("back"));
+  // No tooltip on Back — label alone is enough.
+  btnBack.removeAttribute("data-soft-tip");
+  btnBack.removeAttribute("data-soft-tip-title");
+  btnBack.removeAttribute("title");
 }
 
 export function showStep(n) {

@@ -39,6 +39,22 @@
   background: rgba(63, 224, 197, 0.07);
 }
 
+.form-subsection {
+  margin: 0.85rem 0 0.35rem;
+  padding: 0.75rem 0.85rem 0.35rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.14);
+}
+
+.form-subsection .form-section-head h5 {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
 .form-section-required .req-badge {
   display: inline-block;
   margin-inline-start: 0.4rem;

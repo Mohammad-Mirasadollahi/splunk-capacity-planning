@@ -538,8 +538,8 @@
           <div class="tab-panel is-active" data-panel="topo-cluster" role="tabpanel">
             <section class="form-section" aria-labelledby="sec-idx-cluster-title">
               <header class="form-section-head">
-                <h4 id="sec-idx-cluster-title" data-i18n="sec_idx_cluster">Indexer cluster</h4>
-                <p class="hint" data-i18n="sec_idx_cluster_hint">Enable clustering for the indexer tier — set RF/SF and optional peer count override.</p>
+                <h4 id="sec-idx-cluster-title" data-i18n="sec_idx_cluster">Indexer</h4>
+                <p class="hint" data-i18n="sec_idx_cluster_hint">Indexer tier: clustering (RF/SF) and how many indexers you need.</p>
               </header>
               <div class="grid">
                 <label class="field check glass-chip"><input name="indexer_cluster" type="checkbox" id="indexer_cluster"> <span class="tip-mark" data-tip="indexer_cluster" data-i18n="idx_cluster">Indexer cluster</span></label>
@@ -557,31 +557,10 @@
                 </label>
               </div>
             </section>
-            <section class="form-section form-section-required" aria-labelledby="sec-search-load-title">
+            <section class="form-section form-section-required" aria-labelledby="sec-shc-title">
               <header class="form-section-head">
-                <h4 id="sec-search-load-title"><span data-i18n="sec_search_load">Search load</span> <span class="req-badge" data-i18n="req_badge">Required</span></h4>
-                <p class="hint" data-i18n="sec_search_load_hint">You must enter how many searches run at the same moment — this drives Search Head CPU/RAM and how many Search Heads you need (about one CPU core per active search).</p>
-                <p id="search-load-err" class="err" hidden></p>
-              </header>
-              <div class="grid">
-                <label class="field">
-                  <span class="field-copy"><span class="field-label tip-mark" data-tip="concurrent_users" data-i18n="lbl_users">Concurrent search users</span><span class="field-hint" data-i18n="hint_users">How many people search at the same time</span></span>
-                  <input name="concurrent_users" id="concurrent_users" type="number" value="8" min="1" required>
-                </label>
-                <label class="field field-emphasis">
-                  <span class="field-copy"><span class="field-label tip-mark" data-tip="concurrent_searches" data-i18n="lbl_searches">Searches running at the same moment</span><span class="field-hint" data-i18n="hint_searches">Default 8. Peak scheduled + ad-hoc jobs active together — drives Search Head CPU/RAM and count (about 1 search = 1 CPU core per official Reference hardware)</span></span>
-                  <input name="concurrent_searches" id="concurrent_searches" type="number" value="8" min="1" step="1" required placeholder="e.g. 16" data-i18n-placeholder="ph_searches" aria-required="true">
-                </label>
-                <label class="field">
-                  <span class="field-copy"><span class="field-label tip-mark" data-tip="saved_searches" data-i18n="lbl_saved">Saved / scheduled searches (total)</span><span class="field-hint" data-i18n="hint_saved">How many saved searches are enabled in total — not the same as “running at once”</span></span>
-                  <input name="saved_searches" id="saved_searches" type="number" value="20" min="0" required>
-                </label>
-              </div>
-            </section>
-            <section class="form-section" aria-labelledby="sec-shc-title">
-              <header class="form-section-head">
-                <h4 id="sec-shc-title" data-i18n="sec_shc">Search head cluster</h4>
-                <p class="hint" data-i18n="sec_shc_hint">Optional clustering for Search Heads. Set how many Search Heads you want; sizing also uses the search-load numbers above.</p>
+                <h4 id="sec-shc-title" data-i18n="sec_shc">Search head</h4>
+                <p class="hint" data-i18n="sec_shc_hint">Search Head tier: cluster option, node count, and search load (users and searches at the same moment).</p>
               </header>
               <div class="grid">
                 <label class="field check glass-chip"><input name="search_head_cluster" type="checkbox" id="search_head_cluster"> <span class="tip-mark" data-tip="shc" data-i18n="shc">Search head cluster</span></label>
@@ -590,6 +569,27 @@
                   <input name="n_sh" id="n_sh" type="number" value="1" min="1" placeholder="1">
                   <span class="field-hint shc-n-sh-hint" id="shc-n-sh-hint" hidden data-i18n="hint_shc_n_sh">With SHC: use 1 (single-member interim) or ≥3 — Splunk does not support 2 members for HA.</span>
                 </label>
+              </div>
+              <div class="form-subsection" aria-labelledby="sec-search-load-title">
+                <header class="form-section-head">
+                  <h5 id="sec-search-load-title"><span data-i18n="sec_search_load">Search load</span> <span class="req-badge" data-i18n="req_badge">Required</span></h5>
+                  <p class="hint" data-i18n="sec_search_load_hint">You must enter how many searches run at the same moment — this drives Search Head CPU/RAM and how many Search Heads you need (about one CPU core per active search).</p>
+                  <p id="search-load-err" class="err" hidden></p>
+                </header>
+                <div class="grid">
+                  <label class="field">
+                    <span class="field-copy"><span class="field-label tip-mark" data-tip="concurrent_users" data-i18n="lbl_users">Concurrent search users</span><span class="field-hint" data-i18n="hint_users">How many people search at the same time</span></span>
+                    <input name="concurrent_users" id="concurrent_users" type="number" value="8" min="1" required>
+                  </label>
+                  <label class="field field-emphasis">
+                    <span class="field-copy"><span class="field-label tip-mark" data-tip="concurrent_searches" data-i18n="lbl_searches">Searches running at the same moment</span><span class="field-hint" data-i18n="hint_searches">Default 8. Peak scheduled + ad-hoc jobs active together — drives Search Head CPU/RAM and count (about 1 search = 1 CPU core per official Reference hardware)</span></span>
+                    <input name="concurrent_searches" id="concurrent_searches" type="number" value="8" min="1" step="1" required placeholder="e.g. 16" data-i18n-placeholder="ph_searches" aria-required="true">
+                  </label>
+                  <label class="field">
+                    <span class="field-copy"><span class="field-label tip-mark" data-tip="saved_searches" data-i18n="lbl_saved">Saved / scheduled searches (total)</span><span class="field-hint" data-i18n="hint_saved">How many saved searches are enabled in total — not the same as “running at once”</span></span>
+                    <input name="saved_searches" id="saved_searches" type="number" value="20" min="0" required>
+                  </label>
+                </div>
               </div>
             </section>
           </div>
