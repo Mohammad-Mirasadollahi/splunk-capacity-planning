@@ -4,22 +4,30 @@ Official Splunk **Capacity Planning** guidance (Infrastructure + Storage), extra
 
 **Designed by [Mohammad Mirasadollahi](https://github.com/Mohammad-Mirasadollahi)** · **GitHub:** [Mohammad-Mirasadollahi/splunk-capacity-planning](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning)
 
-**Language:** **English** (this page) · [فارسی](README.fa.md)  
-**Live site:** [Documentation hub](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=en) · [SCPcalc calculator](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/?lang=en)
+**Language:** **English** (this page) · [فارسی](README.fa.md)
 
 Named after Splunk’s Capacity Planning Manual — see [Introduction to capacity planning](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/IntroductiontocapacityplanningforSplunkEnterprise).
 
 **License:** [MIT](LICENSE) · **Changelog:** [CHANGELOG.md](CHANGELOG.md)
 
+---
+
+## Live site (GitHub Pages)
+
+> **Use the live site** — designed hub + calculator in the browser (not raw Markdown).
+
+| | Open here |
+|---|---|
+| **Documentation hub (English)** | **https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=en** |
+| **Documentation hub (فارسی)** | **https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=fa** |
+| **SCPcalc calculator (English)** | **https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/?lang=en** |
+| **SCPcalc calculator (فارسی)** | **https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/?lang=fa** |
+
+---
+
 ## Documentation hub
 
-Browse the bilingual capacity-planning pack in the designed GitHub Pages site (not only raw Markdown):
-
-| | |
-|---|---|
-| **Documentation (English)** | [mohammad-mirasadollahi.github.io/…/?lang=en](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=en) |
-| **مستندات (فارسی)** | [mohammad-mirasadollahi.github.io/…/?lang=fa](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=fa) |
-| **Source Markdown** | [`docs/en/`](docs/en/) · [`docs/fa/`](docs/fa/) |
+Browse the bilingual capacity-planning pack in the designed GitHub Pages site (not only raw Markdown). Source Markdown lives in [`docs/en/`](docs/en/) · [`docs/fa/`](docs/fa/).
 
 ## Calculator (SCPcalc)
 

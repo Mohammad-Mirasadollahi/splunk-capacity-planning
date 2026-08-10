@@ -6,8 +6,7 @@
 
 **طراحی: [محمد میراسدالهی](https://github.com/Mohammad-Mirasadollahi)** · **GitHub:** [Mohammad-Mirasadollahi/splunk-capacity-planning](https://github.com/Mohammad-Mirasadollahi/splunk-capacity-planning)
 
-**زبان:** [English](README.md) · **فارسی** (همین صفحه)  
-**سایت زنده:** [هاب مستندات](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=fa) · [ماشین‌حساب SCPcalc](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/?lang=fa)
+**زبان:** [English](README.md) · **فارسی** (همین صفحه)
 
 نام پروژه از Capacity Planning Manual اسپلانک گرفته شده — [Introduction to capacity planning](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/IntroductiontocapacityplanningforSplunkEnterprise).
 
@@ -15,15 +14,24 @@
 
 > **توجه:** زبان پیش‌فرض و منبع حقیقت **انگلیسی** است (`docs/en/` و [`README.md`](README.md)). این صفحه نمای فارسی همان مخزن است.
 
+---
+
+## سایت زنده (GitHub Pages)
+
+> **از سایت زنده استفاده کنید** — هاب طراحی‌شده + ماشین‌حساب در مرورگر (نه Markdown خام).
+
+| | اینجا باز کنید |
+|---|---|
+| **هاب مستندات (فارسی)** | **https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=fa** |
+| **هاب مستندات (English)** | **https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=en** |
+| **ماشین‌حساب SCPcalc (فارسی)** | **https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/?lang=fa** |
+| **ماشین‌حساب SCPcalc (English)** | **https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/?lang=en** |
+
+---
+
 ## هاب مستندات
 
-بستهٔ دوزبانهٔ Capacity Planning را در سایت طراحی‌شدهٔ GitHub Pages ببینید (نه فقط Markdown خام):
-
-| | |
-|---|---|
-| **مستندات (فارسی)** | [mohammad-mirasadollahi.github.io/…/?lang=fa](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=fa) |
-| **Documentation (English)** | [mohammad-mirasadollahi.github.io/…/?lang=en](https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/?lang=en) |
-| **منبع Markdown** | [`docs/fa/`](docs/fa/) · [`docs/en/`](docs/en/) |
+بستهٔ دوزبانهٔ Capacity Planning را در سایت طراحی‌شدهٔ GitHub Pages ببینید (نه فقط Markdown خام). منبع Markdown در [`docs/fa/`](docs/fa/) · [`docs/en/`](docs/en/).
 
 ## ماشین‌حساب (SCPcalc)
 
