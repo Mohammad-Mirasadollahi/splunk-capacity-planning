@@ -58,7 +58,9 @@ def inject(path: Path, lang: str) -> bool:
     # Prefer placing after the visual wrapper opens
     markers = [
         '<div class="en-doc">\n',
+        '<div class="en-doc" style="direction:ltr; text-align:left;">\n',
         '<div class="fa-doc">\n',
+        '<div class="fa-doc" style="direction:rtl; text-align:left;">\n',
     ]
     placed = False
     for marker in markers:

@@ -5,30 +5,11 @@ import re
 
 root = Path(__file__).resolve().parents[1] / "docs"
 
+# No <style>/<link>: GitHub GFM sanitizes them and shows the markup as plain text.
 FA_STYLE = """\
-<div dir="rtl" lang="fa" style="text-align:left; font-family: 'Vazirmatn', 'IRANSansX', 'IRANSans', 'Tahoma', 'Segoe UI', sans-serif; line-height:1.9; max-width:980px;">
+<div dir="rtl" lang="fa" style="direction:rtl; text-align:left; font-family: Vazirmatn, IRANSansX, IRANSans, Tahoma, 'Segoe UI', sans-serif; line-height:1.9; max-width:980px;">
 
-<style>
-  .fa-doc { direction: rtl; text-align: left; }
-  .fa-doc, .fa-doc p, .fa-doc li, .fa-doc td, .fa-doc th, .fa-doc blockquote {
-    font-family: 'Vazirmatn', 'IRANSansX', 'IRANSans', 'Tahoma', 'Segoe UI', sans-serif;
-    text-align: left;
-  }
-  .fa-doc h1, .fa-doc h2, .fa-doc h3, .fa-doc h4 {
-    font-family: 'Vazirmatn', 'IRANSansX', 'IRANSans', Tahoma, sans-serif;
-    text-align: left;
-  }
-  .fa-doc code, .fa-doc pre, .fa-doc a {
-    direction: ltr;
-    unicode-bidi: isolate;
-    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Courier New', monospace;
-    text-align: left;
-  }
-  .fa-doc table { width: 100%; }
-  .fa-doc th, .fa-doc td { text-align: left; }
-</style>
-
-<div class="fa-doc">
+<div class="fa-doc" style="direction:rtl; text-align:left;">
 
 """
 
@@ -38,25 +19,11 @@ FA_FOOTER = """
 </div>
 """
 
+# No <style>/<link>: GitHub GFM sanitizes them and shows the markup as plain text.
 EN_STYLE = """\
-<div dir="ltr" lang="en" style="text-align:left; font-family: 'Source Sans 3', 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height:1.7; max-width:980px;">
+<div dir="ltr" lang="en" style="direction:ltr; text-align:left; font-family: 'Source Sans 3', 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height:1.7; max-width:980px;">
 
-<style>
-  .en-doc { direction: ltr; text-align: left; }
-  .en-doc, .en-doc p, .en-doc li, .en-doc td, .en-doc th {
-    font-family: 'Source Sans 3', 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    text-align: left;
-  }
-  .en-doc h1, .en-doc h2, .en-doc h3, .en-doc h4 {
-    font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
-    text-align: left;
-  }
-  .en-doc code, .en-doc pre {
-    font-family: 'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace;
-  }
-</style>
-
-<div class="en-doc">
+<div class="en-doc" style="direction:ltr; text-align:left;">
 
 """
 

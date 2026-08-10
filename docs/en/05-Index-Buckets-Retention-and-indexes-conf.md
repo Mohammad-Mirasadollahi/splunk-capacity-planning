@@ -1,26 +1,6 @@
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-
 <div dir="ltr" lang="en" style="text-align:left; font-family: 'Source Sans 3', 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height:1.7; max-width:980px;">
 
-<style>
-  .en-doc { direction: ltr; text-align: left; }
-  .en-doc, .en-doc p, .en-doc li, .en-doc td, .en-doc th {
-    font-family: 'Source Sans 3', 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    text-align: left;
-  }
-  .en-doc h1, .en-doc h2, .en-doc h3, .en-doc h4 {
-    font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
-    text-align: left;
-  }
-  .en-doc code, .en-doc pre {
-    font-family: 'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace;
-  }
-  .en-doc table { width: 100%; }
-</style>
-
-<div class="en-doc">
+<div class="en-doc" style="direction:ltr; text-align:left;">
 
 <nav class="lang-switch" aria-label="Language" style="margin:0 0 1.25rem; display:flex; gap:0.5rem; align-items:center; font-family:inherit; font-size:0.95rem;">
   <span style="opacity:0.75;">Language:</span>
@@ -29,7 +9,6 @@
   <a href="../fa/05-Index-Buckets-Retention-and-indexes-conf.md" style="text-decoration:none;">فارسی</a>
   <span style="opacity:0.55; margin-inline-start:0.5rem;">(default: English)</span>
 </nav>
-
 
 # Index Buckets, Event Size & indexes.conf Retention
 

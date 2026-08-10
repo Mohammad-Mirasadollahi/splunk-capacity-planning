@@ -1,26 +1,6 @@
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-
 <div dir="ltr" lang="en" style="text-align:left; font-family: 'Source Sans 3', 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height:1.7; max-width:980px;">
 
-<style>
-  .en-doc { direction: ltr; text-align: left; }
-  .en-doc, .en-doc p, .en-doc li, .en-doc td, .en-doc th {
-    font-family: 'Source Sans 3', 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    text-align: left;
-  }
-  .en-doc h1, .en-doc h2, .en-doc h3, .en-doc h4 {
-    font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
-    text-align: left;
-  }
-  .en-doc code, .en-doc pre {
-    font-family: 'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace;
-  }
-  .en-doc table { width: 100%; }
-</style>
-
-<div class="en-doc">
+<div class="en-doc" style="direction:ltr; text-align:left;">
 
 <nav class="lang-switch" aria-label="Language" style="margin:0 0 1.25rem; display:flex; gap:0.5rem; align-items:center; font-family:inherit; font-size:0.95rem;">
   <span style="opacity:0.75;">Language:</span>
@@ -30,17 +10,13 @@
   <span style="opacity:0.55; margin-inline-start:0.5rem;">(default: English)</span>
 </nav>
 
-
 # Official References (Read First)
 
 > **Scope:** see document body (Infrastructure / Storage / Disk / IOPS)  
 > **Doc channel:** Enterprise **`/latest/`** (resolved **10.4**) · ES **8.5** (help.splunk.com) · ITSI **5.0** (help.splunk.com) · synced 2026-07-17  
 > **Update:** `python3 tools/sync_latest_docs.py --apply` · [`00-References.md`](00-References.md) · [`VERSION.md`](../../VERSION.md)
 
-
 > **Canonical premium apps:** ES planning is on **help.splunk.com ES 8.5** (classic `/ES/latest/Install/DeploymentPlanning` on docs.splunk.com does not resolve). ITSI Plan is on **help.splunk.com ITSI 5.0** (ahead of docs.splunk.com `/ITSI/latest/` when that still resolves to 4.21.x). Bump with `--es-version` / `--itsi-version`.
-
-
 
 ---
 

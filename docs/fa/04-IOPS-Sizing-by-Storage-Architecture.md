@@ -1,32 +1,6 @@
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-
 <div dir="rtl" lang="fa" style="text-align:left; font-family: 'Vazirmatn', 'IRANSansX', 'IRANSans', 'Tahoma', 'Segoe UI', sans-serif; line-height:1.9; max-width:980px;">
 
-<style>
-  .fa-doc { direction: rtl; text-align: left; }
-  .fa-doc, .fa-doc p, .fa-doc li, .fa-doc td, .fa-doc th, .fa-doc blockquote {
-    font-family: 'Vazirmatn', 'IRANSansX', 'IRANSans', 'Tahoma', 'Segoe UI', sans-serif;
-    text-align: left;
-  }
-  .fa-doc h1, .fa-doc h2, .fa-doc h3, .fa-doc h4 {
-    font-family: 'Vazirmatn', 'IRANSansX', 'IRANSans', Tahoma, sans-serif;
-    text-align: left;
-  }
-  .fa-doc code, .fa-doc pre, .fa-doc a {
-    direction: ltr;
-    unicode-bidi: isolate;
-    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Courier New', monospace;
-    text-align: left;
-  }
-  .fa-doc table { width: 100%; }
-  .fa-doc th, .fa-doc td { text-align: left; }
-  .tag-official { background: #e8f5e9; padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.85em; }
-  .tag-eng { background: #fff3e0; padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.85em; }
-</style>
-
-<div class="fa-doc">
+<div class="fa-doc" style="direction:rtl; text-align:left;">
 
 <nav class="lang-switch" aria-label="زبان" style="margin:0 0 1.25rem; display:flex; gap:0.5rem; align-items:center; font-family:inherit; font-size:0.95rem;">
   <span style="opacity:0.75;">زبان:</span>
@@ -36,16 +10,11 @@
   <span style="opacity:0.55; margin-inline-start:0.5rem;">(پیش‌فرض: English)</span>
 </nav>
 
-
 # سایزینگ IOPS بر اساس معماری Storage
 
 > **دامنه:** بدنه‌ی سند (زیرساخت / Storage / دیسک / IOPS)  
 > **کانال مستند:** Enterprise **`/latest/`** (resolve **10.4**) · ES **8.5** (help.splunk.com) · ITSI **5.0** (help.splunk.com) · همگام‌سازی 2026-07-17  
 > **آپدیت:** `python3 tools/sync_latest_docs.py --apply` · [`00-References.md`](00-References.md) · [`VERSION.md`](../../VERSION.md)
-
-
-
-
 
 > **مراجع (اول بخوانید):** [`00-References.md`](00-References.md) — فهرست اصلی استنادهای رسمی
 
@@ -71,8 +40,8 @@
 
 | لایه | چیست | برچسب در این سند |
 |---|---|---|
-| **A — رسمی Splunk** | اعداد و قواعد رسانه از Capacity Planning / Installation / SmartStore / ES | <span class="tag-official">رسمی</span> |
-| **B — پل مهندسی** | چگونه سطح RAID، تعداد دیسک و کلاس درایو با هم به اهداف رسمی می‌رسند (Splunk فرمول RAID منتشر نکرده) | <span class="tag-eng">مهندسی</span> |
+| **A — رسمی Splunk** | اعداد و قواعد رسانه از Capacity Planning / Installation / SmartStore / ES | <span style="background:#e8f5e9; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">رسمی</span> |
+| **B — پل مهندسی** | چگونه سطح RAID، تعداد دیسک و کلاس درایو با هم به اهداف رسمی می‌رسند (Splunk فرمول RAID منتشر نکرده) | <span style="background:#fff3e0; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">مهندسی</span> |
 
 **قاعده:** لایه B هیچ‌وقت لایه A را باطل نمی‌کند. اگر FIO نشان دهد کف رسمی را نمی‌زنید، معماری مردود است — فارغ از تعداد دیسک یا نوع RAID.
 
@@ -86,7 +55,7 @@
 
 ## 1) اهداف رسمی IOPS / رسانه Splunk
 
-### 1.1 کف‌های سخت <span class="tag-official">رسمی</span>
+### 1.1 کف‌های سخت <span style="background:#e8f5e9; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">رسمی</span>
 
 | هدف | مقدار | اعمال می‌شود به |
 |---|---|---|
@@ -101,7 +70,7 @@
 
 **ارجاع:** [Reference hardware](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware)؛ [System requirements](https://docs.splunk.com/Documentation/Splunk/latest/Installation/Systemrequirements)
 
-### 1.2 مدل Array اشتراکی سطح SSD <span class="tag-official">رسمی</span>
+### 1.2 مدل Array اشتراکی سطح SSD <span style="background:#e8f5e9; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">رسمی</span>
 
 وقتی چند indexer از یک array مشترک با عملکرد **سطح SSD** استفاده می‌کنند:
 
@@ -115,7 +84,7 @@ IOPS_array_for_indexers ≥ 4000 × N_indexers
 
 **ارجاع:** [Reference hardware → Virtualized Infrastructures](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware)؛ [ES DeploymentPlanning](https://help.splunk.com/en/splunk-enterprise-security-8/install/8.5/planning/performance-reference-for-splunk-enterprise-security)
 
-### 1.3 SSD محلی per-host (غیر اشتراکی) <span class="tag-official">رسمی</span> + <span class="tag-eng">مهندسی</span>
+### 1.3 SSD محلی per-host (غیر اشتراکی) <span style="background:#e8f5e9; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">رسمی</span> + <span style="background:#fff3e0; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">مهندسی</span>
 
 Splunk برای hot/warm **SSD** را الزامی کرده، اما به‌جز قاعده **۸۰۰** برای volume نصب و مثال اشتراکی **۴۰۰۰×N**، کف عددی دومی با برچسب صریح «per local indexer SSD» منتشر نکرده است.
 
@@ -151,7 +120,7 @@ J. SmartStore؟               [ ] خیر  [ ] بله (روز cache: 30 / اگر 
 
 ## 3) هدف IOPS بر اساس نقش و توپولوژی
 
-### 3.1 درخت تصمیم <span class="tag-official">رسمی</span>
+### 3.1 درخت تصمیم <span style="background:#e8f5e9; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">رسمی</span>
 
 ```text
 START
@@ -200,7 +169,7 @@ START
 
 ## 4) کلاس رسانه: HDD در برابر SSD در برابر NVMe
 
-### 4.1 Splunk کجا چه چیزی را مجاز کرده <span class="tag-official">رسمی</span>
+### 4.1 Splunk کجا چه چیزی را مجاز کرده <span style="background:#e8f5e9; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">رسمی</span>
 
 | رسانه | Search Head | IDX Hot/Warm + DMA | SmartStore محلی | Cold | Frozen |
 |---|---|---|---|---|---|
@@ -209,7 +178,7 @@ START
 | **NVMe** | بله (کلاس SSD) | بله (کلاس SSD / ترجیح SmartStore) | **در بسیاری کلودها ترجیح** | غیرمعمول | غیرمعمول |
 | **SAN/NAS یا NFS** | جایگزین قواعد hot/warm نیست | Hot/warm روی شبکه **نه** | Remote = object store | بله (با caveat) | بله |
 
-### 4.2 پیامد برنامه‌ریزی <span class="tag-eng">مهندسی</span>
+### 4.2 پیامد برنامه‌ریزی <span style="background:#fff3e0; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">مهندسی</span>
 
 از **دیتاشیت vendor + FIO** استفاده کنید، نه IOPS تبلیغاتی.
 
@@ -231,7 +200,7 @@ START
 
 ## 5) بودن یا نبودن RAID — اثر روی IOPS قابل‌استفاده
 
-### 5.1 موضع رسمی <span class="tag-official">رسمی</span>
+### 5.1 موضع رسمی <span style="background:#e8f5e9; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">رسمی</span>
 
 Reference hardware فعلی سطح RAID مشخصی را اجباری نکرده. می‌توانید استفاده کنید از:
 
@@ -241,7 +210,7 @@ Reference hardware فعلی سطح RAID مشخصی را اجباری نکرده.
 
 …به‌شرط آنکه **رسانه + sustained IOPS + قواعد جای‌گذاری** برقرار باشد.
 
-### 5.2 ضرایب مهندسی RAID (برای تخمین IOPS قابل‌استفاده) <span class="tag-eng">مهندسی</span>
+### 5.2 ضرایب مهندسی RAID (برای تخمین IOPS قابل‌استفاده) <span style="background:#fff3e0; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">مهندسی</span>
 
 این ضرایب **مهندسی ذخیره‌سازی صنعتی** هستند و فقط برای تخمین رسیدن به اهداف رسمی Splunk‌اند. با vendor کنترلر RAID تأیید کنید (جریمه write فرق می‌کند).
 
@@ -265,7 +234,7 @@ W        = ضریب جریمه write (تقریبی)
 
 **Indexing روی hot/warm هم نوشتن و هم خواندن سنگین است.** چیدمان‌هایی با جریمه write بزرگ (RAID 5/6 کلاسیک) معمولاً به **دیسک بیشتر** یا **SSD/NVMe** نیاز دارند تا از سد عملکرد Splunk رد شوند.
 
-### 5.3 فرمول چک حداقل <span class="tag-eng">مهندسی</span> → باید <span class="tag-official">رسمی</span> را ارضا کند
+### 5.3 فرمول چک حداقل <span style="background:#fff3e0; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">مهندسی</span> → باید <span style="background:#e8f5e9; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">رسمی</span> را ارضا کند
 
 ```text
 I_usable_write ≈ f(RAID, N_disks, I_disk)
@@ -290,7 +259,7 @@ I_usable_read  ≈ g(RAID, N_disks, I_disk)
 
 ## 6) Workbook تعداد دیسک
 
-### 6.1 حل برای تعداد دیسک (مهندسی) <span class="tag-eng">مهندسی</span>
+### 6.1 حل برای تعداد دیسک (مهندسی) <span style="background:#fff3e0; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">مهندسی</span>
 
 با هدف نوشتن‌محور `T` (IOPS) و مدل write مربوط به RAID:
 

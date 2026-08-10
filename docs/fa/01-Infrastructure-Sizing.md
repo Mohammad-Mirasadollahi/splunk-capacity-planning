@@ -1,30 +1,6 @@
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-
 <div dir="rtl" lang="fa" style="text-align:left; font-family: 'Vazirmatn', 'IRANSansX', 'IRANSans', 'Tahoma', 'Segoe UI', sans-serif; line-height:1.9; max-width:980px;">
 
-<style>
-  .fa-doc { direction: rtl; text-align: left; }
-  .fa-doc, .fa-doc p, .fa-doc li, .fa-doc td, .fa-doc th, .fa-doc blockquote {
-    font-family: 'Vazirmatn', 'IRANSansX', 'IRANSans', 'Tahoma', 'Segoe UI', sans-serif;
-    text-align: left;
-  }
-  .fa-doc h1, .fa-doc h2, .fa-doc h3, .fa-doc h4 {
-    font-family: 'Vazirmatn', 'IRANSansX', 'IRANSans', Tahoma, sans-serif;
-    text-align: left;
-  }
-  .fa-doc code, .fa-doc pre, .fa-doc a {
-    direction: ltr;
-    unicode-bidi: isolate;
-    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Courier New', monospace;
-    text-align: left;
-  }
-  .fa-doc table { width: 100%; }
-  .fa-doc th, .fa-doc td { text-align: left; }
-</style>
-
-<div class="fa-doc">
+<div class="fa-doc" style="direction:rtl; text-align:left;">
 
 <nav class="lang-switch" aria-label="زبان" style="margin:0 0 1.25rem; display:flex; gap:0.5rem; align-items:center; font-family:inherit; font-size:0.95rem;">
   <span style="opacity:0.75;">زبان:</span>
@@ -34,18 +10,11 @@
   <span style="opacity:0.55; margin-inline-start:0.5rem;">(پیش‌فرض: English)</span>
 </nav>
 
-
 # طرح سایزینگ زیرساخت Splunk (Infrastructure Sizing)
 
 > **دامنه:** بدنه‌ی سند (زیرساخت / Storage / دیسک / IOPS)  
 > **کانال مستند:** Enterprise **`/latest/`** (resolve **10.4**) · ES **8.5** (help.splunk.com) · ITSI **5.0** (help.splunk.com) · همگام‌سازی 2026-07-17  
 > **آپدیت:** `python3 tools/sync_latest_docs.py --apply` · [`00-References.md`](00-References.md) · [`VERSION.md`](../../VERSION.md)
-
-
-
-
-
-
 
 > **مراجع (اول بخوانید):** [`00-References.md`](00-References.md) — فهرست اصلی استنادهای رسمی
 

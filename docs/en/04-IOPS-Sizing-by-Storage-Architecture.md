@@ -1,28 +1,6 @@
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-
 <div dir="ltr" lang="en" style="text-align:left; font-family: 'Source Sans 3', 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height:1.7; max-width:980px;">
 
-<style>
-  .en-doc { direction: ltr; text-align: left; }
-  .en-doc, .en-doc p, .en-doc li, .en-doc td, .en-doc th {
-    font-family: 'Source Sans 3', 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    text-align: left;
-  }
-  .en-doc h1, .en-doc h2, .en-doc h3, .en-doc h4 {
-    font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
-    text-align: left;
-  }
-  .en-doc code, .en-doc pre {
-    font-family: 'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace;
-  }
-  .en-doc table { width: 100%; }
-  .tag-official { background: #e8f5e9; padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.85em; }
-  .tag-eng { background: #fff3e0; padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.85em; }
-</style>
-
-<div class="en-doc">
+<div class="en-doc" style="direction:ltr; text-align:left;">
 
 <nav class="lang-switch" aria-label="Language" style="margin:0 0 1.25rem; display:flex; gap:0.5rem; align-items:center; font-family:inherit; font-size:0.95rem;">
   <span style="opacity:0.75;">Language:</span>
@@ -32,16 +10,11 @@
   <span style="opacity:0.55; margin-inline-start:0.5rem;">(default: English)</span>
 </nav>
 
-
 # IOPS Sizing by Storage Architecture
 
 > **Scope:** see document body (Infrastructure / Storage / Disk / IOPS)  
 > **Doc channel:** Enterprise **`/latest/`** (resolved **10.4**) · ES **8.5** (help.splunk.com) · ITSI **5.0** (help.splunk.com) · synced 2026-07-17  
 > **Update:** `python3 tools/sync_latest_docs.py --apply` · [`00-References.md`](00-References.md) · [`VERSION.md`](../../VERSION.md)
-
-
-
-
 
 > **References (read first):** [`00-References.md`](00-References.md) — master official citation index
 
@@ -67,8 +40,8 @@
 
 | Layer | What it is | Label in this doc |
 |---|---|---|
-| **A — Official Splunk** | Numbers and media rules from Capacity Planning / Installation / SmartStore / ES | <span class="tag-official">OFFICIAL</span> |
-| **B — Engineering bridge** | How RAID level, disk count, and drive class combine to **reach** those official targets (Splunk does **not** publish RAID formulas) | <span class="tag-eng">ENGINEERING</span> |
+| **A — Official Splunk** | Numbers and media rules from Capacity Planning / Installation / SmartStore / ES | <span style="background:#e8f5e9; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">OFFICIAL</span> |
+| **B — Engineering bridge** | How RAID level, disk count, and drive class combine to **reach** those official targets (Splunk does **not** publish RAID formulas) | <span style="background:#fff3e0; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">ENGINEERING</span> |
 
 **Rule:** Layer B never overrides Layer A. If FIO shows you miss the official floor, the architecture fails — regardless of how many disks or which RAID you bought.
 
@@ -82,7 +55,7 @@ Companion docs:
 
 ## 1) Official Splunk IOPS / Media Targets
 
-### 1.1 Hard floors <span class="tag-official">OFFICIAL</span>
+### 1.1 Hard floors <span style="background:#e8f5e9; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">OFFICIAL</span>
 
 | Target | Value | Applies to |
 |---|---|---|
@@ -97,7 +70,7 @@ Companion docs:
 
 **Source:** [Reference hardware](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware); [System requirements](https://docs.splunk.com/Documentation/Splunk/latest/Installation/Systemrequirements)
 
-### 1.2 Shared / virtual SSD-level array model <span class="tag-official">OFFICIAL</span>
+### 1.2 Shared / virtual SSD-level array model <span style="background:#e8f5e9; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">OFFICIAL</span>
 
 When multiple indexers share an array that must deliver **SSD-level** performance:
 
@@ -111,7 +84,7 @@ For ES on VMs: measure IOPS with **all indexer nodes running the test simultaneo
 
 **Source:** [Reference hardware → Virtualized Infrastructures](https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Referencehardware); [ES DeploymentPlanning](https://help.splunk.com/en/splunk-enterprise-security-8/install/8.5/planning/performance-reference-for-splunk-enterprise-security)
 
-### 1.3 Per-host local SSD (non-shared) <span class="tag-official">OFFICIAL</span> + <span class="tag-eng">ENGINEERING</span>
+### 1.3 Per-host local SSD (non-shared) <span style="background:#e8f5e9; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">OFFICIAL</span> + <span style="background:#fff3e0; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">ENGINEERING</span>
 
 Splunk mandates **SSD** for hot/warm but does **not** publish a second numeric IOPS floor specifically labeled “per local indexer SSD volume” beyond the install-volume **800** rule and the shared-array **4000×N** example.
 
@@ -147,7 +120,7 @@ J. SmartStore?              [ ] No  [ ] Yes (local cache days: 30 / 90 if ES)
 
 ## 3) Target IOPS by Role and Topology
 
-### 3.1 Decision tree <span class="tag-official">OFFICIAL</span>
+### 3.1 Decision tree <span style="background:#e8f5e9; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">OFFICIAL</span>
 
 ```text
 START
@@ -196,7 +169,7 @@ START
 
 ## 4) Media Class: HDD vs SSD vs NVMe
 
-### 4.1 What Splunk allows where <span class="tag-official">OFFICIAL</span>
+### 4.1 What Splunk allows where <span style="background:#e8f5e9; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">OFFICIAL</span>
 
 | Media | Search Head | IDX Hot/Warm + DMA | SmartStore local | Cold | Frozen |
 |---|---|---|---|---|---|
@@ -205,7 +178,7 @@ START
 | **NVMe** | Yes (SSD-class) | Yes (SSD-class / SmartStore preferred) | **Preferred on many clouds** | Unusual | Unusual |
 | **SAN/NAS block or NFS** | Not for replacing hot/warm rules | Hot/warm **not** on network | Remote = object store, not NFS hot path | Yes (with caveats) | Yes |
 
-### 4.2 Planning implications <span class="tag-eng">ENGINEERING</span>
+### 4.2 Planning implications <span style="background:#fff3e0; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">ENGINEERING</span>
 
 Use **vendor datasheet + FIO**, not marketing peak IOPS.
 
@@ -227,7 +200,7 @@ Typical order of magnitude for **random** small-block I/O (illustrative only —
 
 ## 5) RAID Present vs Absent — Effect on Usable IOPS
 
-### 5.1 Official position <span class="tag-official">OFFICIAL</span>
+### 5.1 Official position <span style="background:#e8f5e9; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">OFFICIAL</span>
 
 Current Reference hardware does **not** require a specific RAID level. You may use:
 
@@ -237,7 +210,7 @@ Current Reference hardware does **not** require a specific RAID level. You may u
 
 …as long as **media + sustained IOPS + placement rules** are met.
 
-### 5.2 Engineering RAID factors (to estimate usable IOPS) <span class="tag-eng">ENGINEERING</span>
+### 5.2 Engineering RAID factors (to estimate usable IOPS) <span style="background:#fff3e0; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">ENGINEERING</span>
 
 These factors are **industry storage engineering**, used only to estimate whether a disk set can hit Splunk’s official targets. Confirm with your RAID/controller vendor (penalties vary).
 
@@ -261,7 +234,7 @@ W        = write penalty factor (approx.)
 
 **Indexing is write- and read-intensive** on hot/warm. Layouts with large write penalties (classic RAID 5/6) often need **more disks** or **SSD/NVMe** to still clear Splunk’s performance bar.
 
-### 5.3 Minimum check formula <span class="tag-eng">ENGINEERING</span> → must satisfy <span class="tag-official">OFFICIAL</span>
+### 5.3 Minimum check formula <span style="background:#fff3e0; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">ENGINEERING</span> → must satisfy <span style="background:#e8f5e9; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">OFFICIAL</span>
 
 ```text
 I_usable_write ≈ f(RAID, N_disks, I_disk)     # from table above / vendor
@@ -286,7 +259,7 @@ For local hot/warm SSD/NVMe:
 
 ## 6) Disk Count Workbook
 
-### 6.1 Solve for disks (engineering) <span class="tag-eng">ENGINEERING</span>
+### 6.1 Solve for disks (engineering) <span style="background:#fff3e0; padding:0.15em 0.4em; border-radius:3px; font-size:0.85em;">ENGINEERING</span>
 
 Given a write-oriented target `T` (IOPS) and RAID write model:
 
