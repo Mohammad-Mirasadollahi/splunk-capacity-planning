@@ -224,7 +224,7 @@ function renderPlanResult(data) {
   }
   const overviewCharts = document.getElementById("results-charts");
   if (overviewCharts) {
-    renderAllCharts(data, { hostId: "results-charts", idPrefix: "results" });
+    renderAllCharts(data, { hostId: "results-charts", idPrefix: "results", rows: state.rows });
   }
 
   if (designEl) designEl.textContent = d.structure_text || "";
@@ -255,7 +255,7 @@ function renderPlanResult(data) {
   syncVolStateFromGlobals();
   setConfText(state.lastConf, true);
   state.lastPlan = data;
-  renderAllCharts(data);
+  renderAllCharts(data, { rows: state.rows });
   if (err) err.hidden = true;
   closeWizard();
   if (out) {

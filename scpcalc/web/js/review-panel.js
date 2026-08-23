@@ -321,7 +321,7 @@ export async function loadReviewPreview() {
     renderReviewViz(data);
     renderPreviewMetrics(data);
     renderPreviewIndexes(data);
-    renderAllCharts(data, { hostId: "review-charts", idPrefix: "review" });
+    renderAllCharts(data, { hostId: "review-charts", idPrefix: "review", rows: state.rows });
     if (status) {
       status.textContent = t("review_preview_ready");
     }
