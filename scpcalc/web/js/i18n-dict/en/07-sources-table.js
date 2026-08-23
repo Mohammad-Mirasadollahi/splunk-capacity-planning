@@ -45,4 +45,5 @@ export const sources_table = {
   table_find_count: "{n} of {t} rows",
   table_find_ph: "role, tier, RAM…",
   table_find_ph_ix: "index, GB, MB…",
+  table_find_ph_src: "source, index, GB, EPS…",
 };

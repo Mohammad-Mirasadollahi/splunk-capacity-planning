@@ -77,6 +77,18 @@
 }
 
 /* Sources: keep actions visible; table scrolls in remaining space */
+.wizard-body .tab-panel[data-panel="vol-sources"] .sources-table-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.85rem;
+  margin: 0 0 0.55rem;
+}
+
+.wizard-body .tab-panel[data-panel="vol-sources"] .src-table--volume tr.is-find-hit td {
+  background: rgba(63, 224, 197, 0.08);
+}
+
 .wizard-body .tab-panel[data-panel="vol-sources"] {
   display: flex;
   flex-direction: column;

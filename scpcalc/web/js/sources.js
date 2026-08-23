@@ -12,6 +12,7 @@ import {
 } from "./volume-convert.js";
 import { DEMO_AVG_EVENT_BYTES } from "./defaults.js";
 import { formatSizeGB, formatSizeMB, planSourceDiskNeeds, underfillScaleFactor } from "./source-sizing.js";
+import { applyTableFind, bindTableFind } from "./table-find.js";
 
 export const MAIN_INDEX_KEY = "main";
 
@@ -297,13 +298,30 @@ export function syncTotalVolumePair(edited) {
   }
 }
 
+function rowFindText(r) {
+  return [
+    r.label,
+    r.index_name,
+    r.key,
+    r.notes,
+    r.daily_gb,
+    r.eps,
+    r.event_bytes,
+    r.retention_days,
+    r.hot_warm_days,
+  ]
+    .filter((v) => v !== "" && v != null)
+    .join(" ");
+}
+
 function volumeRowHTML(r, i, sizedMap) {
   const title = r.notes ? ` data-soft-tip="${escapeAttr(r.notes)}" data-soft-tip-title="${escapeAttr(r.label || r.index_name || "Source")}"` : "";
   const on = !!r.enabled;
   const sumOn = !!r.enable_summary;
   const p = `src-${i}`;
   const sized = on ? sizedMap.get(i) : null;
-  return `<tr data-i="${i}" class="${on ? "src-row-on" : "src-row-off"}"${title}>
+  const find = escapeAttr(rowFindText(r));
+  return `<tr data-i="${i}" data-find="${find}" class="${on ? "src-row-on" : "src-row-off"}"${title}>
     <td><input type="checkbox" id="${p}-enabled" data-f="enabled" class="src-toggle" ${on ? "checked" : ""} aria-label="Use source"></td>
     <td><input type="text" id="${p}-label" data-f="label" value="${escapeAttr(r.label)}" ${on ? "" : "disabled"} autocomplete="off"></td>
     <td><input type="text" id="${p}-index_name" data-f="index_name" value="${escapeAttr(r.index_name)}" ${on ? "" : "disabled"} autocomplete="off"></td>
@@ -361,12 +379,14 @@ export function renderRows() {
       });
       srcBody.innerHTML = state.rows.map((r, i) => volumeRowHTML(r, i, sizedMap)).join("");
       bindTips(srcBody);
+      applyTableFind("src-find", "src-body", "src-find-count");
       refreshTotalCounterpart();
       import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
     })
     .catch(() => {
       srcBody.innerHTML = state.rows.map((r, i) => volumeRowHTML(r, i, new Map())).join("");
       bindTips(srcBody);
+      applyTableFind("src-find", "src-body", "src-find-count");
       refreshTotalCounterpart();
     });
 }
@@ -469,6 +489,7 @@ function bindTotalVolumePair() {
 
 export function bindSourcesTable() {
   bindTableBody(document.getElementById("src-body"));
+  bindTableFind("src-find", "src-body", "src-find-count");
   bindTotalVolumePair();
   syncConfigureSourcesUI();
 

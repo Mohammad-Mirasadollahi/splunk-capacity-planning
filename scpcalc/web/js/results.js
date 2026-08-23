@@ -23,44 +23,11 @@ import { collectGlobals } from "./plan-form.js";
 import { formatDailyGB, formatEPS, epsFromDailyGB, numOr0 } from "./volume-convert.js";
 import { planningAvgEventBytes } from "./sources.js";
 import { collapseViewBlocks } from "./view-blocks.js";
-
-function applyTableFind(inputId, tbodyId, countId) {
-  const input = document.getElementById(inputId);
-  const tbody = document.getElementById(tbodyId);
-  const countEl = document.getElementById(countId);
-  if (!input || !tbody) return;
-  const q = (input.value || "").trim().toLowerCase();
-  let shown = 0;
-  let total = 0;
-  tbody.querySelectorAll("tr").forEach((tr) => {
-    total += 1;
-    const hay = (tr.dataset.find || tr.textContent || "").toLowerCase();
-    const match = !q || hay.includes(q);
-    tr.hidden = !match;
-    tr.classList.toggle("is-find-hit", Boolean(q && match));
-    if (match) shown += 1;
-  });
-  if (countEl) {
-    if (!q) {
-      countEl.hidden = true;
-      countEl.textContent = "";
-    } else {
-      countEl.hidden = false;
-      countEl.textContent = t("table_find_count").replace("{n}", String(shown)).replace("{t}", String(total));
-    }
-  }
-}
+import { applyTableFind, bindTableFind } from "./table-find.js";
 
 export function bindResultTableFind() {
-  const wire = (inputId, tbodyId, countId) => {
-    const input = document.getElementById(inputId);
-    if (!input || input.dataset.bound === "1") return;
-    input.dataset.bound = "1";
-    input.addEventListener("input", () => applyTableFind(inputId, tbodyId, countId));
-    input.addEventListener("search", () => applyTableFind(inputId, tbodyId, countId));
-  };
-  wire("ix-find", "ix-body", "ix-find-count");
-  wire("node-find", "node-pick-body", "node-find-count");
+  bindTableFind("ix-find", "ix-body", "ix-find-count");
+  bindTableFind("node-find", "node-pick-body", "node-find-count");
 }
 
 function renderNodePicker() {

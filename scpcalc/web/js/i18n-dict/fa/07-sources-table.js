@@ -45,4 +45,5 @@ export const sources_table = {
   table_find_count: "{n} از {t} ردیف",
   table_find_ph: "نقش، رده، RAM…",
   table_find_ph_ix: "ایندکس، GB، MB…",
+  table_find_ph_src: "منبع، ایندکس، GB، EPS…",
 };
