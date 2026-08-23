@@ -3,6 +3,10 @@
 All notable changes to this repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/)-style sections so GitHub Releases can show what actually changed between versions.
 
+## 0.4.10 — 2026-08-23
+
+- Modal open locks background scroll; modal content scrolls
+
 ## 0.4.9 — 2026-08-23
 
 - Preview charts show GB on DMA and aligned live values
