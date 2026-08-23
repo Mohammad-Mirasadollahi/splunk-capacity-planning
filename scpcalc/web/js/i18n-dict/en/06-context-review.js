@@ -39,7 +39,6 @@ export const context_review = {
   review_auto: "auto",
   review_budget_group: "Disk budgets (Policy caps)",
   review_budget_note: "Hot/cold are caps you set under Policy.",
-  review_budget_note_dma: "Hot/cold are caps you set. DMA volume is calculated automatically from ingest and dma_years.",
   review_idx_no_volume: "No daily volume set",
   review_idx_size_pending: "Estimate pending — check retention and daily ingest",
   review_paths_group: "Paths",

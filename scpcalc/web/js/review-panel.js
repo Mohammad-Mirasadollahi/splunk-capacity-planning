@@ -241,9 +241,7 @@ export function fillReviewSummary() {
           ${kv(t("lbl_avail_hot"), budgetCap(g.available_hot_gb))}
           ${kv(t("lbl_avail_cold"), budgetCap(g.available_cold_gb))}
           ${g.enable_dma ? kv(t("lbl_dma_volume"), formatReviewDmaVolume(g, g.available_summaries_gb)) : ""}
-          <li class="review-kv-note"><span>${escapeAttr(
-            g.enable_dma ? t("review_budget_note_dma") : t("review_budget_note")
-          )}</span></li>
+          <li class="review-kv-note"><span>${escapeAttr(t("review_budget_note"))}</span></li>
         </ul>
       </section>
     </div>

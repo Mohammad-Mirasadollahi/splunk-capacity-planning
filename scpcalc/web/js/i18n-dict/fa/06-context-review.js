@@ -39,7 +39,6 @@ export const context_review = {
   review_auto: "خودکار",
   review_budget_group: "بودجه دیسک (سقف Policy)",
   review_budget_note: "hot/cold سقف دستی زیر Policy است.",
-  review_budget_note_dma: "hot/cold سقف دستی است. حجم DMA از ingest و dma_years خودکار محاسبه می‌شود.",
   review_idx_no_volume: "حجم روزانه تنظیم نشده",
   review_idx_size_pending: "تخمین در انتظار — retention و ingest روزانه را بررسی کنید",
   review_paths_group: "مسیرها",
