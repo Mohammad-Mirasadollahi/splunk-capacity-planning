@@ -15,7 +15,7 @@ export const sources_table = {
   col_source: "Source",
   col_total_time: "Total Time",
   col_sum_gb: "Summary GB/day",
-  col_summary: "Summary",
+  col_summary: "Summary index",
   col_use: "Use",
   col_vol_pair: "GB/day = EPS",
   find_next: "Find next",

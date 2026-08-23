@@ -53,6 +53,14 @@ function kv(label, value) {
   return `<li><span>${escapeAttr(label)}</span><strong>${value}</strong></li>`;
 }
 
+function kvGroup(title) {
+  return `<li class="review-kv-group"><span>${escapeAttr(title)}</span></li>`;
+}
+
+function budgetCap(gb) {
+  return t("review_budget_cap_fmt").replace("{n}", String(gb || 0));
+}
+
 function renderReviewViz(data) {
   const host = document.getElementById("review-viz");
   if (!host) return;
@@ -170,14 +178,17 @@ export function fillReviewSummary() {
           ${kv(t("lbl_headroom"), String(g.headroom))}
           ${kv(t("lbl_summary_ret"), t("review_days").replace("{n}", String(g.summary_retention_days)))}
           ${kv(t("lbl_archive"), archiveVal)}
+          ${kvGroup(t("review_paths_group"))}
           ${kv(t("lbl_hot_path"), escapeAttr(g.hot_path))}
           ${kv(t("lbl_cold_path"), escapeAttr(g.cold_path))}
           ${kv(t("lbl_frozen_path"), escapeAttr(g.frozen_path))}
           ${kv(t("lbl_sum_path"), escapeAttr(g.summaries_path))}
           ${kv(t("lbl_total_daily"), totalDaily)}
-          ${kv(t("lbl_avail_hot"), `${g.available_hot_gb || 0} GB`)}
-          ${kv(t("lbl_avail_cold"), `${g.available_cold_gb || 0} GB`)}
-          ${kv(t("lbl_avail_sum"), `${g.available_summaries_gb || 0} GB`)}
+          ${kvGroup(t("review_budget_group"))}
+          ${kv(t("lbl_avail_hot"), budgetCap(g.available_hot_gb))}
+          ${kv(t("lbl_avail_cold"), budgetCap(g.available_cold_gb))}
+          ${kv(t("lbl_avail_sum"), budgetCap(g.available_summaries_gb))}
+          <li class="review-kv-note"><span>${escapeAttr(t("review_budget_note"))}</span></li>
         </ul>
       </section>
     </div>

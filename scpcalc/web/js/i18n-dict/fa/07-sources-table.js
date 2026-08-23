@@ -15,7 +15,7 @@ export const sources_table = {
   col_source: "منبع",
   col_total_time: "Total Time",
   col_sum_gb: "GB روزانه summary",
-  col_summary: "Summary",
+  col_summary: "ایندکس summary",
   col_use: "فعال",
   col_vol_pair: "GB/روز = EPS",
   find_next: "بعدی",

@@ -94,6 +94,33 @@
   color: var(--ink);
 }
 
+.review-kv-group {
+  display: block;
+  margin-top: 0.45rem;
+  padding-top: 0.45rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
+}
+
+.review-kv-group span {
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.review-kv-note {
+  display: block;
+  margin-top: 0.15rem;
+}
+
+.review-kv-note span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-style: italic;
+  line-height: 1.35;
+}
+
 .review-metrics {
   margin-bottom: 0.35rem;
 }
