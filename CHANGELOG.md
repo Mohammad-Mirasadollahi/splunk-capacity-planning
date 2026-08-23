@@ -3,6 +3,39 @@
 All notable changes to this repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/)-style sections so GitHub Releases can show what actually changed between versions.
 
+## 0.5.0 — 2026-08-24
+
+### Added
+
+- **Log sources overhaul** — optional *Custom log sources* toggle on Volume → Sources; built-in catalog (Windows, Linux, Sysmon, FortiGate, Palo Alto, …); *+ Add custom source*; fullscreen table mode
+- **Main index as a normal index** — `main` can stay enabled alongside catalog indexes (no longer auto-disabled when other sources are turned on)
+- **CPU by role chart** — hardware CPU cores by role next to RAM in Review preview and Results charts
+- **Review / DMA clarity** — sources Total column labeled *per-indexer* with tooltip; DMA amounts show **GB** (e.g. `96 GB DMA`)
+- **Wizard context banner** — fades on scroll down inside the wizard, returns on scroll up (all steps and nested scroll areas)
+
+### Changed
+
+- **Sources scrolling** — one scroll region for Volume → Sources (no nested table scrollbar); mouse wheel scroll inside the wizard modal
+- **Input readability** — source table text and number fields use proper dark-theme contrast (enabled, disabled, readonly)
+- **DMA planning** — DMA-only storage when enabled; DMA in Storage Required totals, per-index/per-indexer disk, and Policy disk; removed redundant DMA auto-calc note from Review
+- **Modal scroll lock** — background page locked while a modal is open; main page scroll restored after closing the wizard or fullscreen overlays
+- **Removed duplicate CTA** — bottom *Enable custom sources* button removed (use the header checkbox only)
+
+### Fixed
+
+- Sources add/index toolbar and presets catalog restore after toggle regressions
+- `configure_sources` snapshot restore (no longer forced on after Load)
+- Wizard wheel scroll on inputs and tables when no inner scroll container is found
+- Main page scroll stuck after closing wizard with Sources fullscreen still active
+- Double modal scroll-lock when reopening the wizard without closing first
+
+### Release artifacts
+
+- **CLI** — `scpcalc-0.5.0-<os>-<arch>` (linux / windows / mac, amd64 & arm64)
+- **WASM** — `scpcalc-0.5.0.wasm`, `scpcalc-0.5.0-wasm.gz`, `wasm_exec.js`
+- **Container** — `ghcr.io/mohammad-mirasadollahi/scpcalc:0.5.0`
+- **Online calculator** — https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/
+
 ## 0.4.17 — 2026-08-23
 
 - Fix main page scroll lock after closing wizard or fullscreen overlays
