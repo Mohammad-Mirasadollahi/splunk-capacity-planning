@@ -105,9 +105,31 @@ Conf places summary indexes on `volume:summaries`.
 
 When `enable_dma=true` or (unset and `has_es=true`):
 
+**ES official (default — `dma_pct` = 0):**
+
 ```text
-DMA_MB ≈ TotalDailyOnDisk_GB × 1024 × RetentionDays × Headroom × dma_pct   (default dma_pct=0.10)
+DMA_GB ≈ TotalDailyRaw_GB × 3.4 × dma_years   (default dma_years = 1)
 ```
+
+Source: ES *Data model acceleration storage and retention* — cluster-wide total across all indexers at default ES/CIM data model retention mix.
+
+**Override (`dma_pct` > 0):** legacy fraction of searchable on-disk × retention × headroom.
+
+```text
+DMA_MB ≈ TotalDailyOnDisk_GB × 1024 × RetentionDays × Headroom × dma_pct
+```
+
+## 6b. Archive (frozen / coldToFrozenDir)
+
+When `archive_frozen=true` and `archive_days` > 0:
+
+```text
+Archive_GB ≈ TotalDailyRaw_GB × 0.15 × archive_days × (RF if indexer_cluster and not archive_single_copy else 1)
+```
+
+Frozen buckets keep **rawdata only** (~15% of pre-indexed ingest). SF does not apply. Cluster default archives one copy per peer (× RF).
+
+**Headroom:** Splunk base capacity formulas do **not** include a spare multiplier. `headroom` (default **1.0**) is an optional extra on searchable size caps only. Splunk recommends keeping **≥20% disk free** operationally (separate from sizing math).
 
 - Adds DMA_MB to summaries volume budget  
 - Emits `tstatsHomePath` on primary indexes  

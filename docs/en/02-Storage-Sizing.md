@@ -425,6 +425,19 @@ From ES Performance reference:
 **Source:**  
 [Performance reference for Splunk Enterprise Security → Constraints on data model acceleration / retention](https://help.splunk.com/en/splunk-enterprise-security-8/install/8.5/planning/performance-reference-for-splunk-enterprise-security)
 
+#### Official ES DMA formula
+
+From **Configure data models for Splunk Enterprise Security** → *Data model acceleration storage and retention*:
+
+```text
+Accelerated data model storage per year = Data volume per day × 3.4
+```
+
+Example: **100 GB/day** ingest → **340 GB** additional space across all indexers for up to one year at default ES data model retention settings.
+
+**Source:**  
+[Configure data models for Splunk Enterprise Security → Data model acceleration storage and retention](https://help.splunk.com/en/splunk-enterprise-security-8/install/8.6/installation/configure-data-models-for-splunk-enterprise-security)
+
 #### Practical calculation (mandatory ES DMA page reference)
 
 ```text

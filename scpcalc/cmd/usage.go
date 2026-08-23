@@ -34,7 +34,7 @@ Volume inputs (combinable — no exclusive mode):
 Retention & paths:
   --retention-days INT     (default 90)
   --hot-warm-days INT      (default 30)
-  --headroom FLOAT         (default 1.2)
+  --headroom FLOAT         optional spare on size caps (default 1.0; Splunk base formulas omit this)
   --summary-pct FLOAT      (default 0.10)
   --summary-retention-days INT
   --hot-path --cold-path --frozen-path --summaries-path STRING
@@ -54,7 +54,9 @@ Topology (users × searches × volume → N_SH / N_IDX):
   --has-es --has-itsi
   --es-smartstore          alias: has-es + smartstore
   --enable-dma / --no-dma  DMA/tstats (default: on when ES)
-  --dma-pct FLOAT          (default 0.10)
+  --dma-pct FLOAT          override only (>0); 0 = ES official daily_raw × 3.4/year
+  --dma-years FLOAT        ES DMA planning horizon in years (default 1)
+  --archive-single-copy    archive sizing assumes one copy (custom script); default × RF in cluster
 
 Legacy single-index (if no --plan/--sources):
   --daily-gb FLOAT

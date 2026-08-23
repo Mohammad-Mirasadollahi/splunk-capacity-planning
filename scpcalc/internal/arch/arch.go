@@ -556,6 +556,13 @@ func renderStructure(p model.PlanInput, d model.Design, out model.PlanResult) st
 		if p.ArchiveDays > 0 {
 			fmt.Fprintf(&b, " · keep ≈%d days", p.ArchiveDays)
 		}
+		if d.ArchiveNeedGB > 0 {
+			fmt.Fprintf(&b, " · need ~%.1f GB (rawdata ×0.15", d.ArchiveNeedGB)
+			if p.IndexerCluster && !p.ArchiveSingleCopy && p.RF > 1 {
+				fmt.Fprintf(&b, " × RF=%d", p.RF)
+			}
+			fmt.Fprintf(&b, ")")
+		}
 		b.WriteByte('\n')
 	} else {
 		fmt.Fprintf(&b, "  - frozen: default DELETE (archive_frozen=false)\n")

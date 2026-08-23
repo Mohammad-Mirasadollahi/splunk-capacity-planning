@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/splunk-capacity-planning/scpcalc/internal/model"
+	"github.com/splunk-capacity-planning/scpcalc/internal/splunkform"
 )
 
 // Counts is a platform SH/IDX recommendation (doc 01 §4.1).
@@ -592,16 +593,10 @@ func BuildDesign(p model.PlanInput, out model.PlanResult) model.Design {
 
 	if p.ArchiveFrozen && p.ArchiveDays > 0 {
 		d.ArchiveDays = p.ArchiveDays
-		dailyOnDisk := out.TotalDailyOnDiskGB
-		if dailyOnDisk <= 0 {
-			comp := out.CompressionFactor
-			if comp <= 0 {
-				comp = 0.5
-			}
-			dailyOnDisk = out.TotalDailyRawGB * comp
-		}
-		if dailyOnDisk > 0 {
-			d.ArchiveNeedGB = round1(dailyOnDisk * float64(p.ArchiveDays))
+		if out.TotalDailyRawGB > 0 {
+			d.ArchiveNeedGB = round1(splunkform.ArchiveNeedGB(
+				out.TotalDailyRawGB, p.ArchiveDays, p.IndexerCluster, p.RF, p.ArchiveSingleCopy,
+			))
 		}
 	}
 

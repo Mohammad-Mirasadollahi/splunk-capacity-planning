@@ -231,6 +231,12 @@ func parseCalcArgs(args []string) (calcOptions, int) {
 			if c := needFloat(a, &p.DMAPct); c >= 0 {
 				return opts, c
 			}
+		case "--dma-years":
+			if c := needFloat(a, &p.DmaYears); c >= 0 {
+				return opts, c
+			}
+		case "--archive-single-copy":
+			p.ArchiveSingleCopy = true
 		case "--daily-gb":
 			if c := needFloat(a, &opts.DailyGB); c >= 0 {
 				return opts, c

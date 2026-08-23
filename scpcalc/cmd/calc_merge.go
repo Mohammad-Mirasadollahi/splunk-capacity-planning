@@ -94,6 +94,12 @@ func mergePlan(base, flags model.PlanInput, clusterSet, shcSet, dmaSet, dmaVal, 
 	if flags.DMAPct > 0 {
 		out.DMAPct = flags.DMAPct
 	}
+	if flags.DmaYears > 0 {
+		out.DmaYears = flags.DmaYears
+	}
+	if flags.ArchiveSingleCopy {
+		out.ArchiveSingleCopy = true
+	}
 	if flags.TotalDailyGB > 0 {
 		out.TotalDailyGB = flags.TotalDailyGB
 	}

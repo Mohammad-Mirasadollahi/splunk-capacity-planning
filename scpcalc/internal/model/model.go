@@ -70,8 +70,11 @@ type PlanInput struct {
 	// ArchiveDays is how long frozen/archived data is kept after freeze (capacity planning; 0 = not sized).
 	ArchiveDays int `json:"archive_days"`
 	// EnableDMA: nil = default (true when HasES). Emits tstatsHomePath + DMA sizing on summaries.
-	EnableDMA *bool  `json:"enable_dma,omitempty"`
-	DMAPct    float64 `json:"dma_pct"` // fraction of searchable on-disk for DMA estimate; default 0.10
+	EnableDMA *bool   `json:"enable_dma,omitempty"`
+	DMAPct    float64 `json:"dma_pct"`   // >0 = override (% of searchable on-disk); 0 = ES official daily_raw × 3.4/year
+	DmaYears  float64 `json:"dma_years"` // planning horizon for ES official DMA; default 1
+	// ArchiveSingleCopy: when true, do not multiply archive by RF (assumes coldToFrozenScript archives one copy).
+	ArchiveSingleCopy bool `json:"archive_single_copy"`
 
 	RemotePath string `json:"remote_path"` // SmartStore object-store path hint / volume path
 
@@ -332,7 +335,7 @@ func (p *PlanInput) ApplyDefaults() {
 		}
 	}
 	if p.Headroom <= 0 {
-		p.Headroom = 1.2
+		p.Headroom = 1.0
 	}
 	if p.RetentionDays <= 0 {
 		p.RetentionDays = 90
@@ -357,8 +360,8 @@ func (p *PlanInput) ApplyDefaults() {
 	if p.SavedSearches < 0 {
 		p.SavedSearches = 0
 	}
-	if p.DMAPct <= 0 {
-		p.DMAPct = 0.10
+	if p.DmaYears <= 0 {
+		p.DmaYears = 1
 	}
 	if strings.TrimSpace(p.HotPath) == "" {
 		p.HotPath = "/hot"

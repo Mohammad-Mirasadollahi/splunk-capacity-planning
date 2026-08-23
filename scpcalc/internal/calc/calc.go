@@ -8,6 +8,7 @@ import (
 	"github.com/splunk-capacity-planning/scpcalc/internal/arch"
 	"github.com/splunk-capacity-planning/scpcalc/internal/confgen"
 	"github.com/splunk-capacity-planning/scpcalc/internal/model"
+	"github.com/splunk-capacity-planning/scpcalc/internal/splunkform"
 )
 
 const gib = 1024.0 * 1024.0 * 1024.0
@@ -196,16 +197,16 @@ func CalculatePlan(p model.PlanInput) (model.PlanResult, error) {
 	out.TotalSummaryRawGB = round3(out.TotalSummaryRawGB)
 	out.TotalSummaryOnDiskGB = round3(out.TotalSummaryOnDiskGB)
 
-	// DMA estimate on summaries volume (docs/en/02 §6.1 / 05 §6) when DMA/ES enabled.
+	// DMA estimate on summaries volume (ES official ×3.4/year or dma_pct override).
 	if p.WantDMA() {
-		dmaMB := int64(math.Round(out.TotalDailyOnDiskGB * 1024 * float64(p.RetentionDays) * p.Headroom * p.DMAPct))
-		if dmaMB < 1 {
-			dmaMB = 1
-		}
+		dmaMB, dmaNote := splunkform.DMAEstimateMB(
+			out.TotalDailyRawGB, out.TotalDailyOnDiskGB, out.CompressionFactor,
+			p.DMAPct, p.DmaYears, p.Headroom, p.RetentionDays,
+		)
 		sumBudget += dmaMB
-		out.Warnings = append(out.Warnings, fmt.Sprintf(
-			"DMA estimate added to summaries volume (~%.0f%% of searchable on-disk × retention); measure real DMA in your environment",
-			p.DMAPct*100))
+		if dmaNote != "" {
+			out.Warnings = append(out.Warnings, dmaNote)
+		}
 	}
 
 	calcHot, calcCold, calcSum := hotBudget, coldBudget, sumBudget
