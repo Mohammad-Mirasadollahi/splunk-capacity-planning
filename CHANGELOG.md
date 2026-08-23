@@ -3,6 +3,10 @@
 All notable changes to this repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/)-style sections so GitHub Releases can show what actually changed between versions.
 
+## 0.4.12 — 2026-08-23
+
+- Remove DMA auto-calc note from Review budget hint
+
 ## 0.4.11 — 2026-08-23
 
 - CPU by role chart alongside RAM in Preview/Results charts
