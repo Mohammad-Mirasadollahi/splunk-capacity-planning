@@ -13,6 +13,7 @@ export const errors_budget = {
   cap_scenario_archive: "Hot {hot}d + Cold {cold}d = {total}d searchable · Archive {arch}d → freeze to frozen path.",
   cap_scenario_delete: "Hot {hot}d + Cold {cold}d = {total}d total searchable · Archive off → delete on freeze.",
   cap_scenario_disk: "Hot {hot} GB + Cold {cold} GB = {total} GB searchable · DMA {sum} GB (auto).",
+  cap_scenario_disk_searchable: "Hot {hot} GB + Cold {cold} GB = {total} GB searchable.",
   cap_time_title: "Retention time",
   cap_title: "Disk you already have (GB)",
   col_idx_scale_tip: "Scaled up so source volumes match total_daily_gb (same as Calculate under-fill).",

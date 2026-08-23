@@ -114,7 +114,7 @@ export function syncDiskTotal(hotGB, coldGB) {
   const out = document.getElementById("disk_total_out");
   const dmaGb = syncDmaVolumeGB();
   const searchable = numOr0(hotGB) + numOr0(coldGB);
-  const dmaOn = !!document.getElementById("enable_dma")?.checked || !!document.getElementById("has_es")?.checked;
+  const dmaOn = !!document.getElementById("enable_dma")?.checked;
   const grand = searchable + (dmaOn ? numOr0(dmaGb) : 0);
   if (out) {
     if (grand > 0) {
@@ -150,12 +150,21 @@ function updateTimeScenario(hot, cold, total) {
 function updateDiskScenario(hotGB, coldGB, totalGB, summariesGB) {
   const el = document.getElementById("cap-disk-scenario");
   if (!el) return;
-  el.setAttribute("data-i18n", "cap_scenario_disk");
-  el.textContent = t("cap_scenario_disk")
+  const dmaOn = !!document.getElementById("enable_dma")?.checked;
+  if (dmaOn) {
+    el.setAttribute("data-i18n", "cap_scenario_disk");
+    el.textContent = t("cap_scenario_disk")
+      .replace("{hot}", formatDiskGB(hotGB))
+      .replace("{cold}", formatDiskGB(coldGB))
+      .replace("{total}", formatDiskGB(totalGB))
+      .replace("{sum}", formatDiskGB(summariesGB));
+    return;
+  }
+  el.setAttribute("data-i18n", "cap_scenario_disk_searchable");
+  el.textContent = t("cap_scenario_disk_searchable")
     .replace("{hot}", formatDiskGB(hotGB))
     .replace("{cold}", formatDiskGB(coldGB))
-    .replace("{total}", formatDiskGB(totalGB))
-    .replace("{sum}", formatDiskGB(summariesGB));
+    .replace("{total}", formatDiskGB(totalGB));
 }
 
 /** Read-only coldPath preview after days are known. */

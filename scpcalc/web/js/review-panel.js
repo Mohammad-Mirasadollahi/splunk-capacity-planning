@@ -19,7 +19,8 @@ import {
 } from "./plan-form.js";
 import { runPlan } from "./engine.js";
 import { renderAllCharts } from "./charts.js";
-import { formatSizeGB } from "./source-sizing.js";
+import { planSourceDiskNeeds } from "./source-sizing.js";
+import { formatDiskGB, roundDiskGB } from "./retention-convert.js";
 import {
   buildMetricSections,
   renderMetricSectionsHTML,
@@ -27,7 +28,6 @@ import {
   renderIndexRowsHTML,
   indexesTableHeaderHTML,
   formatDmaNeedDisplay,
-  formatSummaryIndexNeedDisplay,
   resolveDmaNeedGB,
 } from "./plan-display.js";
 
@@ -64,6 +64,21 @@ function budgetCap(gb) {
   return t("review_budget_cap_fmt").replace("{n}", String(gb || 0));
 }
 
+function formatReviewDmaVolume(g, gb) {
+  if (!g.enable_dma) return "";
+  if (!(numOr0(gb) > 0)) return t("dma_volume_need_ingest");
+  return formatDmaNeedDisplay(gb, g);
+}
+
+function formatReviewIndexTotal({ idxGB, dmaGB, dailyGB, g }) {
+  if (!(dailyGB > 0)) return t("review_idx_no_volume");
+  const parts = [];
+  if (idxGB > 0) parts.push(`${formatDiskGB(roundDiskGB(idxGB))} GB`);
+  if (g.enable_dma && dmaGB > 0) parts.push(`${formatDiskGB(roundDiskGB(dmaGB))} DMA`);
+  if (parts.length) return parts.join(" + ");
+  return g.enable_dma ? t("dma_volume_need_ingest") : t("review_idx_size_pending");
+}
+
 function renderReviewViz(data) {
   const host = document.getElementById("review-viz");
   if (!host) return;
@@ -84,10 +99,13 @@ export function fillReviewSummary() {
   if (!host) return;
   const g = collectGlobals();
   const enabled = state.rows.filter((r) => r.enabled);
+  const livePlan = planSourceDiskNeeds(state.rows, g);
+  const sizedByRow = new Map(livePlan.rows.map((s) => [s.row, s]));
   const planIndexes = state.reviewPreview?.indexes || [];
   const byIndex = new Map(planIndexes.map((ix) => [String(ix.index_name || ""), ix]));
   const previewData = state.reviewPreview;
-  const totalDma = resolveDmaNeedGB(previewData, g, state.rows);
+  const totalDma =
+    resolveDmaNeedGB(previewData, g, state.rows) || (g.enable_dma ? livePlan.needSum : 0);
   let idxTotalGB = 0;
   let dmaTotalGB = 0;
   const archiveDays = g.archive_frozen ? Math.max(0, Math.floor(numOr0(g.archive_days))) : 0;
@@ -125,16 +143,20 @@ export function fillReviewSummary() {
         ? t("review_days").replace("{n}", String(archiveDays))
         : yn(false);
       const ix = byIndex.get(String(r.index_name || ""));
-      const idxGB = ix?.max_total_data_size_mb > 0 ? Number(ix.max_total_data_size_mb) / 1024 : 0;
-      const dmaGB = ingestSum > 0 && totalDma > 0 ? (totalDma * gb) / ingestSum : 0;
+      const sized = sizedByRow.get(r);
+      const idxGB =
+        ix?.max_total_data_size_mb > 0
+          ? Number(ix.max_total_data_size_mb) / 1024
+          : numOr0(sized?.maxTotalGB);
+      const dmaGB =
+        g.enable_dma && ingestSum > 0 && totalDma > 0
+          ? (totalDma * gb) / ingestSum
+          : g.enable_dma
+            ? numOr0(sized?.dmaGB)
+            : 0;
       if (idxGB > 0) idxTotalGB += idxGB;
       if (dmaGB > 0) dmaTotalGB += dmaGB;
-      const idxTotal =
-        idxGB > 0 || dmaGB > 0
-          ? `${idxGB > 0 ? `${formatSizeGB(idxGB)} GB` : "—"}${
-              dmaGB > 0 ? ` + ${formatSizeGB(dmaGB)} DMA` : ""
-            }`
-          : "—";
+      const idxTotal = formatReviewIndexTotal({ idxGB, dmaGB, dailyGB: gb, g });
       return `<tr>
         <td>${escapeAttr(r.label)}</td>
         <td>${escapeAttr(r.index_name)}</td>
@@ -153,13 +175,12 @@ export function fillReviewSummary() {
     enabled.length > 0
       ? `<tr class="review-src-total">
           <th scope="row" colspan="8">${escapeAttr(t("review_total"))}</th>
-          <td class="review-src-idx-total">${
-            idxTotalGB > 0 || dmaTotalGB > 0
-              ? `${idxTotalGB > 0 ? `${formatSizeGB(idxTotalGB)} GB` : "—"}${
-                  dmaTotalGB > 0 ? ` + ${formatSizeGB(dmaTotalGB)} DMA` : ""
-                }`
-              : "—"
-          }</td>
+          <td class="review-src-idx-total">${formatReviewIndexTotal({
+            idxGB: idxTotalGB,
+            dmaGB: dmaTotalGB,
+            dailyGB: ingestSum,
+            g,
+          })}</td>
         </tr>`
       : "";
 
@@ -203,14 +224,15 @@ export function fillReviewSummary() {
           ${kv(t("lbl_hot_path"), escapeAttr(g.hot_path))}
           ${kv(t("lbl_cold_path"), escapeAttr(g.cold_path))}
           ${kv(t("lbl_frozen_path"), escapeAttr(g.frozen_path))}
-          ${kv(t("lbl_sum_path"), escapeAttr(g.summaries_path))}
+          ${g.enable_dma ? kv(t("lbl_sum_path"), escapeAttr(g.summaries_path)) : ""}
           ${kv(t("lbl_total_daily"), totalDaily)}
           ${kvGroup(t("review_budget_group"))}
           ${kv(t("lbl_avail_hot"), budgetCap(g.available_hot_gb))}
           ${kv(t("lbl_avail_cold"), budgetCap(g.available_cold_gb))}
-          ${g.enable_dma || g.has_es ? kv(t("lbl_dma_volume"), formatDmaNeedDisplay(numOr0(g.available_summaries_gb), g)) : ""}
-          ${kv(t("review_m_need_summary_idx_total"), formatSummaryIndexNeedDisplay())}
-          <li class="review-kv-note"><span>${escapeAttr(t("review_budget_note"))}</span></li>
+          ${g.enable_dma ? kv(t("lbl_dma_volume"), formatReviewDmaVolume(g, g.available_summaries_gb)) : ""}
+          <li class="review-kv-note"><span>${escapeAttr(
+            g.enable_dma ? t("review_budget_note_dma") : t("review_budget_note")
+          )}</span></li>
         </ul>
       </section>
     </div>

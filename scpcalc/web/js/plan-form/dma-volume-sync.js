@@ -1,6 +1,6 @@
 /**
  * Auto-compute DMA volume (ES official ×3.4/year) into available_summaries_gb hidden field.
- * User does not edit — only Data Model Acceleration sizing, not summary indexes.
+ * User does not edit — only Data Model Acceleration sizing on volume:summaries.
  */
 import { state } from "../state.js";
 import { t } from "../i18n.js";
@@ -25,7 +25,7 @@ export function planningDailyRawGB() {
 }
 
 function dmaEnabled() {
-  return !!document.getElementById("enable_dma")?.checked || !!document.getElementById("has_es")?.checked;
+  return !!document.getElementById("enable_dma")?.checked;
 }
 
 /** Cluster-wide DMA GB from current form (0 when DMA off or no ingest). */

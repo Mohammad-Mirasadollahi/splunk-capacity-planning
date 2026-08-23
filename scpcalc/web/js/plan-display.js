@@ -10,7 +10,7 @@ import { planSourceDiskNeeds } from "./source-sizing.js";
 /** ES official horizon label for DMA / acceleration sizing. */
 export function dmaHorizonLabel(g) {
   const globals = g || {};
-  if (!(globals.enable_dma || globals.has_es)) return "";
+  if (!globals.enable_dma) return "";
   const pct = numOr0(globals.dma_pct);
   if (pct > 0) return t("review_dma_horizon_override");
   const years = numOr0(globals.dma_years) || 1;
@@ -24,13 +24,8 @@ export function formatDmaNeedDisplay(gb, g) {
   return horizon ? `${amt} · ${horizon}` : amt;
 }
 
-/** Summary index sizing is out of scope — DMA-only on volume:summaries. */
-export function formatSummaryIndexNeedDisplay() {
-  return t("review_summary_idx_not_sized");
-}
-
 export function dmaEnabled(g) {
-  return !!(g?.enable_dma || g?.has_es);
+  return !!g?.enable_dma;
 }
 
 /** Cluster-wide DMA GB — engine design, synced policy field, or live source preview. */
@@ -158,7 +153,6 @@ export function buildMetricSections(data, g, rows = null) {
   if (dmaEnabled(globals)) {
     storageTotal.rows.push([t("review_m_need_dma_total"), formatDmaNeedDisplay(dmaAll, globals)]);
   }
-  storageTotal.rows.push([t("review_m_need_summary_idx_total"), formatSummaryIndexNeedDisplay()]);
   storageTotal.rows.push([t("review_m_total_storage"), formatStorageAmt(totalStore)]);
 
   const storagePer = {
@@ -167,13 +161,12 @@ export function buildMetricSections(data, g, rows = null) {
     rows: [
       [t("review_m_hot_per_idx"), formatStorageAmt(hotAll / nIdx)],
       [t("review_m_cold_per_idx"), formatStorageAmt(coldAll / nIdx)],
-      [t("review_m_archive_per_idx"), globals.archive_frozen ? formatStorageAmt(archAll / nIdx) : "—"],
+      [t("review_m_archive_per_idx"), globals.archive_frozen ? formatStorageAmt(archAll / nIdx) : t("ctx_off")],
     ],
   };
   if (dmaEnabled(globals)) {
     storagePer.rows.push([t("review_m_dma_per_idx"), formatDmaNeedDisplay(dmaAll / nIdx, globals)]);
   }
-  storagePer.rows.push([t("review_m_summary_idx_per_idx"), formatSummaryIndexNeedDisplay()]);
 
   const other = {
     id: "other",
@@ -241,6 +234,7 @@ export function renderRetentionStorageHTML(data, g, rows = null) {
   const totalPer = totalAll / nIdx;
   const pct = (days) => (seg.total > 0 ? (100 * days) / seg.total : 0);
   const dmaHorizon = escapeAttr(dmaHorizonLabel(globals));
+  const storageHint = dmaEnabled(globals) ? t("review_storage_hint_dma") : t("review_storage_hint");
   const dmaRow = dmaEnabled(globals)
       ? `<tr>
               <th scope="row">${t("review_tier_dma")}${
@@ -250,13 +244,6 @@ export function renderRetentionStorageHTML(data, g, rows = null) {
               <td>${formatStorageAmt(dmaAll)}</td>
             </tr>`
       : "";
-  const summaryIdxRow = `<tr>
-              <th scope="row">${t("review_tier_summary_idx")}<span class="review-storage-sub">${escapeAttr(
-                t("review_summary_idx_hint")
-              )}</span></th>
-              <td>${formatSummaryIndexNeedDisplay()}</td>
-              <td>${formatSummaryIndexNeedDisplay()}</td>
-            </tr>`;
 
   return `
     <section class="review-retention" aria-label="${escapeAttr(t("review_retention_title"))}">
@@ -292,7 +279,7 @@ export function renderRetentionStorageHTML(data, g, rows = null) {
     </section>
     <section class="review-storage" aria-label="${escapeAttr(t("review_storage_title"))}">
       <h4 data-i18n="review_storage_title">${t("review_storage_title")}</h4>
-      <p class="hint review-storage-hint" data-i18n="review_storage_hint">${t("review_storage_hint")}</p>
+      <p class="hint review-storage-hint">${escapeAttr(storageHint)}</p>
       <div class="review-storage-table-wrap">
         <table class="review-storage-table">
           <thead>
@@ -319,7 +306,6 @@ export function renderRetentionStorageHTML(data, g, rows = null) {
               <td>${formatStorageAmt(archAll)}</td>
             </tr>
             ${dmaRow}
-            ${summaryIdxRow}
             <tr class="review-storage-total">
               <th scope="row">${t("review_total")}</th>
               <td>${formatStorageAmt(totalPer)}</td>
@@ -351,6 +337,9 @@ export function renderIndexRowsHTML(indexes, { data = null, g = null } = {}) {
       const label = ix.label || ix.key || "—";
       const coldMB = indexColdMB(ix);
       const dmaGB = showDma ? dmaByIndex.get(String(ix.index_name || "")) || 0 : 0;
+      const dmaCol = showDma
+        ? `<td data-sort="${Number(dmaGB) || 0}">${formatStorageAmt(dmaGB)}</td>`
+        : "";
       const find = [
         ix.index_name,
         label,
@@ -377,9 +366,7 @@ export function renderIndexRowsHTML(indexes, { data = null, g = null } = {}) {
           <td data-sort="${Number(ix.max_total_data_size_mb) || 0}">${ix.max_total_data_size_mb} <span class="unit">MB</span></td>
           <td data-sort="${Number(ix.home_path_max_data_size_mb) || 0}">${ix.home_path_max_data_size_mb} <span class="unit">MB</span></td>
           <td data-sort="${Number(coldMB) || 0}">${coldMB} <span class="unit">MB</span></td>
-          <td data-sort="${Number(dmaGB) || 0}" class="${showDma ? "" : "ix-col-dma-off"}">${
-            showDma ? `${formatStorageAmt(dmaGB)}` : "—"
-          }</td>
+          ${dmaCol}
           <td data-sort="${escapeAttr(String(ix.max_data_size || ""))}">${escapeAttr(ix.max_data_size || "—")}</td>
           <td data-sort="${frozenDays === "—" ? -1 : Number(frozenDays) || 0}">${frozenDays}${
             frozenDays === "—" ? "" : ` <span class="unit">d</span>`
@@ -391,6 +378,7 @@ export function renderIndexRowsHTML(indexes, { data = null, g = null } = {}) {
 
 export function indexesTableHeaderHTML({ g = null } = {}) {
   const showDma = dmaEnabled(g || {});
+  const dmaTh = showDma ? `<th data-i18n="ix_dma">${t("ix_dma")}</th>` : "";
   return `<tr>
     <th data-i18n="ix_index">${t("ix_index")}</th>
     <th data-i18n="ix_label">${t("ix_label")}</th>
@@ -401,7 +389,7 @@ export function indexesTableHeaderHTML({ g = null } = {}) {
     <th data-i18n="ix_max_total">${t("ix_max_total")}</th>
     <th data-i18n="ix_home">${t("ix_home")}</th>
     <th data-i18n="ix_cold">${t("ix_cold")}</th>
-    <th data-i18n="ix_dma" class="${showDma ? "" : "ix-col-dma-off"}">${t("ix_dma")}</th>
+    ${dmaTh}
     <th data-i18n="ix_max_data">${t("ix_max_data")}</th>
     <th data-i18n="ix_frozen_days">${t("ix_frozen_days")}</th>
   </tr>`;

@@ -46,6 +46,6 @@ func TestRenderPlanDMAOnSummariesVolume(t *testing.T) {
 		}
 	}
 	if strings.Contains(out, "_summary]") {
-		t.Fatal("optional *_summary index stanzas must not be emitted")
+		t.Fatal("indexes.conf must not contain *_summary] stanzas")
 	}
 }

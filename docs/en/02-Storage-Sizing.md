@@ -47,7 +47,7 @@
   - [5.5 SmartStore Infrastructure Considerations Related to Storage](#55-smartstore-infrastructure-considerations-related-to-storage)
 - [6) Storage for Premium Apps](#6-storage-for-premium-apps)
   - [6.1 Enterprise Security — Data Model Acceleration (DMA)](#61-enterprise-security--data-model-acceleration-dma)
-  - [6.2 ITSI — Summary / KV Store / Internal Indexes](#62-itsi--summary--kv-store--internal-indexes)
+  - [6.2 ITSI — KV Store / Internal Indexes](#62-itsi--kv-store--internal-indexes)
 - [7) Search Head Storage](#7-search-head-storage)
 - [8) Storage Calculation Workbook (Operational Formulas)](#8-storage-calculation-workbook-operational-formulas)
   - [8.1 Non-Clustered Indexers](#81-non-clustered-indexers)
@@ -450,7 +450,7 @@ Example: **100 GB/day** ingest → **340 GB** additional space across all indexe
 
 > Because ES versions differ, take exact DMA multipliers from **Data model acceleration storage and retention** for your ES version rather than guessing constants here.
 
-### 6.2 ITSI — Summary / KV Store / Internal Indexes
+### 6.2 ITSI — KV Store / Internal Indexes
 
 | Item | Storage requirement | Source |
 |---|---|---|
@@ -460,7 +460,7 @@ Example: **100 GB/day** ingest → **340 GB** additional space across all indexe
 | `max_size_per_result_mb` | Default 500 MB; guidance ~500 MB per 1,000 KPIs | Same section |
 | Event Analytics internal license stack | Internal notable/episode volume on separate stack; not counted against daily license | License requirements |
 
-For ITSI summary index disk, read retention per ITSI index in *Configure indexes in ITSI* and sum using the base 50% formula (or RF/SF).
+For ITSI KPI index disk, read retention per ITSI index in *Configure indexes in ITSI* and sum using the base 50% formula (or RF/SF).
 
 ---
 

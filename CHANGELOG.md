@@ -13,7 +13,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/)-style sections so
 
 ## 0.4.1 — 2026-08-23
 
-- Review/Storage show DMA need with dma_years horizon and Summary indexes row (not sized); docs updated
+- Review/Storage show DMA need with dma_years horizon; docs updated
 
 ## 0.4.0 — 2026-08-01
 

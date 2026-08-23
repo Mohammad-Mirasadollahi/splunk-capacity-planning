@@ -13,6 +13,7 @@ export const errors_budget = {
   cap_scenario_archive: "Hot {hot}روز + Cold {cold}روز = {total}روز searchable · Archive {arch}روز → انتقال به مسیر frozen.",
   cap_scenario_delete: "Hot {hot}روز + Cold {cold}روز = {total}روز searchable · آرشیو خاموش → حذف هنگام freeze.",
   cap_scenario_disk: "Hot {hot} GB + Cold {cold} GB = {total} GB searchable · DMA {sum} GB (خودکار).",
+  cap_scenario_disk_searchable: "Hot {hot} GB + Cold {cold} GB = {total} GB searchable.",
   cap_time_title: "زمان نگهداری",
   cap_title: "دیسکی که الان دارید (GB)",
   col_idx_scale_tip: "به‌خاطر under-fill تا total_daily_gb اسکیل شده (مثل Calculate).",

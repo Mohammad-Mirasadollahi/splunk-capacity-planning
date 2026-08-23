@@ -91,7 +91,7 @@ window.SCP_TIPS = {
     has_itsi: {
       title: "IT Service Intelligence (ITSI)",
       formula: "Example floor N_IDX ≈ ceil(D/100); KV store needs ≥ 30 GB free on $SPLUNK_HOME",
-      body: "ITSI needs its own SH/SHC (not shared with ES). KPI/entity load drives SH count; summary indexes (e.g. itsi_summary) should land on the indexer tier.",
+      body: "ITSI needs its own SH/SHC (not shared with ES). KPI/entity load drives SH count; KPI indexes (e.g. itsi_summary) should land on the indexer tier.",
       example: "D=250 GB/day → ceil(250/100)=3 indexers from the ITSI data rule (then take max with platform/ES).",
       links: [
         { label: "Plan your ITSI deployment", url: "https://help.splunk.com/en/splunk-it-service-intelligence/splunk-it-service-intelligence/install-and-upgrade/5.0/planning/plan-your-itsi-deployment" },
@@ -608,15 +608,6 @@ window.SCP_TIPS = {
         { label: "Archive indexed data — cluster", url: "https://help.splunk.com/en/splunk-enterprise/administer/manage-indexers-and-indexer-clusters/10.4/back-up-and-archive-your-indexes/archive-indexed-data" },
       ],
     },
-    "Summaries need (GB · total)": {
-      title: "Summaries need (GB · total)",
-      formula: "DMA (Daily_Raw × 3.4 × dma_years when ES official)",
-      body: "Cluster-wide volume:summaries budget for DMA/tstats only.",
-      example: "100 GB/day ES → 340 GB DMA at dma_years=1.",
-      links: [
-        { label: "ES DMA storage and retention", url: "https://help.splunk.com/en/splunk-enterprise-security-8/install/8.6/installation/configure-data-models-for-splunk-enterprise-security" },
-      ],
-    },
     "Hot/Warm need (GB · total)": {
       title: "Hot/Warm need (GB · total)",
       formula: "Σ homePath.maxDataSizeMB / 1024\n≈ Daily_OnDisk × hot_warm_days × headroom",
@@ -721,8 +712,6 @@ const SCP_TIP_IMPACTS = {
     "summaries need GB": "Same as DMA need — ES official uses daily_raw × 3.4 × dma_years when dma_pct=0.",
     "DMA need (GB · total)": "Data model acceleration on volume:summaries. Sub-label shows dma_years horizon (or dma_pct override). Not index retention_days unless override mode.",
     "DMA need · per Indexer": "Cluster-wide DMA ÷ N_IDX (display average; summaries volume is deployment-wide).",
-    "Summary indexes need (GB · total)": "Optional *_summary indexes (ITSI KPI, etc.) — not sized in SCPcalc. Size manually from Splunk/ITSI docs if you use them.",
-    "Summary indexes · per Indexer": "Same — not sized here.",
     "Archive need (GB · total)": "Grows with daily raw ingest, archive_days, and RF (cluster). Uses 15% rawdata formula — not searchable on-disk.",
     "Archive need · per Indexer": "Total archive ÷ N_IDX display average; physical layout depends on peer archive paths.",
     "Hot/Warm need (GB · total)": "Grows with hot_warm_days, daily on-disk, and optional headroom >1.",
@@ -791,8 +780,6 @@ const SCP_TIP_IMPACTS = {
     "summaries need GB": "همان نیاز DMA — ES رسمی: daily_raw × ۳٫۴ × dma_years وقتی dma_pct=۰.",
     "نیاز DMA (GB · total)": "شتاب data model روی volume:summaries؛ زیرنویس افق dma_years (یا override dma_pct).",
     "نیاز DMA · per Indexer": "DMA کل ÷ N_IDX (میانگین نمایشی).",
-    "نیاز Summary indexes (GB · total)": "ایندکس‌های اختیاری *_summary — در SCPcalc سایز نمی‌شوند؛ در صورت استفاده از مستندات Splunk/ITSI دستی محاسبه کنید.",
-    "Summary indexes · per Indexer": "همان — این‌جا سایز نمی‌شود.",
     "نیاز Archive (GB · total)": "با ingest خام، روز آرشیو و RF (کلاستر) زیاد می‌شود — فرمول ۱۵٪ rawdata، نه on-disk searchable.",
     "نیاز Archive · per Indexer": "جمع آرشیو ÷ N_IDX — میانگین نمایشی؛ چیدمان فیزیکی به مسیر هر peer بستگی دارد.",
     "نیاز Hot/Warm (GB · total)": "با روز hot/warm، on-disk روزانه و headroom اختیاری >۱ زیاد می‌شود.",
@@ -879,12 +866,11 @@ window.SCP_TIPS.fa = JSON.parse(JSON.stringify(window.SCP_TIPS.en));
     ["Max daily from disk", "حداکثر ingest روزانه که در دیسک شما جا می‌شود."],
     ["Archive need (GB · total)", "آرشیو frozen: Daily_Raw × ۰٫۱۵ × روز × RF — فقط rawdata."],
     ["Archive need · per Indexer", "میانگین آرشیو per peer = جمع ÷ N_IDX."],
-    ["Summaries need (GB · total)", "volume:summaries — فقط DMA رسمی ES (×۳٫۴/year)."],
     ["Hot/Warm need (GB · total)", "بودجه SSD hot/warm — on-disk × روز hot × headroom اختیاری."],
     ["Cold need (GB · total)", "بودجه cold searchable — on-disk × روز cold × headroom اختیاری."],
     ["نیاز Archive (GB · total)", "آرشیو frozen: Daily_Raw × ۰٫۱۵ × روز × RF — فقط rawdata."],
     ["نیاز Archive · per Indexer", "میانگین آرشیو per peer = جمع ÷ N_IDX."],
-    ["نیاز Summaries (GB · total)", "volume:summaries — فقط DMA رسمی ES (×۳٫۴/year)."],
+    ["نیاز DMA (GB · total)", "volume:summaries — فقط DMA رسمی ES (×۳٫۴/year)."],
     ["نیاز Hot/Warm (GB · total)", "بودجه SSD hot/warm — on-disk × روز hot × headroom اختیاری."],
     ["نیاز Cold (GB · total)", "بودجه cold searchable — on-disk × روز cold × headroom اختیاری."],
   ].forEach(([k, body]) => {

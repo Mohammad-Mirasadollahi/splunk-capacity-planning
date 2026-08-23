@@ -52,7 +52,7 @@ function buildChartDatasets(data) {
   const archGB = g.archive_frozen ? d.archive_need_gb || 0 : 0;
   const storageLabels = [t("chart_lbl_hot"), t("chart_lbl_cold")];
   const storageValues = [hotGB, coldGB];
-  if (sumGB > 0 || g.enable_dma || g.has_es) {
+  if (g.enable_dma) {
     storageLabels.push(t("chart_lbl_summaries"));
     storageValues.push(sumGB);
   }
@@ -82,24 +82,26 @@ function buildChartDatasets(data) {
       labels: indexes.map((ix) => ix.index_name),
       values: indexes.map((ix) => ix.searchable_tb || 0),
     },
-    budget: {
-      labels: [
+    budget: (() => {
+      const labels = [
         t("chart_lbl_hot") + " need",
         t("chart_lbl_hot") + " avail",
         t("chart_lbl_cold") + " need",
         t("chart_lbl_cold") + " avail",
-        t("chart_lbl_dma_need"),
-        t("chart_lbl_dma_avail"),
-      ],
-      values: [
+      ];
+      const values = [
         d.hot_need_gb || 0,
         d.hot_available_gb || 0,
         d.cold_need_gb || 0,
         d.cold_available_gb || 0,
-        resolveDmaNeedGB(data, g),
-        d.summaries_available_gb || resolveDmaNeedGB(data, g) || 0,
-      ],
-    },
+      ];
+      if (g.enable_dma) {
+        labels.push(t("chart_lbl_dma_need"), t("chart_lbl_dma_avail"));
+        const dmaGB = resolveDmaNeedGB(data, g);
+        values.push(dmaGB, d.summaries_available_gb || dmaGB || 0);
+      }
+      return { labels, values };
+    })(),
     resources: {
       labels: (d.resources || []).filter((r) => r.ram_gb > 0).map((r) => `${r.role}×${r.count}`),
       values: (d.resources || []).filter((r) => r.ram_gb > 0).map((r) => r.ram_gb * (r.count || 1)),

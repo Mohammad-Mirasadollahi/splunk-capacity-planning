@@ -47,7 +47,7 @@
   - [5.5 ملاحظات Infra مرتبط با Storage SmartStore](#55-ملاحظات-infra-مرتبط-با-storage-smartstore)
 - [6) Storage مربوط به Premium Apps](#6-storage-مربوط-به-premium-apps)
   - [6.1 Enterprise Security — Data Model Acceleration (DMA)](#61-enterprise-security-data-model-acceleration-dma)
-  - [6.2 ITSI — Summary / KV Store / Internal indexes](#62-itsi-summary-kv-store-internal-indexes)
+  - [6.2 ITSI — KV Store / Internal indexes](#62-itsi-kv-store-internal-indexes)
 - [7) Search Head Storage](#7-search-head-storage)
 - [8) Workbook محاسبه Storage (فرمول‌های اجرایی)](#8-workbook-محاسبه-storage-فرمولهای-اجرایی)
   - [8.1 Non-clustered Indexers](#81-non-clustered-indexers)
@@ -428,7 +428,7 @@ Remote_Store_GB ≈ Daily_Ingest_GB × Retention_Days × Cluster_Multiplier
 
 > به‌خاطر تفاوت نسخه‌های ES، ضریب عددی دقیق DMA را از صفحه **Data model acceleration storage and retention** نسخه ES خودتان بردارید و اینجا به‌صورت ثابت «حدس» نزنید. نقطه ورود رسمی از Capacity Manual و ES Performance reference همین ارجاع است.
 
-### 6.2 ITSI — Summary / KV Store / Internal indexes
+### 6.2 ITSI — KV Store / Internal indexes
 
 | مورد | الزام Storage | ارجاع |
 |---|---|---|
@@ -438,7 +438,7 @@ Remote_Store_GB ≈ Daily_Ingest_GB × Retention_Days × Cluster_Multiplier
 | `max_size_per_result_mb` | پیش‌فرض 500MB؛ راهنما: حدود 500MB per 1,000 KPIs | همان بخش |
 | Event Analytics internal license stack | حجم داخلی notable/episode روی stack جدا؛ روی license روزانه شما حساب نشود | بخش License requirements |
 
-برای ظرفیت دیسک summary ایندکس‌های ITSI، retention هر index ITSI را از *Configure indexes in ITSI* بخوانید و با فرمول پایه 50% (یا RF/SF) جمع کنید.
+برای ظرفیت دیسک ایندکس‌های KPI ITSI، retention هر index ITSI را از *Configure indexes in ITSI* بخوانید و با فرمول پایه 50% (یا RF/SF) جمع کنید.
 
 ---
 

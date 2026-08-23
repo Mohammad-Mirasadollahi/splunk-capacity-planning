@@ -360,7 +360,7 @@ First-run Web UI seeds the same volume defaults (`total_daily_gb` 500, hot/cold 
 1. `./bin/scpcalc serve` → open `http://127.0.0.1:12345`  
    (or GitHub Pages: `https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/`)
 2. **Start wizard:** topology → retention (Policy: time↔disk · Volumes: daily GB/EPS + auto DMA on summaries) → sources → review → **Calculate**
-3. **Review / Overview:** Retention timeline + **Storage Required** table — separate rows for **DMA need** (with `dma_years` horizon) and **Summary indexes need** (not sized here); totals include DMA
+3. **Review / Overview:** Retention timeline + **Storage Required** table — **DMA need** row (with `dma_years` horizon) when enabled; totals include DMA
 4. **Results tabs:** Overview · Charts (layer totals) · Design · Resources (labeled **Nodes** + role table) · Settings · Per index · indexes.conf (editor / rename)
 5. **Fullscreen / Copy** on Design, Resources, Settings, Nodes, and Per-index panels
 6. Language toggle **EN / FA**; soft tips (dark) for formulas + official links

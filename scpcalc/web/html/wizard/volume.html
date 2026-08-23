@@ -172,7 +172,7 @@
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="cold_path" data-i18n="lbl_cold_path">Cold volume path</span><span class="field-hint" data-i18n="hint_cold_path">[volume:cold] path</span></span>
                 <input name="cold_path" id="cold_path" type="text" value="/cold">
               </label>
-              <label class="field">
+              <label class="field" data-depends-on="enable_dma" hidden>
                 <span class="field-copy"><span class="field-label tip-mark" data-tip="summaries_path" data-i18n="lbl_sum_path">DMA volume path</span><span class="field-hint" data-i18n="hint_sum_path">[volume:_splunk_summaries] path — SSD for tstats/DMA</span></span>
                 <input name="summaries_path" id="summaries_path" type="text" value="/summaries">
               </label>

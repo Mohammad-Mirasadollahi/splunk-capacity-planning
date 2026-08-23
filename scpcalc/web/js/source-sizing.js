@@ -80,7 +80,7 @@ export function planSourceDiskNeeds(rows, g) {
     sf: g.sf,
   });
   const headroom = Number(g.headroom) >= 1 ? Number(g.headroom) : 1;
-  const dmaOn = !!g.enable_dma || !!g.has_es;
+  const dmaOn = !!g.enable_dma;
   const dmaPct = numOr0(g.dma_pct);
   let totalRaw = 0;
 
