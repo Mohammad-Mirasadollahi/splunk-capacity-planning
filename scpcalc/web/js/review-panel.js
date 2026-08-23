@@ -187,7 +187,7 @@ export function fillReviewSummary() {
           ${kvGroup(t("review_budget_group"))}
           ${kv(t("lbl_avail_hot"), budgetCap(g.available_hot_gb))}
           ${kv(t("lbl_avail_cold"), budgetCap(g.available_cold_gb))}
-          ${kv(t("lbl_avail_sum"), budgetCap(g.available_summaries_gb))}
+          ${g.enable_dma || g.has_es ? kv(t("lbl_dma_volume"), `${formatSizeGB(numOr0(g.available_summaries_gb))} · ${t("review_auto")}`) : ""}
           <li class="review-kv-note"><span>${escapeAttr(t("review_budget_note"))}</span></li>
         </ul>
       </section>

@@ -47,7 +47,7 @@ function buildChartDatasets(data) {
 
   const hotGB = d.hot_need_gb || 0;
   const coldGB = d.cold_need_gb || 0;
-  const sumGB = d.summaries_need_gb || 0;
+  const sumGB = d.dma_need_gb || 0;
   return {
     storage: {
       labels: [t("chart_lbl_hot"), t("chart_lbl_cold"), t("chart_lbl_summaries")],
@@ -76,8 +76,8 @@ function buildChartDatasets(data) {
         d.hot_available_gb || 0,
         d.cold_need_gb || 0,
         d.cold_available_gb || 0,
-        d.summaries_need_gb || 0,
-        d.summaries_available_gb || 0,
+        d.dma_need_gb || d.summaries_need_gb || 0,
+        d.summaries_available_gb || d.dma_need_gb || 0,
       ],
     },
     resources: {

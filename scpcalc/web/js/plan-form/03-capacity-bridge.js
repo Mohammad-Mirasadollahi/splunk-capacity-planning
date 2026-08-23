@@ -2,6 +2,7 @@
  * Retention time ↔ searchable disk GB bridge (capacity pair).
  * Avoids importing collectGlobals to prevent circular deps with globals.js.
  */
+import { syncDmaVolumeGB } from "./dma-volume-sync.js";
 import { state } from "../state.js";
 import { t } from "../i18n.js";
 import { dailyGBFromEPS, numOr0, resolveEventBytes } from "../volume-convert.js";
@@ -115,8 +116,8 @@ export function syncDiskTotal(hotGB, coldGB) {
   if (out) {
     out.textContent = sum > 0 ? t("disk_total_fmt").replace("{n}", formatDiskGB(sum)) : "—";
   }
-  const sumEl = document.getElementById("available_summaries_gb");
-  updateDiskScenario(numOr0(hotGB), numOr0(coldGB), sum, numOr0(sumEl?.value));
+  const dmaGb = syncDmaVolumeGB();
+  updateDiskScenario(numOr0(hotGB), numOr0(coldGB), sum, dmaGb);
   return sum;
 }
 

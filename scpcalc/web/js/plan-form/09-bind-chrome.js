@@ -10,6 +10,7 @@ import {
   syncSHCMemberHint,
 } from "./02-cluster-sync.js";
 import { syncCapacityPair, syncDiskTotal } from "./03-capacity-bridge.js";
+import { syncDmaVolumeGB } from "./dma-volume-sync.js";
 import { syncArchiveFields } from "./04-archive-sync.js";
 import { syncVolumeInputMode } from "./05-volume-mode.js";
 
@@ -34,6 +35,7 @@ export function bindPlanFormChrome() {
         import("../volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
       } else if (input.id === "enable_dma" || input.id === "has_es" || input.id === "has_itsi") {
         syncToggleUI();
+        syncDmaVolumeGB();
         import("../volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
       } else syncToggleUI();
     });
@@ -54,6 +56,7 @@ export function bindPlanFormChrome() {
     document.querySelectorAll(sel).forEach((el) => {
       const run = () => {
         syncCapacityPair(edited);
+        syncDmaVolumeGB();
         import("../volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
       };
       el.addEventListener("input", run);
@@ -69,13 +72,8 @@ export function bindPlanFormChrome() {
     el.addEventListener("input", run);
     el.addEventListener("change", run);
   });
-  document.querySelectorAll('input[name="available_summaries_gb"], #available_summaries_gb').forEach((el) => {
-    const run = () => {
-      const hot = numOr0(document.getElementById("available_hot_gb")?.value);
-      const cold = numOr0(document.getElementById("available_cold_gb")?.value);
-      syncDiskTotal(hot, cold);
-      import("../volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
-    };
+  document.querySelectorAll('input[name="dma_years"], #dma_years, input[name="dma_pct"], #dma_pct').forEach((el) => {
+    const run = () => syncDmaVolumeGB();
     el.addEventListener("input", run);
     el.addEventListener("change", run);
   });
@@ -106,5 +104,6 @@ export function bindPlanFormChrome() {
   );
 
   syncCapacityPair("bridge");
+  syncDmaVolumeGB();
   syncVolumeInputMode("daily_gb");
 }

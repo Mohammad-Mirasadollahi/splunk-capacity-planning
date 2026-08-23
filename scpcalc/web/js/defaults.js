@@ -6,7 +6,7 @@
 export const DEMO_TOTAL_DAILY_GB = 500;
 export const DEMO_AVAILABLE_HOT_GB = 10000;
 export const DEMO_AVAILABLE_COLD_GB = 20000;
-export const DEMO_AVAILABLE_SUMMARIES_GB = 2000;
+export const DEMO_AVAILABLE_SUMMARIES_GB = 0;
 export const DEMO_AVG_EVENT_BYTES = 500;
 export const DEMO_HEADROOM = 1;
 /** Default searchable retention: hot 7d + cold 30d = 37d; archive on freeze for 90d. */
@@ -30,7 +30,7 @@ export function demoGlobals() {
     total_daily_gb: DEMO_TOTAL_DAILY_GB,
     available_hot_gb: DEMO_AVAILABLE_HOT_GB,
     available_cold_gb: DEMO_AVAILABLE_COLD_GB,
-    available_summaries_gb: DEMO_AVAILABLE_SUMMARIES_GB,
+    available_summaries_gb: 0,
     headroom: DEMO_HEADROOM,
     concurrent_users: 8,
     concurrent_searches: 8, // peak jobs at one moment — drives SH CPU / N_SH (1 search ≤ 1 core)
@@ -91,7 +91,7 @@ export function defaultsFromDailyGB(dailyGB, { headroom } = {}) {
     total_daily_gb: round3(d),
     available_hot_gb: Math.max(100, round1(DEMO_AVAILABLE_HOT_GB * scale)),
     available_cold_gb: Math.max(100, round1(DEMO_AVAILABLE_COLD_GB * scale)),
-    available_summaries_gb: Math.max(50, round1(DEMO_AVAILABLE_SUMMARIES_GB * scale)),
+    available_summaries_gb: Math.max(0, round1(d * 3.4)),
     concurrent_users,
     concurrent_searches,
     saved_searches,

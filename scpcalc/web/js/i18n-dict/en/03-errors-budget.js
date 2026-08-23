@@ -12,7 +12,7 @@ export const errors_budget = {
   cap_mode_time: "Plan by time",
   cap_scenario_archive: "Hot {hot}d + Cold {cold}d = {total}d searchable · Archive {arch}d → freeze to frozen path.",
   cap_scenario_delete: "Hot {hot}d + Cold {cold}d = {total}d total searchable · Archive off → delete on freeze.",
-  cap_scenario_disk: "Hot {hot} GB + Cold {cold} GB = {total} GB searchable · Summaries+DMA budget {sum} GB (separate cap).",
+  cap_scenario_disk: "Hot {hot} GB + Cold {cold} GB = {total} GB searchable · DMA {sum} GB (auto).",
   cap_sum_hint: "Hot/cold volume budgets are linked to retention time on Policy (plan by time or by disk). Summaries+DMA budget is a separate cap you set manually.",
   cap_sum_title: "Summaries + DMA budget (GB)",
   cap_time_title: "Retention time",

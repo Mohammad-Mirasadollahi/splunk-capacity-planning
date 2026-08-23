@@ -7,7 +7,7 @@ export const results_charts = {
   chart_lbl_cold_days: "cold days",
   chart_lbl_hot: "hot/warm",
   chart_lbl_hot_days: "hot/warm days",
-  chart_lbl_summaries: "Summaries + DMA",
+  chart_lbl_summaries: "DMA",
   chart_lbl_total_days: "total days",
   chart_resources: "Hardware RAM by role (GB)",
   chart_retention: "Retention time (days)",

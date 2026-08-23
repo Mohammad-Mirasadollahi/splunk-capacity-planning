@@ -543,9 +543,10 @@ func BuildDesign(p model.PlanInput, out model.PlanResult) model.Design {
 		HotNeedGB:            float64(out.HotVolumeMB) / 1024.0,
 		ColdNeedGB:           float64(out.ColdVolumeMB) / 1024.0,
 		SummariesNeedGB:      float64(out.SummariesVolumeMB) / 1024.0,
+		DmaNeedGB:            float64(out.DmaVolumeMB) / 1024.0,
 		HotAvailableGB:       p.AvailableHotGB,
 		ColdAvailableGB:      p.AvailableColdGB,
-		SummariesAvailableGB: p.AvailableSummariesGB,
+		SummariesAvailableGB: float64(out.DmaVolumeMB) / 1024.0,
 		ConcurrentUsers:      p.ConcurrentUsers,
 		ConcurrentSearches:   p.ConcurrentSearches,
 		SavedSearches:        p.SavedSearches,
@@ -590,6 +591,7 @@ func BuildDesign(p model.PlanInput, out model.PlanResult) model.Design {
 	d.HotNeedGB = round1(d.HotNeedGB)
 	d.ColdNeedGB = round1(d.ColdNeedGB)
 	d.SummariesNeedGB = round1(d.SummariesNeedGB)
+	d.DmaNeedGB = round1(d.DmaNeedGB)
 
 	if p.ArchiveFrozen && p.ArchiveDays > 0 {
 		d.ArchiveDays = p.ArchiveDays
@@ -607,10 +609,6 @@ func BuildDesign(p model.PlanInput, out model.PlanResult) model.Design {
 	if p.AvailableColdGB > 0 {
 		ok := d.ColdNeedGB <= p.AvailableColdGB
 		d.ColdFits = &ok
-	}
-	if p.AvailableSummariesGB > 0 {
-		ok := d.SummariesNeedGB <= p.AvailableSummariesGB
-		d.SummariesFit = &ok
 	}
 
 	comp := out.CompressionFactor

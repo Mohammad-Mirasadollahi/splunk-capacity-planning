@@ -42,6 +42,7 @@ export function buildMetricSections(data, g) {
   const hotAll = numOr0(d.hot_need_gb);
   const coldAll = numOr0(d.cold_need_gb);
   const archAll = globals.archive_frozen ? numOr0(d.archive_need_gb) : 0;
+  const dmaAll = numOr0(d.dma_need_gb);
   const sumAll = numOr0(d.summaries_need_gb);
   const totalStore = hotAll + coldAll + archAll + sumAll;
 
@@ -92,10 +93,15 @@ export function buildMetricSections(data, g) {
   if (globals.archive_frozen) {
     storageTotal.rows.push([t("review_m_need_archive_total"), formatStorageAmt(archAll)]);
   }
-  storageTotal.rows.push([
-    t("review_m_need_sum_total"),
-    d.summaries_need_gb != null ? formatStorageAmt(sumAll) : "—",
-  ]);
+  if (dmaAll > 0) {
+    storageTotal.rows.push([t("review_m_need_dma_total"), formatStorageAmt(dmaAll)]);
+  }
+  const sumIdxAll = Math.max(0, sumAll - dmaAll);
+  if (sumIdxAll > 0.1) {
+    storageTotal.rows.push([t("review_m_need_summary_idx_total"), formatStorageAmt(sumIdxAll)]);
+  } else if (dmaAll <= 0 && sumAll > 0) {
+    storageTotal.rows.push([t("review_m_need_sum_total"), formatStorageAmt(sumAll)]);
+  }
   storageTotal.rows.push([t("review_m_total_storage"), formatStorageAmt(totalStore)]);
 
   const storagePer = {

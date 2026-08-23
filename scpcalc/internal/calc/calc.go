@@ -64,7 +64,17 @@ func CalculatePlan(p model.PlanInput) (model.PlanResult, error) {
 		if p.AvailableColdGB > 0 {
 			out.ColdVolumeMB = int64(math.Round(p.AvailableColdGB * 1024))
 		}
-		if p.AvailableSummariesGB > 0 {
+		if p.WantDMA() && p.TotalDailyGB > 0 {
+			dmaMB, dmaNote := splunkform.DMAEstimateMB(
+				p.TotalDailyGB, p.TotalDailyGB*comp, comp,
+				p.DMAPct, p.DmaYears, p.Headroom, p.RetentionDays,
+			)
+			out.DmaVolumeMB = dmaMB
+			out.SummariesVolumeMB = dmaMB
+			if dmaNote != "" {
+				out.Warnings = append(out.Warnings, dmaNote)
+			}
+		} else if p.AvailableSummariesGB > 0 {
 			out.SummariesVolumeMB = int64(math.Round(p.AvailableSummariesGB * 1024))
 		}
 		if out.SummariesVolumeMB == 0 && p.WantDMA() {
@@ -103,7 +113,7 @@ func CalculatePlan(p model.PlanInput) (model.PlanResult, error) {
 		Warnings:          warnings,
 	}
 
-	var hotBudget, coldBudget, sumBudget int64
+	var hotBudget, coldBudget, sumBudget, dmaBudget int64
 
 	for _, s := range p.Sources {
 		ret := s.RetentionDays
@@ -203,6 +213,7 @@ func CalculatePlan(p model.PlanInput) (model.PlanResult, error) {
 			out.TotalDailyRawGB, out.TotalDailyOnDiskGB, out.CompressionFactor,
 			p.DMAPct, p.DmaYears, p.Headroom, p.RetentionDays,
 		)
+		dmaBudget = dmaMB
 		sumBudget += dmaMB
 		if dmaNote != "" {
 			out.Warnings = append(out.Warnings, dmaNote)
@@ -212,6 +223,7 @@ func CalculatePlan(p model.PlanInput) (model.PlanResult, error) {
 	calcHot, calcCold, calcSum := hotBudget, coldBudget, sumBudget
 	out.HotVolumeMB = hotBudget
 	out.ColdVolumeMB = coldBudget
+	out.DmaVolumeMB = dmaBudget
 	out.SummariesVolumeMB = max64(sumBudget, 0)
 	if out.SummariesVolumeMB == 0 && (p.WantDMA() || hasAnySummary(out)) {
 		out.SummariesVolumeMB = 1
@@ -237,17 +249,6 @@ func CalculatePlan(p model.PlanInput) (model.PlanResult, error) {
 		}
 		out.ColdVolumeMB = capMB
 	}
-	if p.AvailableSummariesGB > 0 {
-		capMB := int64(math.Round(p.AvailableSummariesGB * 1024))
-		if calcSum > 0 && capMB < calcSum {
-			return model.PlanResult{}, fmt.Errorf(
-				"summaries disk need (%.0f GB) exceeds available_summaries_gb budget (%.0f GB) — raise the Volume summaries budget or lower summary retention / DMA",
-				float64(calcSum)/1024.0, p.AvailableSummariesGB,
-			)
-		}
-		out.SummariesVolumeMB = max64(capMB, 1)
-	}
-
 	out.HotVolumeClusterMB = out.HotVolumeMB
 	out.ColdVolumeClusterMB = out.ColdVolumeMB
 	out.SummariesClusterMB = out.SummariesVolumeMB
@@ -256,6 +257,7 @@ func CalculatePlan(p model.PlanInput) (model.PlanResult, error) {
 	needOut := out
 	needOut.HotVolumeMB = calcHot
 	needOut.ColdVolumeMB = calcCold
+	needOut.DmaVolumeMB = dmaBudget
 	needOut.SummariesVolumeMB = max64(calcSum, 0)
 	design := arch.BuildDesign(p, needOut)
 

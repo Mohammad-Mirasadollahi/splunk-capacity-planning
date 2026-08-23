@@ -143,7 +143,7 @@ ColdBudgetMB  = Σ (maxTotal − homePath)
 SumBudgetMB   = Σ summary maxTotal + DMA
 ```
 
-If `available_hot_gb` / `available_cold_gb` / `available_summaries_gb` is set and calculated need exceeds that budget, calculation **errors** (do not silently shrink). When available ≥ need, conf volume caps may still expand up to the available budget. Design “need” uses pre-cap cluster-wide budgets; conf `maxVolumeDataSizeMB` uses per-peer values after ÷ `N_IDX`.
+If `available_hot_gb` / `available_cold_gb` is set and calculated need exceeds that budget, calculation **errors** (do not silently shrink). `available_summaries_gb` in the UI is **auto-calculated DMA only** (not a manual cap); the engine sizes `[volume:_splunk_summaries]` from DMA + optional summary indexes without a user summaries budget check.
 
 ## 8. Capacity reverse
 

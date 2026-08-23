@@ -12,7 +12,7 @@ export const errors_budget = {
   cap_mode_time: "برنامه با زمان",
   cap_scenario_archive: "Hot {hot}روز + Cold {cold}روز = {total}روز searchable · Archive {arch}روز → انتقال به مسیر frozen.",
   cap_scenario_delete: "Hot {hot}روز + Cold {cold}روز = {total}روز searchable · آرشیو خاموش → حذف هنگام freeze.",
-  cap_scenario_disk: "Hot {hot} GB + Cold {cold} GB = {total} GB searchable · بودجه summaries+DMA {sum} GB (سقف جدا).",
+  cap_scenario_disk: "Hot {hot} GB + Cold {cold} GB = {total} GB searchable · DMA {sum} GB (خودکار).",
   cap_sum_hint: "بودجه hot/cold در Policy به retention لینک است. بودجه summaries+DMA سقف دستی جداست.",
   cap_sum_title: "بودجه summaries + DMA (GB)",
   cap_time_title: "زمان نگهداری",

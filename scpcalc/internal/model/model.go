@@ -174,6 +174,7 @@ type Design struct {
 	HotNeedGB            float64     `json:"hot_need_gb"`
 	ColdNeedGB           float64     `json:"cold_need_gb"`
 	SummariesNeedGB      float64     `json:"summaries_need_gb"`
+	DmaNeedGB            float64     `json:"dma_need_gb,omitempty"`
 	ArchiveNeedGB        float64     `json:"archive_need_gb,omitempty"`
 	ArchiveDays          int         `json:"archive_days,omitempty"`
 	HotAvailableGB       float64     `json:"hot_available_gb,omitempty"`
@@ -205,6 +206,7 @@ type PlanResult struct {
 	HotVolumeMB          int64         `json:"hot_volume_budget_mb"`          // per peer when design.per_peer_mb
 	ColdVolumeMB         int64         `json:"cold_volume_budget_mb"`         // per peer when design.per_peer_mb
 	SummariesVolumeMB    int64         `json:"summaries_volume_budget_mb"`    // per peer when design.per_peer_mb
+	DmaVolumeMB          int64         `json:"dma_volume_mb,omitempty"`       // cluster-wide DMA only (pre-peer)
 	HotVolumeClusterMB   int64         `json:"hot_volume_cluster_mb,omitempty"`
 	ColdVolumeClusterMB  int64         `json:"cold_volume_cluster_mb,omitempty"`
 	SummariesClusterMB   int64         `json:"summaries_volume_cluster_mb,omitempty"`

@@ -10,6 +10,8 @@ import { estimateEnabledDailyGB } from "./wizard-continuity.js";
 import { collectGlobals, readVolumeInputMode } from "./plan-form.js";
 import { planSourceDiskNeeds, formatSizeGB } from "./source-sizing.js";
 
+import { syncDmaVolumeGB } from "./plan-form/dma-volume-sync.js";
+
 function hasEnabledSources() {
   return (state.rows || []).some((r) => r.enabled);
 }
@@ -40,11 +42,9 @@ export function checkVolumeBudgets() {
 
   const hot = numOr0(g.available_hot_gb);
   const cold = numOr0(g.available_cold_gb);
-  const sumCap = numOr0(g.available_summaries_gb);
   const diskBudget = hot + cold;
   const needHot = plan.needHot;
   const needCold = plan.needCold;
-  const needSum = plan.needSum;
 
   if (diskBudget > 0 && (needHot > 0 || needCold > 0)) {
     if (hot > 0 && needHot > hot + 1) {
@@ -77,20 +77,11 @@ export function checkVolumeBudgets() {
     }
   }
 
-  if (sumCap > 0 && needSum > sumCap + 1) {
-    return {
-      ok: false,
-      message: t("err_disk_exceeds_summaries")
-        .replace("{need}", formatSizeGB(needSum))
-        .replace("{cap}", formatSizeGB(sumCap)),
-      warn,
-    };
-  }
-
   return { ok: true, message: "", warn };
 }
 
 export function refreshVolumeBudgetUI() {
+  syncDmaVolumeGB();
   const el = document.getElementById("volume-budget-err");
   const reviewErr = document.getElementById("err");
   const check = checkVolumeBudgets();
