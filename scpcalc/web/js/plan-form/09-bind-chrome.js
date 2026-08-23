@@ -28,6 +28,10 @@ export function bindPlanFormChrome() {
         if (dma) dma.checked = true;
         syncToggleUI();
         import("../volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
+      } else if (input.id === "configure_sources") {
+        state.configureSources = input.checked;
+        syncToggleUI();
+        import("../volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
       } else if (input.id === "enable_dma" || input.id === "has_es" || input.id === "has_itsi") {
         syncToggleUI();
         import("../volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});

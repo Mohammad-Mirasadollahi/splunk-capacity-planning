@@ -1,6 +1,8 @@
 /** Shared mutable UI state */
 export const state = {
   rows: [],
+  /** When false, per-source table is hidden and planning uses total_daily_gb only. */
+  configureSources: false,
   step: 0,
   volumeInputMode: "daily_gb", // "daily_gb" | "eps" — both are raw/pre-indexed ingest
   capacityPlanMode: "time", // last edit direction: days→GB ("time") or GB→days ("disk")

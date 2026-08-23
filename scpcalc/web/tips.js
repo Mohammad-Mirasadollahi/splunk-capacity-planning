@@ -329,6 +329,14 @@ window.SCP_TIPS = {
         { label: "Estimate your storage requirements", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Estimateyourstoragerequirements" },
       ],
     },
+    configure_sources: {
+      title: "Per-source volumes",
+      body: "Optional. When off, planning uses total_daily_gb from Budget only — no per-index breakdown, no source budget checks. Turn on when you want to split daily volume across log sources and preview per-index maxTotalDataSizeMB.",
+      example: "Budget 100 GB/day with toggle off → one aggregate plan. Toggle on → enable Windows/Linux rows and split the 100 GB across indexes.",
+      links: [
+        { label: "Estimate your storage requirements", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Estimateyourstoragerequirements" },
+      ],
+    },
     available_hot_gb: {
       title: "[volume:hotwarm] maxVolumeDataSizeMB",
       formula: "available_hot_gb → maxVolumeDataSizeMB ≈ GB × 1024 (conf); fit vs Σ homePath.maxDataSizeMB",

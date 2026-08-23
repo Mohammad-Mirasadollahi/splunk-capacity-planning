@@ -2,7 +2,8 @@
 export const errors_budget = {
   cap_bridge_hint: "نرخ پل ≈ {rate} GB/روز روی دیسک × headroom {h}. دیسک ≈ نرخ × روز × headroom.",
   cap_bridge_need_volume: "حجم روزانه را در Budget بگذارید یا منابع را پر کنید تا تبدیل زمان ↔ دیسک کار کند.",
-  cap_disk_title: "بودجه حجم volume (GB)",
+  cap_disk_title: "بودجه حجم volume (GB) — کلاستر [volume:*]",
+  cap_disk_scope_note: "سقف volume فایل‌سیستم برای کل استقرار — نه maxTotalDataSizeMB هر Index. اندازه هر Index در Sources پیش‌نمایش می‌شود و بعد از Cluster (تعداد peer) + Calculate نهایی می‌شود.",
   cap_hint: "برای سنجش تناسب و سقف حجم روزانهٔ قابل نگه‌داری روی دیسک.",
   cap_mode_disk: "برنامه با دیسک",
   cap_mode_hint_disk: "بودجه حجم volume (GB) را وارد کنید — روزهای retention از همان فرمول پل به‌روز می‌شوند.",

@@ -424,7 +424,8 @@
               </div>
               <span class="vol-eq vol-eq-lg cap-eq" aria-hidden="true">=</span>
               <div class="subpanel cap-side" id="cap-disk-box" data-cap-side="disk">
-                <h4 data-i18n="cap_disk_title">Volume size budgets (GB)</h4>
+                <h4 data-i18n="cap_disk_title">Volume size budgets (GB) — cluster [volume:*]</h4>
+                <p class="hint cap-disk-scope" data-i18n="cap_disk_scope_note">Splunk filesystem volume caps for the whole deployment — not per-index maxTotalDataSizeMB. Per-index sizes are previewed on Sources and finalized after Cluster (peer count) + Calculate.</p>
                 <div class="grid">
                   <label class="field">
                     <span class="field-copy"><span class="field-label tip-mark" data-tip="available_hot_gb" id="lbl_cap_hot" data-i18n="lbl_avail_hot">Hot/warm volume (GB)</span><span class="field-hint" id="hint_cap_hot" data-i18n="hint_avail_hot">→ [volume:hotwarm] maxVolumeDataSizeMB</span></span>
@@ -466,19 +467,19 @@
           </div>
 
           <div class="tab-panel" data-panel="vol-sources" role="tabpanel" hidden>
-            <section class="form-section" aria-labelledby="sec-vol-mode-title">
-              <header class="form-section-head">
-                <h4 id="sec-vol-mode-title" data-i18n="sec_vol_mode">Enter volume as GB/day or EPS</h4>
-                <p class="hint" data-i18n-html="sec_vol_mode_hint">Use the linked <strong>GB/day = EPS</strong> pair on each source (and on Total daily volume). Edit either side — the other updates from average event size. Planning math always uses <strong>raw Daily GB</strong> under the hood.</p>
-              </header>
-              <p class="hint tip-mark" data-tip="eps" data-i18n="sec_vol_mode_eps_note">EPS = raw events arriving from the source (before Splunk compression). With average event size it becomes Daily raw GB; on-disk ≈ that × Comp.</p>
-            </section>
-
-            <section class="form-section" aria-labelledby="sec-log-sources-title">
+            <section class="form-section sources-gate" aria-labelledby="sec-log-sources-title">
               <header class="form-section-head">
                 <h4 id="sec-log-sources-title" data-i18n="sec_log_sources">Log sources</h4>
-                <p class="hint" data-i18n="sources_hint">Turn on each source and set daily GB/EPS. Optional Retention / Hot-warm days override Policy globals (blank = use Policy). Index size (GB) is a live cluster-wide preview of maxTotalDataSizeMB ≈ on-disk × retention × headroom (under-fill scales to total_daily_gb; conf may ÷ peers). Need vs Policy disk budgets is checked live with a clear error.</p>
+                <p class="hint" data-i18n="hint_configure_sources_off">Optional — plan from total daily volume on Budget only, or break volume down per source here later.</p>
               </header>
+              <label class="field check glass-chip sources-gate-toggle">
+                <input type="checkbox" id="configure_sources" name="configure_sources">
+                <span class="tip-mark" data-tip="configure_sources" data-i18n="lbl_configure_sources">Configure per-source volumes</span>
+              </label>
+            </section>
+
+            <div class="sources-config-panel" data-depends-on="configure_sources" hidden>
+              <p class="hint tip-mark sources-config-note" data-tip="eps" data-i18n="sec_vol_mode_eps_note">EPS = raw events arriving from the source (before Splunk compression). With average event size it becomes Daily raw GB; on-disk ≈ that × Comp.</p>
               <p id="volume-budget-err" class="err volume-budget-err" hidden role="alert"></p>
               <div class="table-wrap">
                 <table class="src-table src-table--volume src-table--merged" id="src-table">
@@ -506,7 +507,7 @@
                 <button type="button" class="btn-ghost" id="btn-export" data-i18n="export">Export .json</button>
                 <button type="button" class="btn-ghost" id="btn-export-url" data-i18n="export_url">Export URL</button>
               </div>
-            </section>
+            </div>
           </div>
 
           <div class="tab-panel" data-panel="vol-paths" role="tabpanel" hidden>

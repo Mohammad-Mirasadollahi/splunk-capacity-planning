@@ -2,7 +2,8 @@
 export const errors_budget = {
   cap_bridge_hint: "Bridge rate ≈ {rate} GB/day on-disk × headroom {h}. disk ≈ rate × days × headroom.",
   cap_bridge_need_volume: "Set total daily GB under Budget or enable sources so time ↔ disk can convert.",
-  cap_disk_title: "Volume size budgets (GB)",
+  cap_disk_title: "Volume size budgets (GB) — cluster [volume:*]",
+  cap_disk_scope_note: "Splunk filesystem volume caps for the whole deployment — not per-index maxTotalDataSizeMB. Per-index sizes are previewed on Sources and finalized after Cluster (peer count) + Calculate.",
   cap_hint: "Used to check fit and estimate the max daily volume your disks can hold.",
   cap_mode_disk: "Plan by disk",
   cap_mode_hint_disk: "Edit volume size budgets (GB) — retention days update automatically from the same bridge formula.",

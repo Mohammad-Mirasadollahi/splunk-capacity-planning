@@ -26,7 +26,7 @@ import {
   syncClusterFields,
   syncToggleUI,
 } from "./plan-form.js";
-import { renderRows, refreshTotalCounterpart, syncRowVolumePair, syncTotalVolumePair } from "./sources.js";
+import { renderRows, refreshTotalCounterpart, syncRowVolumePair, syncTotalVolumePair, setConfigureSources } from "./sources.js";
 import { runPlan } from "./engine.js";
 import { updateAutoRecBadges } from "./suggestions.js";
 
@@ -85,6 +85,7 @@ function applyVolumeDefaults(dailyGB) {
   });
   scaleDemoSourcesToTotal(state.rows, dailyGB, { eventBytes });
   applyAvgEventBytesToSources(state.rows, eventBytes, { enabledOnly: true });
+  setConfigureSources(true);
   state.rows.forEach((r) => {
     if (numOr0(r.daily_gb) > 0) syncRowVolumePair(r, state.rows, "daily_gb");
   });

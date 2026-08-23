@@ -33,6 +33,70 @@ export function estimateEnabledDailyGB(rows, _mode) {
   return sum;
 }
 
+function buildVolumeBits(g, enabled, mode) {
+  const ingest = [];
+  if (g.total_daily_gb > 0) {
+    ingest.push(t("ctx_total_daily_cluster").replace("{n}", formatDailyGB(g.total_daily_gb)));
+    const eps = totalEPSFromDailyGB(g.total_daily_gb, state.rows);
+    if (eps > 0) ingest.push(t("ctx_total_eps").replace("{n}", formatEPS(eps)));
+  }
+  const srcSum = estimateEnabledDailyGB(enabled, mode);
+  ingest.push(t("ctx_sources_per_index").replace("{n}", String(enabled.length)).replace("{sum}", formatDailyGB(srcSum)));
+
+  const policy = [];
+  policy.push(t("ctx_headroom").replace("{h}", String(g.headroom)));
+  const coldDays = Math.max(0, (g.retention_days || 0) - (g.hot_warm_days || 0));
+  policy.push(
+    t("ctx_retention")
+      .replace("{r}", String(g.retention_days))
+      .replace("{hw}", String(g.hot_warm_days))
+      .replace("{c}", String(coldDays))
+  );
+  if (g.available_hot_gb || g.available_cold_gb) {
+    policy.push(
+      t("ctx_disk_stanzas")
+        .replace("{h}", String(g.available_hot_gb || 0))
+        .replace("{c}", String(g.available_cold_gb || 0))
+    );
+  }
+  return [
+    `<strong>${t("ctx_ingest_cluster")}</strong> ${ingest.join(" · ")}`,
+    `<strong>${t("ctx_policy_cluster")}</strong> ${policy.join(" · ")}`,
+  ];
+}
+
+function buildVolumeScopeNote(step, g) {
+  if (step === 1) return t("ctx_volume_scope_note");
+  if (step >= 2 && g.indexer_cluster && g.n_idx > 1) {
+    return t("ctx_peer_split_note").replace("{n}", String(g.n_idx));
+  }
+  if (step >= 2) return t("ctx_volume_scope_later");
+  return "";
+}
+
+function buildTopologyBits(g) {
+  const topo = [];
+  topo.push(
+    g.indexer_cluster
+      ? t("ctx_idx_cluster_on").replace("{rf}", String(g.rf)).replace("{sf}", String(g.sf))
+      : t("ctx_idx_cluster_off")
+  );
+  topo.push(
+    g.search_head_cluster
+      ? t("ctx_shc_on").replace("{u}", String(g.concurrent_users)).replace("{s}", String(g.concurrent_searches))
+      : t("ctx_shc_off").replace("{u}", String(g.concurrent_users)).replace("{s}", String(g.concurrent_searches))
+  );
+  if (g.n_idx > 0) topo.push(t("ctx_n_idx").replace("{n}", String(g.n_idx)));
+  if (g.n_sh > 0) topo.push(t("ctx_n_sh").replace("{n}", String(g.n_sh)));
+  const apps = [];
+  if (g.has_es) apps.push("ES");
+  if (g.has_itsi) apps.push("ITSI");
+  if (g.enable_dma) apps.push("DMA");
+  if (g.smartstore) apps.push("SmartStore");
+  if (apps.length) topo.push(apps.join(" · "));
+  return topo;
+}
+
 function buildContextHTML(step) {
   const g = collectGlobals();
   const mode = readVolumeInputMode();
@@ -40,59 +104,22 @@ function buildContextHTML(step) {
   const bits = [];
 
   // Step order v10+: 0=Overview, 1=Volume, 2=Cluster, 3=Review
-  if (step >= 2) {
-    const vol = [];
-    if (g.total_daily_gb > 0) {
-      vol.push(t("ctx_total_daily").replace("{n}", formatDailyGB(g.total_daily_gb)));
-      const eps = totalEPSFromDailyGB(g.total_daily_gb, state.rows);
-      if (eps > 0) vol.push(t("ctx_total_eps").replace("{n}", formatEPS(eps)));
-    }
-    vol.push(t("ctx_headroom").replace("{h}", String(g.headroom)));
-    const coldDays = Math.max(0, (g.retention_days || 0) - (g.hot_warm_days || 0));
-    vol.push(
-      t("ctx_retention")
-        .replace("{r}", String(g.retention_days))
-        .replace("{hw}", String(g.hot_warm_days))
-        .replace("{c}", String(coldDays))
-    );
-    const srcSum = estimateEnabledDailyGB(enabled, mode);
-    vol.push(t("ctx_sources_on").replace("{n}", String(enabled.length)));
-    if (srcSum > 0) vol.push(t("ctx_sources_sum").replace("{n}", formatDailyGB(srcSum)));
-    if (g.available_hot_gb || g.available_cold_gb) {
-      vol.push(
-        t("ctx_disk")
-          .replace("{h}", String(g.available_hot_gb || 0))
-          .replace("{c}", String(g.available_cold_gb || 0))
-      );
-    }
-    bits.push(`<strong>${t("ctx_from_sources")}</strong> ${vol.join(" · ")}`);
+  if (step === 0) {
+    return `<p class="wizard-context-title">${t("ctx_intro_title")}</p><p class="wizard-context-intro">${t("ctx_intro_body")}</p>`;
+  }
+
+  if (step >= 1) {
+    bits.push(...buildVolumeBits(g, enabled, mode));
   }
 
   if (step >= 3) {
-    const topo = [];
-    topo.push(
-      g.indexer_cluster
-        ? t("ctx_idx_cluster_on").replace("{rf}", String(g.rf)).replace("{sf}", String(g.sf))
-        : t("ctx_idx_cluster_off")
-    );
-    topo.push(
-      g.search_head_cluster
-        ? t("ctx_shc_on").replace("{u}", String(g.concurrent_users)).replace("{s}", String(g.concurrent_searches))
-        : t("ctx_shc_off").replace("{u}", String(g.concurrent_users)).replace("{s}", String(g.concurrent_searches))
-    );
-    if (g.n_idx > 0) topo.push(t("ctx_n_idx").replace("{n}", String(g.n_idx)));
-    if (g.n_sh > 0) topo.push(t("ctx_n_sh").replace("{n}", String(g.n_sh)));
-    const apps = [];
-    if (g.has_es) apps.push("ES");
-    if (g.has_itsi) apps.push("ITSI");
-    if (g.enable_dma) apps.push("DMA");
-    if (g.smartstore) apps.push("SmartStore");
-    if (apps.length) topo.push(apps.join(" · "));
-    bits.push(`<strong>${t("ctx_from_topology")}</strong> ${topo.join(" · ")}`);
+    bits.push(`<strong>${t("ctx_from_topology")}</strong> ${buildTopologyBits(g).join(" · ")}`);
   }
 
-  if (!bits.length) return "";
-  return `<p class="wizard-context-title">${t("ctx_title")}</p><ul class="wizard-context-list">${bits
+  const titleKey = step === 1 ? "ctx_volume_title" : "ctx_title";
+  const scopeNote = buildVolumeScopeNote(step, g);
+  const scopeHtml = scopeNote ? `<p class="wizard-context-scope">${scopeNote}</p>` : "";
+  return `<p class="wizard-context-title">${t(titleKey)}</p>${scopeHtml}<ul class="wizard-context-list">${bits
     .map((b) => `<li>${b}</li>`)
     .join("")}</ul>`;
 }
@@ -119,22 +146,14 @@ export function applyInheritedSourcePlaceholders() {
 export function refreshWizardContext(step = state.step, { remountSources = false } = {}) {
   const el = document.getElementById("wizard-context");
   if (!el) return;
-  if (step <= 1) {
-    el.hidden = true;
-    el.innerHTML = "";
-    syncQuickFromGlobals();
-    syncLinkedSummaryRetention();
-    if (remountSources) renderRows();
-    applyInheritedSourcePlaceholders();
-    return;
-  }
   syncLinkedSummaryRetention();
   const html = buildContextHTML(step);
   el.innerHTML = html;
   el.hidden = !html;
+  if (step <= 1) syncQuickFromGlobals();
   if (remountSources) renderRows();
   applyInheritedSourcePlaceholders();
-  refreshTotalCounterpart();
+  if (step >= 1) refreshTotalCounterpart();
   if (step === 3) {
     fillReview();
     import("./review-panel.js")
@@ -156,7 +175,7 @@ export function bindWizardContinuity() {
       applyInheritedSourcePlaceholders();
     }
     if (name === "total_daily_gb") syncQuickFromGlobals();
-    if (state.step >= 2) refreshWizardContext(state.step);
+    if (state.step >= 1) refreshWizardContext(state.step);
   });
   form.addEventListener("input", (e) => {
     const name = e.target?.name || e.target?.dataset?.f;
@@ -166,6 +185,6 @@ export function bindWizardContinuity() {
       applyInheritedSourcePlaceholders();
     }
     if (name === "total_daily_gb") syncQuickFromGlobals();
-    if (state.step >= 2) refreshWizardContext(state.step);
+    if (state.step >= 1) refreshWizardContext(state.step);
   });
 }

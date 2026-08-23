@@ -3,7 +3,7 @@
  */
 import { state } from "../state.js";
 import { dailyGBFromEPS, epsFromDailyGB, numOr0, resolveEventBytes } from "../volume-convert.js";
-import { normalizeSnapshotRows, renderRows } from "../sources.js";
+import { normalizeSnapshotRows, renderRows, setConfigureSources, isConfigureSourcesEnabled } from "../sources.js";
 import { syncCapacityPair, readCapacityPlanMode } from "./03-capacity-bridge.js";
 import { syncArchiveFields } from "./04-archive-sync.js";
 import { readVolumeInputMode, syncVolumeInputMode } from "./05-volume-mode.js";
@@ -47,7 +47,8 @@ export function migrateWizardStep(data) {
 
 export function snapshot() {
   return {
-    version: 10,
+    version: 11,
+    configure_sources: state.configureSources,
     volume_input_mode: readVolumeInputMode(),
     capacity_plan_mode: readCapacityPlanMode(),
     globals: collectGlobals(),
@@ -63,6 +64,11 @@ export function applySnapshot(data) {
   }
   applyGlobals(data.globals);
   state.rows = normalizeSnapshotRows(data.rows);
+  const configureSources =
+    typeof data.configure_sources === "boolean"
+      ? data.configure_sources
+      : state.rows.some((r) => r.enabled);
+  setConfigureSources(configureSources);
   renderRows();
   state.step = migrateWizardStep(data);
   const mode =
@@ -78,9 +84,11 @@ export function buildPlanBody(overrides = {}) {
   syncCapacityPair(null);
   const g = { ...collectGlobals(), ...overrides };
   syncVolumeInputMode("daily_gb");
-  const sources = state.rows
-    .filter((r) => r.enabled)
-    .map((r) => {
+  const configureSources = isConfigureSourcesEnabled();
+  const sources = configureSources
+    ? state.rows
+        .filter((r) => r.enabled)
+        .map((r) => {
       const bytes = resolveEventBytes(r, state.rows);
       // Prefer explicit Daily GB; if only EPS is set, derive GB. Engine plans from volume.
       let daily = numOr0(r.daily_gb);
@@ -104,7 +112,8 @@ export function buildPlanBody(overrides = {}) {
       if (r.enable_summary && sg > 0) row.summary_daily_gb = sg;
       if (r.summary_index_name) row.summary_index_name = String(r.summary_index_name).trim();
       return row;
-    });
+    })
+    : [];
   const { capacity_plan_mode: _mode, ...payload } = g;
   return { ...payload, sources };
 }

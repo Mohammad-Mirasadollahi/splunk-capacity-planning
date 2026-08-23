@@ -13,6 +13,34 @@ import {
 import { DEMO_AVG_EVENT_BYTES } from "./defaults.js";
 import { formatSizeGB, formatSizeMB, planSourceDiskNeeds, underfillScaleFactor } from "./source-sizing.js";
 
+/** Per-source table is optional; when off, planning uses total_daily_gb only. */
+export function isConfigureSourcesEnabled() {
+  const el = document.getElementById("configure_sources");
+  if (el) return el.checked;
+  return state.configureSources;
+}
+
+export function setConfigureSources(on) {
+  state.configureSources = !!on;
+  const el = document.getElementById("configure_sources");
+  if (el) el.checked = state.configureSources;
+  import("./plan-form.js")
+    .then((m) => m.syncToggleUI?.())
+    .catch(() => {});
+  import("./volume-budget.js")
+    .then((m) => m.refreshVolumeBudgetUI?.())
+    .catch(() => {});
+}
+
+export function syncConfigureSourcesUI() {
+  const el = document.getElementById("configure_sources");
+  if (!el) return;
+  el.checked = state.configureSources;
+  import("./plan-form.js")
+    .then((m) => m.syncToggleUI?.())
+    .catch(() => {});
+}
+
 /** Planning average event size: Quick Start field first, else enabled sources, else demo default. */
 export function planningAvgEventBytes() {
   const fromQuick = numOr0(document.getElementById("avg_event_bytes")?.value);
@@ -334,6 +362,15 @@ function bindTotalVolumePair() {
 export function bindSourcesTable() {
   bindTableBody(document.getElementById("src-body"));
   bindTotalVolumePair();
+  syncConfigureSourcesUI();
+
+  const cfg = document.getElementById("configure_sources");
+  if (cfg && cfg.dataset.sourcesBound !== "1") {
+    cfg.dataset.sourcesBound = "1";
+    cfg.addEventListener("change", () => {
+      setConfigureSources(cfg.checked);
+    });
+  }
 
   document.getElementById("btn-add")?.addEventListener("click", () => {
     state.rows.push(blankCustom());
