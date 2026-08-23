@@ -3,6 +3,10 @@
 All notable changes to this repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/)-style sections so GitHub Releases can show what actually changed between versions.
 
+## 0.4.14 — 2026-08-23
+
+- Sources: restore add/index toolbar, presets catalog, scroll and inputs
+
 ## 0.4.13 — 2026-08-23
 
 - Log sources toggle, main-only mode, fullscreen table
