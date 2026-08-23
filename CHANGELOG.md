@@ -3,6 +3,10 @@
 All notable changes to this repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/)-style sections so GitHub Releases can show what actually changed between versions.
 
+## 0.4.3 — 2026-08-23
+
+- Centralized form control sizing; fix stretched Policy volume inputs
+
 ## 0.4.2 — 2026-08-23
 
 - DMA included in Storage Required totals, per-indexer/per-index disk, and Policy disk total when enabled
