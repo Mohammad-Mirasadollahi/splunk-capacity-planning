@@ -74,7 +74,7 @@ function formatReviewIndexTotal({ idxGB, dmaGB, dailyGB, g }) {
   if (!(dailyGB > 0)) return t("review_idx_no_volume");
   const parts = [];
   if (idxGB > 0) parts.push(`${formatDiskGB(roundDiskGB(idxGB))} GB`);
-  if (g.enable_dma && dmaGB > 0) parts.push(`${formatDiskGB(roundDiskGB(dmaGB))} DMA`);
+  if (g.enable_dma && dmaGB > 0) parts.push(`${formatDiskGB(roundDiskGB(dmaGB))} GB DMA`);
   if (parts.length) return parts.join(" + ");
   return g.enable_dma ? t("dma_volume_need_ingest") : t("review_idx_size_pending");
 }

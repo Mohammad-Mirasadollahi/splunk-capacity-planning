@@ -8,7 +8,7 @@ export const sources_table = {
   col_event_bytes: "Avg event (bytes)",
   col_archive: "Archive",
   col_hw: "Hot/warm days",
-  col_idx_dma_short: "DMA {n}",
+  col_idx_dma_short: "DMA {n} GB",
   col_idx_home_short: "home {n}",
   col_idx_size: "maxTotal (MB) · EPS",
   col_index: "Index name",

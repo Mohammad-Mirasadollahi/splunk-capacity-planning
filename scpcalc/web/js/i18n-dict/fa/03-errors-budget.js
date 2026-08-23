@@ -20,7 +20,7 @@ export const errors_budget = {
   cold_vol_auto: "{days} روز cold · coldPath.maxDataSizeMB = maxTotal − homePath",
   cold_vol_auto_zero: "۰ روز cold (hot/warm کل حجم Index را پوشش می‌دهد)",
   disk_total_fmt: "{n} GB",
-  disk_total_with_dma_fmt: "{n} GB ({searchable} searchable + {dma} DMA)",
+  disk_total_with_dma_fmt: "{n} GB ({searchable} searchable + {dma} GB DMA)",
   err_disk_exceeds_budget: "نیاز دیسک searchable حدود {need} GB است، ولی بودجه hot+cold برابر {cap} GB است — دیسک Policy را بالا ببرید یا retention / حجم روزانه را کم کنید.",
   err_disk_exceeds_cold: "نیاز دیسک cold حدود {need} GB است، ولی بودجه available_cold_gb برابر {cap} GB است — دیسک Policy را بالا ببرید یا retention / حجم روزانه را کم کنید.",
   err_disk_exceeds_hot: "نیاز دیسک hot/warm حدود {need} GB است، ولی بودجه available_hot_gb برابر {cap} GB است — دیسک Policy را بالا ببرید یا retention / حجم روزانه را کم کنید.",
