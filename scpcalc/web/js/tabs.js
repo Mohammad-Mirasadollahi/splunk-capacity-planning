@@ -1,4 +1,5 @@
 import { state } from "./state.js";
+import { resetWizardContextScroll } from "./wizard-context-scroll.js";
 
 /** @type {null | ((plan: object) => void)} */
 let onChartsTab = null;
@@ -67,6 +68,7 @@ export function initTabBars() {
             p.classList.toggle("is-active", on);
             if (on) p.scrollTop = 0;
           });
+          if (scope.closest("#wizard-modal")) resetWizardContextScroll();
           if (id === "charts" && state.lastPlan) {
             setTimeout(() => onChartsTab?.(state.lastPlan), 40);
           }

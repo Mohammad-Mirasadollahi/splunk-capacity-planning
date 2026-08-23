@@ -1,6 +1,6 @@
 /**
  * Fade/collapse the carry-forward wizard-context banner while scrolling down
- * inside the wizard; restore it when scrolling up or near the top.
+ * inside the wizard (any step / inner tab / nested table); restore on scroll up.
  */
 import { reduceMotion } from "./state.js";
 
@@ -11,9 +11,32 @@ function contextEl() {
   return document.getElementById("wizard-context");
 }
 
-function isScrollRoot(el) {
-  if (!el?.classList) return false;
-  return el.classList.contains("wiz-pane") || el.classList.contains("tab-panel");
+function wizardModal() {
+  return document.getElementById("wizard-modal");
+}
+
+function isVerticalScrollable(el) {
+  if (!(el instanceof HTMLElement)) return false;
+  const style = window.getComputedStyle(el);
+  const oy = style.overflowY;
+  if (oy !== "auto" && oy !== "scroll" && oy !== "overlay") return false;
+  return el.scrollHeight > el.clientHeight + 1;
+}
+
+/** Nearest scrollable ancestor inside the wizard (excluding the context banner). */
+function scrollRootWithinWizard(el) {
+  const modal = wizardModal();
+  const ctx = contextEl();
+  if (!modal || !el || !modal.contains(el)) return null;
+  if (ctx?.contains(el)) return null;
+
+  let node = el;
+  while (node && node !== modal) {
+    if (node === ctx) return null;
+    if (isVerticalScrollable(node)) return node;
+    node = node.parentElement;
+  }
+  return null;
 }
 
 export function resetWizardContextScroll() {
@@ -21,7 +44,7 @@ export function resetWizardContextScroll() {
 }
 
 function bindWizardContextScroll() {
-  const modal = document.getElementById("wizard-modal");
+  const modal = wizardModal();
   if (!modal || modal.dataset.ctxScrollBound === "1") return;
   modal.dataset.ctxScrollBound = "1";
 
@@ -31,8 +54,8 @@ function bindWizardContextScroll() {
     "scroll",
     (e) => {
       if (reduceMotion) return;
-      const root = e.target;
-      if (!isScrollRoot(root)) return;
+      const root = scrollRootWithinWizard(e.target);
+      if (!root) return;
 
       const ctx = contextEl();
       if (!ctx || ctx.hidden) return;
