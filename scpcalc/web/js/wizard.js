@@ -2,6 +2,7 @@ import { t } from "./i18n.js";
 import { openModal, closeModal } from "./modal.js";
 import { fillReview } from "./plan-form.js";
 import { bindWizardContinuity, refreshWizardContext } from "./wizard-continuity.js";
+import { resetWizardContextScroll, initWizardContextScroll } from "./wizard-context-scroll.js";
 import { loadReviewPreview } from "./review-panel.js";
 import { validateSearchLoad, focusSearchLoadField } from "./search-load.js";
 import { activateTab } from "./tabs.js";
@@ -58,6 +59,7 @@ export function showStep(n) {
     btnCalc.disabled = !last;
   }
   refreshWizardContext(state.step, { remountSources: state.step === 1 });
+  resetWizardContextScroll();
   if (last) {
     fillReview();
     void loadReviewPreview();
@@ -85,6 +87,7 @@ export function closeWizard() {
 
 export function bindWizard() {
   bindWizardContinuity();
+  initWizardContextScroll();
   document.getElementById("btn-open-wizard")?.addEventListener("click", () => openWizard(0));
   document.getElementById("btn-reopen-wizard")?.addEventListener("click", () => openWizard(state.step));
   wizardModal()?.querySelectorAll("[data-close-wizard]").forEach((el) => {

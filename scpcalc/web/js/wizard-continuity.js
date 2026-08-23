@@ -135,6 +135,7 @@ export function refreshWizardContext(step = state.step, { remountSources = false
   const html = buildContextHTML(step);
   el.innerHTML = html;
   el.hidden = !html;
+  el.classList.remove("is-scroll-collapsed");
   if (step <= 1) syncQuickFromGlobals();
   if (remountSources) renderRows();
   applyInheritedSourcePlaceholders();
