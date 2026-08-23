@@ -13,6 +13,7 @@
 .suggest-modal-body {
   padding: 0.85rem 1.25rem 0.5rem;
   overflow: auto;
+  overscroll-behavior: contain;
 }
 
 .suggest-list {
@@ -92,6 +93,10 @@
   padding: 1rem 1.25rem 1.25rem;
   display: grid;
   gap: 0.85rem;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
 }
 
 .import-paste-field textarea {

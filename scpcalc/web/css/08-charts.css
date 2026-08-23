@@ -13,6 +13,7 @@
 .charts-grid-modal {
   padding: 0 1.1rem 1.1rem;
   overflow: auto;
+  overscroll-behavior: contain;
   max-height: min(70vh, 640px);
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 }

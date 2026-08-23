@@ -4,6 +4,7 @@
   flex: 1 1 0;
   min-height: 0;
   overflow: hidden;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
   padding: 0.85rem 1.25rem 0.45rem;
@@ -34,12 +35,14 @@
   flex: 1 1 0;
   min-height: 0;
   overflow: auto;
+  overscroll-behavior: contain;
   padding-bottom: 0.25rem;
 }
 
 /* Overview / Review (no inner tabs): pane itself scrolls. */
 .wiz-pane.is-active:not(:has(> .tab-bar)) {
   overflow: auto;
+  overscroll-behavior: contain;
 }
 
 .wiz-pane h3,

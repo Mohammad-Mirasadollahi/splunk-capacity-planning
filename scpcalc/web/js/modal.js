@@ -1,9 +1,91 @@
 import { reduceMotion } from "./state.js";
 
+let scrollLockDepth = 0;
+let savedScrollY = 0;
+let scrollGuardBound = false;
+
+function isScrollable(el) {
+  if (!el || el === document.body || el === document.documentElement) return false;
+  const style = getComputedStyle(el);
+  const oy = style.overflowY;
+  if (oy !== "auto" && oy !== "scroll" && oy !== "overlay") return false;
+  return el.scrollHeight > el.clientHeight + 1;
+}
+
+/** Nearest scrollable region inside the open modal dialog. */
+function scrollableWithinModal(from) {
+  const root = from?.closest?.(".modal-root:not([hidden])");
+  if (!root) return null;
+  const boundary = root.querySelector(".modal") || root;
+  let node = from;
+  while (node && node !== boundary) {
+    if (isScrollable(node)) return node;
+    node = node.parentElement;
+  }
+  return null;
+}
+
+/** Block wheel events from reaching the locked page behind the modal. */
+function onModalWheel(e) {
+  if (!document.body.classList.contains("modal-open")) return;
+  const root = e.target.closest(".modal-root:not([hidden])");
+  if (!root) {
+    e.preventDefault();
+    return;
+  }
+  const scrollable = scrollableWithinModal(e.target);
+  if (!scrollable) {
+    e.preventDefault();
+    return;
+  }
+  const max = scrollable.scrollHeight - scrollable.clientHeight;
+  if (max <= 0) {
+    e.preventDefault();
+    return;
+  }
+  const top = scrollable.scrollTop;
+  if (e.deltaY < 0 && top <= 0) e.preventDefault();
+  else if (e.deltaY > 0 && top >= max - 1) e.preventDefault();
+}
+
+function ensureScrollGuard() {
+  if (scrollGuardBound) return;
+  scrollGuardBound = true;
+  document.addEventListener("wheel", onModalWheel, { passive: false, capture: true });
+}
+
+function lockPageScroll() {
+  scrollLockDepth += 1;
+  if (scrollLockDepth > 1) return;
+  savedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+  document.documentElement.classList.add("modal-open");
+  document.body.classList.add("modal-open");
+  document.body.style.position = "fixed";
+  document.body.style.top = `-${savedScrollY}px`;
+  document.body.style.left = "0";
+  document.body.style.right = "0";
+  document.body.style.width = "100%";
+}
+
+function unlockPageScroll() {
+  scrollLockDepth = Math.max(0, scrollLockDepth - 1);
+  if (scrollLockDepth > 0) return;
+  const y = savedScrollY;
+  document.documentElement.classList.remove("modal-open");
+  document.body.classList.remove("modal-open");
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.left = "";
+  document.body.style.right = "";
+  document.body.style.width = "";
+  window.scrollTo(0, y);
+}
+
 export function openModal(el) {
   if (!el) return;
+  ensureScrollGuard();
   el.hidden = false;
-  document.body.classList.add("modal-open");
+  lockPageScroll();
   if (!reduceMotion) {
     el.querySelector(".modal")?.animate(
       [
@@ -16,14 +98,13 @@ export function openModal(el) {
 }
 
 export function closeModal(el) {
-  if (!el) return;
+  if (!el || el.hidden) return;
   el.hidden = true;
-  if (![...document.querySelectorAll(".modal-root")].some((m) => !m.hidden)) {
-    document.body.classList.remove("modal-open");
-  }
+  unlockPageScroll();
 }
 
 export function bindModalChrome({ onEscapeWizard, onEscapeOther } = {}) {
+  ensureScrollGuard();
   document.querySelectorAll("[data-open-modal]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const id = btn.getAttribute("data-open-modal");
