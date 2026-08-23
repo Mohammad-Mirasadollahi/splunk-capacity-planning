@@ -174,7 +174,12 @@ export function bindWizardContinuity() {
       syncLinkedSummaryRetention();
       applyInheritedSourcePlaceholders();
     }
-    if (name === "total_daily_gb") syncQuickFromGlobals();
+    if (name === "total_daily_gb") {
+      syncQuickFromGlobals();
+      import("./sources.js")
+        .then((m) => m.syncMainFromTotal?.())
+        .catch(() => {});
+    }
     if (state.step >= 1) refreshWizardContext(state.step);
   });
   form.addEventListener("input", (e) => {
@@ -184,7 +189,12 @@ export function bindWizardContinuity() {
       syncLinkedSummaryRetention();
       applyInheritedSourcePlaceholders();
     }
-    if (name === "total_daily_gb") syncQuickFromGlobals();
+    if (name === "total_daily_gb") {
+      syncQuickFromGlobals();
+      import("./sources.js")
+        .then((m) => m.syncMainFromTotal?.())
+        .catch(() => {});
+    }
     if (state.step >= 1) refreshWizardContext(state.step);
   });
 }

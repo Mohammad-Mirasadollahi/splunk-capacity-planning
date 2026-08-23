@@ -2,8 +2,8 @@
 export const errors_budget = {
   cap_bridge_hint: "نرخ پل ≈ {rate} GB/روز روی دیسک × headroom {h}. دیسک ≈ نرخ × روز × headroom.",
   cap_bridge_need_volume: "حجم روزانه را در Budget بگذارید یا منابع را پر کنید تا تبدیل زمان ↔ دیسک کار کند.",
-  cap_disk_title: "بودجه حجم volume (GB) — کلاستر [volume:*]",
-  cap_disk_scope_note: "سقف volume فایل‌سیستم برای کل استقرار — نه maxTotalDataSizeMB هر Index. اندازه هر Index در Sources پیش‌نمایش می‌شود و بعد از Cluster (تعداد peer) + Calculate نهایی می‌شود.",
+  cap_disk_title: "بودجه حجم volume (GB) — کل استقرار [volume:*]",
+  cap_disk_scope_note: "سقف volume فایل‌سیستم برای کل استقرار — نه maxTotalDataSizeMB هر Index. اندازه هر Index در Sources پیش‌نمایش می‌شود و بعد از مرحله توپولوژی (تعداد peer) + Calculate نهایی می‌شود.",
   cap_hint: "برای سنجش تناسب و سقف حجم روزانهٔ قابل نگه‌داری روی دیسک.",
   cap_mode_disk: "برنامه با دیسک",
   cap_mode_hint_disk: "بودجه حجم volume (GB) را وارد کنید — روزهای retention از همان فرمول پل به‌روز می‌شوند.",
@@ -29,6 +29,6 @@ export const errors_budget = {
   err_sources_exceed_total: "بودجه حجم روزانه {cap} GB/روز بود، ولی مجموع منابع روشن الان {sum} GB/روز است ({over} GB/روز بیشتر) — حجم ایندکس‌ها را کم کنید یا سقف مرحله Volume را بالا ببرید.",
   policy_headroom_note: "حاشیه اطمینان (headroom) یک‌بار در Budget تنظیم می‌شود — سقف‌های اندازه (maxTotal / homePath / volume) را ضرب می‌کند.",
   policy_index_size_note: "maxTotalDataSizeMB هر Index اینجا تایپ نمی‌شود — Splunk آن را از حجم روزانه روی دیسک × روز searchable × headroom می‌سازد (عمر یا حجم، هرکدام زودتر). زمان retention و بودجه volume را پایین تنظیم کنید؛ Calculate فیلدهای MB را می‌نویسد.",
-  sources_hint: "هر منبع را روشن کنید و GB/روز یا EPS بگذارید. Retention / Hot-warm اختیاری Policy را override می‌کند (خالی = Policy). اندازه Index (GB) پیش‌نمایش زندهٔ cluster-wide برای maxTotalDataSizeMB ≈ روی‌دیسک × retention × headroom است (under-fill تا total اسکیل می‌شود؛ conf ممکن است ÷ peer شود). نیاز در برابر بودجه دیسک Policy زنده چک می‌شود و با علت خطا می‌دهد.",
+  sources_hint: "هر منبع را روشن کنید و GB/روز یا EPS بگذارید. Retention / Hot-warm اختیاری Policy را override می‌کند (خالی = Policy). اندازه Index (GB) پیش‌نمایش زندهٔ deployment-wide برای maxTotalDataSizeMB ≈ روی‌دیسک × retention × headroom است (under-fill تا total اسکیل می‌شود؛ conf ممکن است ÷ peer شود). نیاز در برابر بودجه دیسک Policy زنده چک می‌شود و با علت خطا می‌دهد.",
   total_title: "حجم کل روزانه",
 };

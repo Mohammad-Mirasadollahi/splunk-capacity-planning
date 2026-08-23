@@ -330,9 +330,9 @@ window.SCP_TIPS = {
       ],
     },
     configure_sources: {
-      title: "Per-source volumes",
-      body: "Optional. When off, planning uses total_daily_gb from Budget only — no per-index breakdown, no source budget checks. Turn on when you want to split daily volume across log sources and preview per-index maxTotalDataSizeMB.",
-      example: "Budget 100 GB/day with toggle off → one aggregate plan. Toggle on → enable Windows/Linux rows and split the 100 GB across indexes.",
+      title: "Log sources",
+      body: "The main index row always exists and mirrors total_daily_gb until you add or enable another log source. Then main steps aside so you assign volumes and index names yourself.",
+      example: "Budget 500 GB/day → main shows 500 GB/day. Add Windows at 200 GB/day → main turns off; you split the rest across your indexes.",
       links: [
         { label: "Estimate your storage requirements", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Estimateyourstoragerequirements" },
       ],

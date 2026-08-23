@@ -2,8 +2,8 @@
 export const errors_budget = {
   cap_bridge_hint: "Bridge rate ≈ {rate} GB/day on-disk × headroom {h}. disk ≈ rate × days × headroom.",
   cap_bridge_need_volume: "Set total daily GB under Budget or enable sources so time ↔ disk can convert.",
-  cap_disk_title: "Volume size budgets (GB) — cluster [volume:*]",
-  cap_disk_scope_note: "Splunk filesystem volume caps for the whole deployment — not per-index maxTotalDataSizeMB. Per-index sizes are previewed on Sources and finalized after Cluster (peer count) + Calculate.",
+  cap_disk_title: "Volume size budgets (GB) — deployment-wide [volume:*]",
+  cap_disk_scope_note: "Splunk filesystem volume caps for the whole deployment — not per-index maxTotalDataSizeMB. Per-index sizes are previewed on Sources and finalized after the topology step (peer count) + Calculate.",
   cap_hint: "Used to check fit and estimate the max daily volume your disks can hold.",
   cap_mode_disk: "Plan by disk",
   cap_mode_hint_disk: "Edit volume size budgets (GB) — retention days update automatically from the same bridge formula.",
@@ -29,6 +29,6 @@ export const errors_budget = {
   err_sources_exceed_total: "Daily volume budget was {cap} GB/day, but enabled sources now sum to {sum} GB/day ({over} GB/day over) — lower per-index volumes or raise the Volume-step total.",
   policy_headroom_note: "Safety margin (headroom) is set once under Budget — it multiplies size caps (maxTotal / homePath / volumes).",
   policy_index_size_note: "Per-index maxTotalDataSizeMB is not typed here — Splunk sizes it from daily on-disk × searchable days × headroom (age OR size freezes first). Set retention time and disk volume budgets below; Calculate writes the MB fields.",
-  sources_hint: "Turn on each source and set daily GB/EPS. Optional Retention / Hot-warm days override Policy globals (blank = use Policy). Index size (GB) is a live cluster-wide preview of maxTotalDataSizeMB ≈ on-disk × retention × headroom (under-fill scales to total_daily_gb; conf may ÷ peers). Need vs Policy disk budgets is checked live with a clear error.",
+  sources_hint: "Turn on each source and set daily GB/EPS. Optional Retention / Hot-warm days override Policy globals (blank = use Policy). Index size (GB) is a live deployment-wide preview of maxTotalDataSizeMB ≈ on-disk × retention × headroom (under-fill scales to total_daily_gb; conf may ÷ peers). Need vs Policy disk budgets is checked live with a clear error.",
   total_title: "Total daily volume",
 };

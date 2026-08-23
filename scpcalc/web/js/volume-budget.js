@@ -10,18 +10,15 @@ import { estimateEnabledDailyGB } from "./wizard-continuity.js";
 import { collectGlobals, readVolumeInputMode } from "./plan-form.js";
 import { planSourceDiskNeeds, formatSizeGB } from "./source-sizing.js";
 
-function isConfigureSourcesEnabled() {
-  const el = document.getElementById("configure_sources");
-  if (el) return el.checked;
-  return state.configureSources;
+function hasEnabledSources() {
+  return (state.rows || []).some((r) => r.enabled);
 }
 
 /** @returns {{ ok: boolean, message: string, warn: string }} */
 export function checkVolumeBudgets() {
   const g = collectGlobals();
   const mode = readVolumeInputMode();
-  const configureSources = isConfigureSourcesEnabled();
-  const sum = configureSources ? estimateEnabledDailyGB(state.rows, mode) : 0;
+  const sum = hasEnabledSources() ? estimateEnabledDailyGB(state.rows, mode) : 0;
   const cap = numOr0(g.total_daily_gb);
   let warn = "";
 
@@ -36,7 +33,7 @@ export function checkVolumeBudgets() {
     };
   }
 
-  const plan = configureSources ? planSourceDiskNeeds(state.rows, g) : { warnings: [], needHot: 0, needCold: 0, needSum: 0 };
+  const plan = hasEnabledSources() ? planSourceDiskNeeds(state.rows, g) : { warnings: [], needHot: 0, needCold: 0, needSum: 0 };
   if (plan.warnings.length) {
     warn = t("err_hot_warm_gt_retention").replace("{detail}", plan.warnings[0]);
   }

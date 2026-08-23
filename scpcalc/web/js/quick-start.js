@@ -15,7 +15,6 @@ import {
   DEMO_HEADROOM,
   applyAvgEventBytesToSources,
   defaultsFromDailyGB,
-  scaleDemoSourcesToTotal,
 } from "./defaults.js";
 import {
   applyGlobals,
@@ -26,7 +25,7 @@ import {
   syncClusterFields,
   syncToggleUI,
 } from "./plan-form.js";
-import { renderRows, refreshTotalCounterpart, syncRowVolumePair, syncTotalVolumePair, setConfigureSources } from "./sources.js";
+import { renderRows, refreshTotalCounterpart, syncRowVolumePair, syncTotalVolumePair, setConfigureSources, isMainRow, syncMainFromTotal } from "./sources.js";
 import { runPlan } from "./engine.js";
 import { updateAutoRecBadges } from "./suggestions.js";
 
@@ -83,12 +82,12 @@ function applyVolumeDefaults(dailyGB) {
     compression: current.compression,
     remote_path: current.remote_path,
   });
-  scaleDemoSourcesToTotal(state.rows, dailyGB, { eventBytes });
   applyAvgEventBytesToSources(state.rows, eventBytes, { enabledOnly: true });
   setConfigureSources(true);
   state.rows.forEach((r) => {
-    if (numOr0(r.daily_gb) > 0) syncRowVolumePair(r, state.rows, "daily_gb");
+    if (!isMainRow(r)) r.enabled = false;
   });
+  syncMainFromTotal();
   renderRows();
   refreshTotalCounterpart();
   const bytesEl = document.getElementById("avg_event_bytes");

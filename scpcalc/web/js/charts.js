@@ -7,6 +7,16 @@ const chartTypes = {};
 const CHART_TYPE_OPTS = ["bar", "pie", "doughnut", "line", "polarArea"];
 const COLORS = ["#3fe0c5", "#5aa8ff", "#ffb48a", "#c4a7ff", "#7ddea3", "#f6d365", "#ff8fab", "#89c2d9"];
 
+function chartLegendLabelColor() {
+  if (typeof document === "undefined") return "#9eb8c4";
+  return getComputedStyle(document.documentElement).getPropertyValue("--muted").trim() || "#9eb8c4";
+}
+
+function chartAxisTickColor() {
+  if (typeof document === "undefined") return "#9eb8c4";
+  return getComputedStyle(document.documentElement).getPropertyValue("--muted").trim() || "#9eb8c4";
+}
+
 const CHART_DEFS = [
   { id: "storage", titleKey: "chart_storage", defaultType: "doughnut" },
   { id: "retention", titleKey: "chart_retention", defaultType: "bar" },
@@ -92,6 +102,8 @@ function paintOne(canvasId, chartId, type, labels, values) {
   const circular = type === "pie" || type === "doughnut" || type === "polarArea";
   const isLine = type === "line";
   const bg = labels.map((_, i) => COLORS[i % COLORS.length]);
+  const legendColor = chartLegendLabelColor();
+  const tickColor = chartAxisTickColor();
   chartInstances[canvasId] = new Chart(canvas, {
     type,
     data: {
@@ -123,7 +135,7 @@ function paintOne(canvasId, chartId, type, labels, values) {
           position: "bottom",
           align: "center",
           labels: {
-            color: "#c8d9e2",
+            color: legendColor,
             boxWidth: 12,
             boxHeight: 12,
             padding: 10,
@@ -143,6 +155,7 @@ function paintOne(canvasId, chartId, type, labels, values) {
                   text: String(text),
                   fillStyle: fill,
                   strokeStyle: fill,
+                  fontColor: legendColor,
                   lineWidth: 0,
                   hidden: false,
                   index: i,
@@ -158,13 +171,13 @@ function paintOne(canvasId, chartId, type, labels, values) {
         ? {}
         : {
             x: {
-              ticks: { color: "#9eb8c4", maxRotation: 45, minRotation: 0, font: { size: 10 } },
+              ticks: { color: tickColor, maxRotation: 45, minRotation: 0, font: { size: 10 } },
               grid: { color: "rgba(255,255,255,0.06)" },
               border: { display: false },
             },
             y: {
               beginAtZero: true,
-              ticks: { color: "#9eb8c4", font: { size: 10 } },
+              ticks: { color: tickColor, font: { size: 10 } },
               grid: { color: "rgba(255,255,255,0.06)" },
               border: { display: false },
             },

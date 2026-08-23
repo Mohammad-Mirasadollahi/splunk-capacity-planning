@@ -7,8 +7,8 @@ import { I18N, lang, setI18nHooks, bindLangSwitcher, t } from "./js/i18n.js";
 import { initTips, bindTips, refreshOpenTip } from "./js/tips-ui.js";
 import { bindModalChrome, closeModal, openModal } from "./js/modal.js";
 import { initTabBars, setTabsHooks } from "./js/tabs.js";
-import { bindSourcesTable, rowFromPreset, renderRows, setConfigureSources } from "./js/sources.js";
-import { applyDemoSourceDefaults, demoGlobals } from "./js/defaults.js";
+import { bindSourcesTable, buildRowsFromPresets, renderRows, setConfigureSources, syncMainFromTotal } from "./js/sources.js";
+import { demoGlobals, DEMO_TOTAL_DAILY_GB } from "./js/defaults.js";
 import { bindPlanFormChrome, snapshot, applySnapshot, applyGlobals, fillReview, syncArchiveFields, syncCapacityPair } from "./js/plan-form.js";
 import { bindConfEditor, getConfText, copyConf } from "./js/conf-editor.js";
 import { renderAllCharts } from "./js/charts.js";
@@ -189,13 +189,10 @@ function bindCalculate() {
 async function boot() {
   await initEngine();
   const data = await fetchPresets();
-  state.rows = (data.sources || []).map((p) => {
-    const row = applyDemoSourceDefaults(rowFromPreset(p));
-    row.enabled = false;
-    return row;
-  });
-  setConfigureSources(false);
+  state.rows = buildRowsFromPresets(data.sources, { dailyGB: DEMO_TOTAL_DAILY_GB });
+  setConfigureSources(true);
   applyGlobals(demoGlobals());
+  syncMainFromTotal();
   syncCapacityPair("mode");
   renderRows();
   showStep(0);

@@ -13,6 +13,87 @@ import {
 import { DEMO_AVG_EVENT_BYTES } from "./defaults.js";
 import { formatSizeGB, formatSizeMB, planSourceDiskNeeds, underfillScaleFactor } from "./source-sizing.js";
 
+export const MAIN_INDEX_KEY = "main";
+
+/** Default catch-all index — receives total_daily_gb until the user enables other sources. */
+export function mainIndexRow(dailyGB = "") {
+  return {
+    key: MAIN_INDEX_KEY,
+    label: "Main",
+    index_name: "main",
+    event_bytes: DEMO_AVG_EVENT_BYTES,
+    daily_gb: dailyGB === "" || dailyGB == null ? "" : dailyGB,
+    eps: "",
+    retention_days: "",
+    hot_warm_days: "",
+    enable_summary: false,
+    summary_daily_gb: "",
+    summary_index_name: "",
+    enabled: true,
+    notes: "",
+  };
+}
+
+export function isMainRow(r) {
+  return r?.key === MAIN_INDEX_KEY;
+}
+
+export function hasManualSources(rows = state.rows) {
+  return (rows || []).some((r) => r.enabled && !isMainRow(r));
+}
+
+function readTotalDailyGB() {
+  return numOr0(
+    document.getElementById("total_daily_gb")?.value ??
+      document.querySelector('input[name="total_daily_gb"]')?.value
+  );
+}
+
+export function ensureMainRow(rows = state.rows) {
+  let main = rows.find((r) => isMainRow(r));
+  if (!main) {
+    main = mainIndexRow();
+    rows.unshift(main);
+  } else {
+    const i = rows.indexOf(main);
+    if (i > 0) {
+      rows.splice(i, 1);
+      rows.unshift(main);
+    }
+  }
+  return main;
+}
+
+/** Keep main index in sync with Budget total while no other sources are enabled. */
+export function syncMainFromTotal() {
+  ensureMainRow();
+  if (hasManualSources()) return;
+  const main = state.rows.find((r) => isMainRow(r));
+  if (!main) return;
+  main.enabled = true;
+  const total = readTotalDailyGB();
+  main.daily_gb = total > 0 ? roundVol(total, "gb") : "";
+  syncRowVolumePair(main, state.rows, "daily_gb");
+  state.configureSources = true;
+}
+
+export function enterManualSourceMode() {
+  ensureMainRow();
+  const main = state.rows.find((r) => isMainRow(r));
+  if (main) {
+    main.enabled = false;
+    main.daily_gb = "";
+    main.eps = "";
+  }
+  setConfigureSources(true);
+}
+
+export function maybeRestoreMainDefault() {
+  ensureMainRow();
+  if (hasManualSources()) return;
+  syncMainFromTotal();
+}
+
 /** Per-source table is optional; when off, planning uses total_daily_gb only. */
 export function isConfigureSourcesEnabled() {
   const el = document.getElementById("configure_sources");
@@ -237,7 +318,11 @@ function volumeRowHTML(r, i, sizedMap) {
         ? `<input type="number" id="${p}-summary_daily_gb" data-f="summary_daily_gb" min="0" step="any" value="${r.summary_daily_gb}" placeholder="auto%" autocomplete="off">`
         : `<span class="src-dep-placeholder">—</span>`
     }</td>
-    <td><button type="button" class="btn-x" data-rm="${i}" aria-label="Remove">×</button></td>
+    <td>${
+      isMainRow(r)
+        ? `<span class="src-main-lock" title="${escapeAttr(t("main_row_locked"))}">—</span>`
+        : `<button type="button" class="btn-x" data-rm="${i}" aria-label="Remove">×</button>`
+    }</td>
   </tr>`;
 }
 
@@ -296,7 +381,25 @@ function bindTableBody(srcBody) {
     const f = e.target.dataset.f;
     if (!f || !state.rows[i]) return;
     if (e.target.type === "checkbox") {
-      state.rows[i][f] = e.target.checked;
+      const row = state.rows[i];
+      if (f === "enabled") {
+        if (e.target.checked && isMainRow(row) && hasManualSources()) {
+          e.target.checked = false;
+          return;
+        }
+        if (e.target.checked && !isMainRow(row)) {
+          enterManualSourceMode();
+          row.enabled = true;
+        } else if (!e.target.checked && isMainRow(row)) {
+          e.target.checked = true;
+          return;
+        } else {
+          row[f] = e.target.checked;
+          if (!e.target.checked) maybeRestoreMainDefault();
+        }
+      } else {
+        row[f] = e.target.checked;
+      }
       if (f === "enabled" || f === "enable_summary") renderRows();
       else bumpBudgetsAndSizes();
     } else {
@@ -334,7 +437,10 @@ function bindTableBody(srcBody) {
   srcBody.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-rm]");
     if (!btn) return;
-    state.rows.splice(Number(btn.dataset.rm), 1);
+    const i = Number(btn.dataset.rm);
+    if (isMainRow(state.rows[i])) return;
+    state.rows.splice(i, 1);
+    maybeRestoreMainDefault();
     renderRows();
   });
 }
@@ -346,10 +452,12 @@ function bindTotalVolumePair() {
   gbEl.dataset.volPairBound = "1";
   const onGb = () => {
     syncTotalVolumePair("gb");
+    syncMainFromTotal();
     bumpBudgetsAndSizes();
   };
   const onEps = () => {
     syncTotalVolumePair("eps");
+    syncMainFromTotal();
     bumpBudgetsAndSizes();
   };
   gbEl.addEventListener("input", onGb);
@@ -373,6 +481,7 @@ export function bindSourcesTable() {
   }
 
   document.getElementById("btn-add")?.addEventListener("click", () => {
+    enterManualSourceMode();
     state.rows.push(blankCustom());
     renderRows();
   });
@@ -394,11 +503,23 @@ export function normalizeSnapshotRows(rows) {
     enabled: r.enabled !== false,
     notes: r.notes || "",
   }));
+  ensureMainRow(list);
   list.forEach((row) => {
     if (numOr0(row.daily_gb) > 0) syncRowVolumePair(row, list, "daily_gb");
     else if (numOr0(row.eps) > 0) syncRowVolumePair(row, list, "eps");
   });
   return list;
+}
+
+export function buildRowsFromPresets(presets, { dailyGB } = {}) {
+  const main = mainIndexRow(dailyGB > 0 ? dailyGB : "");
+  const catalog = (presets || []).map((p) => {
+    const row = rowFromPreset(p);
+    row.enabled = false;
+    if (!(Number(row.event_bytes) > 0)) row.event_bytes = DEMO_AVG_EVENT_BYTES;
+    return row;
+  });
+  return [main, ...catalog];
 }
 
 export { underfillScaleFactor, planSourceDiskNeeds };

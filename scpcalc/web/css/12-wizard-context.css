@@ -4,10 +4,10 @@
   margin: 0 1.25rem 0.55rem;
   flex-shrink: 0;
   box-sizing: border-box;
-  /* Fixed chrome height — no grow, no inner scroll */
-  height: 6.75rem;
   max-height: 6.75rem;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -33,10 +33,6 @@
   font-size: 0.72rem;
   line-height: 1.35;
   color: var(--muted);
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
 }
 
 .wizard-context-title {
@@ -56,9 +52,7 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: hidden;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
@@ -70,9 +64,8 @@
 .wizard-context-list li {
   flex-shrink: 0;
   max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .wizard-context-list strong {
