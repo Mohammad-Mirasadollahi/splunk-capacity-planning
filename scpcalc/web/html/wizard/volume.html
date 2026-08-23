@@ -127,7 +127,7 @@
                   </label>
                 </div>
                 <p class="hint" data-depends-on-off="configure_sources" data-i18n="hint_sources_simple">All daily ingest goes to the <strong>main</strong> index (synced from Budget).</p>
-                <p class="hint" data-depends-on="configure_sources" hidden data-i18n="hint_sources_custom">Turn sources on, set GB/EPS per index, or add custom rows. Main steps aside when you enable others.</p>
+                <p class="hint" data-depends-on="configure_sources" hidden data-i18n="hint_sources_custom">Turn sources on, set GB/EPS per index, or add custom rows. Main is a normal index — enable it with the others.</p>
               </header>
             </section>
 
@@ -166,10 +166,6 @@
                 </table>
               </div>
               <div class="sources-footer">
-                <div class="sources-enable-cta" data-depends-on-off="configure_sources">
-                  <p class="hint" data-i18n="hint_sources_enable_cta">Turn on custom log sources to pick built-in indexes (Windows, Linux, …) or add your own.</p>
-                  <button type="button" class="btn-ghost" id="btn-enable-sources" data-i18n="btn_enable_sources">Enable custom sources</button>
-                </div>
                 <div class="row-actions sources-row-actions" data-depends-on="configure_sources" hidden>
                   <button type="button" class="btn-ghost" id="btn-add" data-i18n="add_row">+ Add custom source</button>
                   <button type="button" class="btn-ghost" id="btn-save" data-i18n="save">Save</button>

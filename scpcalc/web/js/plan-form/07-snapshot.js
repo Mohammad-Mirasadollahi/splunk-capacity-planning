@@ -3,7 +3,7 @@
  */
 import { state } from "../state.js";
 import { dailyGBFromEPS, epsFromDailyGB, numOr0, resolveEventBytes } from "../volume-convert.js";
-import { normalizeSnapshotRows, renderRows, setConfigureSources, hasManualSources, collapseToMainOnly, enterManualSourceMode } from "../sources.js";
+import { normalizeSnapshotRows, renderRows, setConfigureSources, hasManualSources, collapseToMainOnly } from "../sources.js";
 import { syncCapacityPair, readCapacityPlanMode } from "./03-capacity-bridge.js";
 import { syncArchiveFields } from "./04-archive-sync.js";
 import { readVolumeInputMode, syncVolumeInputMode } from "./05-volume-mode.js";
@@ -67,9 +67,7 @@ export function applySnapshot(data) {
   const configureSources =
     typeof data.configure_sources === "boolean" ? data.configure_sources : hasManualSources(state.rows);
   setConfigureSources(configureSources);
-  if (configureSources) {
-    if (hasManualSources(state.rows)) enterManualSourceMode({ keepConfigureFlag: true });
-  } else {
+  if (!configureSources) {
     collapseToMainOnly();
   }
   renderRows();

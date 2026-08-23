@@ -62,10 +62,10 @@ export function ensureMainRow(rows = state.rows) {
   return main;
 }
 
-/** Keep main index in sync with Budget total while no other sources are enabled. */
+/** Keep main index in sync with Budget total in simple mode (custom sources off). */
 export function syncMainFromTotal() {
   ensureMainRow();
-  if (hasManualSources()) return;
+  if (isConfigureSourcesEnabled()) return;
   const main = state.rows.find((r) => isMainRow(r));
   if (!main) return;
   main.enabled = true;
@@ -104,7 +104,6 @@ export function expandSourcesCatalog() {
     }
   }
   state.rows = merged;
-  enterManualSourceMode({ keepConfigureFlag: true });
 }
 
 /** Toggle per-source table: off = main only; on = catalog + custom sources. */
@@ -130,14 +129,9 @@ function rowsForDisplay() {
   return state.rows;
 }
 
+/** Switch to per-source catalog mode (checkbox on); does not change which rows are enabled. */
 export function enterManualSourceMode({ keepConfigureFlag = false } = {}) {
   ensureMainRow();
-  const main = state.rows.find((r) => isMainRow(r));
-  if (main) {
-    main.enabled = false;
-    main.daily_gb = "";
-    main.eps = "";
-  }
   if (!keepConfigureFlag) setConfigureSources(true);
 }
 
@@ -388,7 +382,7 @@ function volumeRowHTML(r, i, sizedMap, { configureOn = true } = {}) {
   const title = r.notes ? ` data-soft-tip="${escapeAttr(r.notes)}" data-soft-tip-title="${escapeAttr(r.label || r.index_name || "Source")}"` : "";
   const simpleMain = !configureOn && isMainRow(r);
   const on = simpleMain ? true : !!r.enabled;
-  const lockMain = isMainRow(r) && (hasManualSources() || !configureOn);
+  const lockMain = isMainRow(r) && !configureOn;
   const p = `src-${i}`;
   const sized = on ? sizedMap.get(i) : null;
   const find = escapeAttr(rowFindText(r));
@@ -479,21 +473,11 @@ function bindTableBody(srcBody) {
     if (e.target.type === "checkbox") {
       const row = state.rows[i];
       if (f === "enabled") {
-        if (e.target.checked && isMainRow(row) && hasManualSources()) {
-          e.target.checked = false;
-          return;
+        if (e.target.checked && !isMainRow(row) && !isConfigureSourcesEnabled()) {
+          applyConfigureSourcesMode(true);
         }
-        if (e.target.checked && !isMainRow(row)) {
-          if (!isConfigureSourcesEnabled()) applyConfigureSourcesMode(true);
-          else enterManualSourceMode({ keepConfigureFlag: true });
-          row.enabled = true;
-        } else if (!e.target.checked && isMainRow(row)) {
-          e.target.checked = true;
-          return;
-        } else {
-          row[f] = e.target.checked;
-          if (!e.target.checked) maybeRestoreMainDefault();
-        }
+        row[f] = e.target.checked;
+        if (!e.target.checked) maybeRestoreMainDefault();
       } else {
         row[f] = e.target.checked;
       }
@@ -572,15 +556,8 @@ export function bindSourcesTable() {
 
   document.getElementById("btn-add")?.addEventListener("click", () => {
     if (!isConfigureSourcesEnabled()) applyConfigureSourcesMode(true);
-    else enterManualSourceMode({ keepConfigureFlag: true });
     state.rows.push(blankCustom());
     renderRows();
-  });
-
-  document.getElementById("btn-enable-sources")?.addEventListener("click", () => {
-    const cfg = document.getElementById("configure_sources");
-    if (cfg) cfg.checked = true;
-    applyConfigureSourcesMode(true);
   });
 }
 

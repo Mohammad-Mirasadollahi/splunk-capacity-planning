@@ -331,8 +331,8 @@ window.SCP_TIPS = {
     },
     configure_sources: {
       title: "Log sources",
-      body: "The main index row always exists and mirrors total_daily_gb until you add or enable another log source. Then main steps aside so you assign volumes and index names yourself.",
-      example: "Budget 500 GB/day → main shows 500 GB/day. Add Windows at 200 GB/day → main turns off; you split the rest across your indexes.",
+      body: "With custom sources off, main mirrors total_daily_gb from Budget. Turn custom sources on to pick built-in indexes (Windows, Linux, …), enable main alongside them, and set GB/EPS per index.",
+      example: "Budget 500 GB/day with custom off → main shows 500 GB/day. Custom on: enable main at 200 GB/day and Windows at 300 GB/day.",
       links: [
         { label: "Estimate your storage requirements", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Estimateyourstoragerequirements" },
       ],
