@@ -117,6 +117,15 @@ temp/
 *.temp
 .cache/
 
+# --- Local agent / release tooling (ephemeral, never publish) ---
+.gh-*.txt
+.git-check.txt
+.git-status-out.txt
+.git-top.txt
+.assemble-out.txt
+.git-commit-log.txt
+*-release-notes.local.md
+
 # --- Env / secrets ---
 .env
 .env.*
