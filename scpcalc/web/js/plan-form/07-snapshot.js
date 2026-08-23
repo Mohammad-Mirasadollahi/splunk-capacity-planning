@@ -3,7 +3,7 @@
  */
 import { state } from "../state.js";
 import { dailyGBFromEPS, epsFromDailyGB, numOr0, resolveEventBytes } from "../volume-convert.js";
-import { normalizeSnapshotRows, renderRows, setConfigureSources, hasManualSources, syncMainFromTotal } from "../sources.js";
+import { normalizeSnapshotRows, renderRows, setConfigureSources, hasManualSources, collapseToMainOnly, enterManualSourceMode } from "../sources.js";
 import { syncCapacityPair, readCapacityPlanMode } from "./03-capacity-bridge.js";
 import { syncArchiveFields } from "./04-archive-sync.js";
 import { readVolumeInputMode, syncVolumeInputMode } from "./05-volume-mode.js";
@@ -48,7 +48,7 @@ export function migrateWizardStep(data) {
 export function snapshot() {
   return {
     version: 11,
-    configure_sources: hasManualSources(state.rows),
+    configure_sources: state.configureSources,
     volume_input_mode: readVolumeInputMode(),
     capacity_plan_mode: readCapacityPlanMode(),
     globals: collectGlobals(),
@@ -66,8 +66,12 @@ export function applySnapshot(data) {
   state.rows = normalizeSnapshotRows(data.rows);
   const configureSources =
     typeof data.configure_sources === "boolean" ? data.configure_sources : hasManualSources(state.rows);
-  setConfigureSources(true);
-  if (!configureSources) syncMainFromTotal();
+  setConfigureSources(configureSources);
+  if (configureSources) {
+    if (hasManualSources(state.rows)) enterManualSourceMode({ keepConfigureFlag: true });
+  } else {
+    collapseToMainOnly();
+  }
   renderRows();
   state.step = migrateWizardStep(data);
   const mode =

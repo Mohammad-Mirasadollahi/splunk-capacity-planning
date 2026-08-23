@@ -465,16 +465,29 @@
 
           <div class="tab-panel" data-panel="vol-sources" role="tabpanel" hidden>
             <section class="form-section sources-gate" aria-labelledby="sec-log-sources-title">
-              <header class="form-section-head">
-                <h4 id="sec-log-sources-title" data-i18n="sec_log_sources">Log sources</h4>
-                <p class="hint" data-i18n="hint_sources_main_default">Default: all daily ingest goes to the <strong>main</strong> index. Add or enable a log source to split volumes and choose index names yourself — main steps aside automatically.</p>
+              <header class="form-section-head sources-gate-head">
+                <div class="sources-gate-title">
+                  <h4 id="sec-log-sources-title" data-i18n="sec_log_sources">Log sources</h4>
+                  <label class="field check glass-chip sources-gate-toggle">
+                    <input type="checkbox" id="configure_sources" name="configure_sources">
+                    <span class="tip-mark" data-tip="configure_sources" data-i18n="lbl_configure_sources">Configure per-source volumes</span>
+                  </label>
+                </div>
+                <p class="hint" data-depends-on-off="configure_sources" data-i18n="hint_sources_simple">All daily ingest goes to the <strong>main</strong> index (synced from Budget).</p>
+                <p class="hint" data-depends-on="configure_sources" hidden data-i18n="hint_sources_custom">Turn sources on, set GB/EPS per index, or add custom rows. Main steps aside when you enable others.</p>
               </header>
             </section>
 
-            <div class="sources-config-panel">
-              <p class="hint tip-mark sources-config-note" data-tip="eps" data-i18n="sec_vol_mode_eps_note">EPS = raw events arriving from the source (before Splunk compression). With average event size it becomes Daily raw GB; on-disk ≈ that × Comp.</p>
+            <div id="sources-panel" class="sources-config-panel sources-panel" aria-labelledby="sec-log-sources-title">
+              <div class="sources-panel-bar">
+                <p class="hint tip-mark sources-config-note" data-tip="eps" data-i18n="sec_vol_mode_eps_note">EPS = raw events arriving from the source (before Splunk compression). With average event size it becomes Daily raw GB; on-disk ≈ that × Comp.</p>
+                <div class="sources-panel-actions">
+                  <button type="button" class="btn-ghost" data-sources-expand data-i18n="fullscreen">Fullscreen</button>
+                  <button type="button" class="btn-ghost" data-sources-collapse hidden data-i18n="exit_fullscreen">Exit fullscreen</button>
+                </div>
+              </div>
               <p id="volume-budget-err" class="err volume-budget-err" hidden role="alert"></p>
-              <div class="sources-table-bar">
+              <div class="sources-table-bar" data-depends-on="configure_sources" hidden>
                 <label class="table-find">
                   <span data-i18n="table_find">Find in table</span>
                   <input type="search" id="src-find" name="src_find" data-i18n-placeholder="table_find_ph_src" placeholder="source, index, GB, EPS…" autocomplete="off">
@@ -499,7 +512,7 @@
                   <tbody id="src-body"></tbody>
                 </table>
               </div>
-              <div class="row-actions">
+              <div class="row-actions" data-depends-on="configure_sources" hidden>
                 <button type="button" class="btn-ghost" id="btn-add" data-i18n="add_row">+ Add custom source</button>
                 <button type="button" class="btn-ghost" id="btn-save" data-i18n="save">Save</button>
                 <button type="button" class="btn-ghost" id="btn-export" data-i18n="export">Export .json</button>

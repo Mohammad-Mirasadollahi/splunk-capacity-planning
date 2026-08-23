@@ -1,0 +1,96 @@
+/* Log sources panel — gate toggle, fullscreen, simple main-only row */
+
+.sources-gate-head {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.sources-gate-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem 1rem;
+}
+
+.sources-gate-title h4 {
+  margin: 0;
+}
+
+.sources-panel-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.55rem 1rem;
+  flex-shrink: 0;
+  margin-bottom: 0.35rem;
+}
+
+.sources-panel-bar .sources-config-note {
+  flex: 1 1 16rem;
+  margin: 0;
+}
+
+.sources-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-inline-start: auto;
+}
+
+.sources-panel-actions [hidden] {
+  display: none !important;
+}
+
+.src-table tr.src-row-main-only td {
+  opacity: 0.92;
+}
+
+.src-table tr.src-row-main-only .src-col-vol input {
+  color: var(--muted);
+}
+
+body.sources-fullscreen {
+  overflow: hidden !important;
+}
+
+.sources-panel.is-fullscreen {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 120 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 1rem clamp(0.85rem, 2vw, 1.5rem) 1.1rem !important;
+  display: flex !important;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 0 !important;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(63, 224, 197, 0.12), transparent 55%),
+    linear-gradient(165deg, #0a1c26 0%, #07141c 55%, #0b1f28 100%) !important;
+  box-shadow: none !important;
+}
+
+.sources-panel.is-fullscreen .sources-panel-bar {
+  flex-shrink: 0;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sources-panel.is-fullscreen .table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none !important;
+}
+
+.sources-panel.is-fullscreen .row-actions {
+  flex-shrink: 0;
+}
+
+.wizard-body .tab-panel[data-panel="vol-sources"] .sources-config-note:not(.sources-panel-bar .sources-config-note) {
+  display: none;
+}

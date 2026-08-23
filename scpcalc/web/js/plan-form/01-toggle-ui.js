@@ -12,9 +12,13 @@ export function syncToggleUI() {
       document.querySelectorAll(`[data-depends-on="${input.id}"]`).forEach((el) => {
         el.hidden = !on;
         el.classList.toggle("is-revealed", on);
-        el.querySelectorAll("input, select, textarea").forEach((ctrl) => {
+        el.querySelectorAll("input, select, textarea, button").forEach((ctrl) => {
+          if (ctrl.id === input.id) return;
           ctrl.disabled = !on;
         });
+      });
+      document.querySelectorAll(`[data-depends-on-off="${input.id}"]`).forEach((el) => {
+        el.hidden = on;
       });
     }
   });

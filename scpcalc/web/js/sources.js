@@ -72,10 +72,52 @@ export function syncMainFromTotal() {
   const total = readTotalDailyGB();
   main.daily_gb = total > 0 ? roundVol(total, "gb") : "";
   syncRowVolumePair(main, state.rows, "daily_gb");
-  state.configureSources = true;
 }
 
-export function enterManualSourceMode() {
+export function collapseToMainOnly() {
+  ensureMainRow();
+  const main = state.rows.find((r) => isMainRow(r));
+  if (!main) return;
+  state.rows = [main];
+  main.enabled = true;
+  syncMainFromTotal();
+}
+
+export function expandSourcesCatalog() {
+  const presets = state.sourcePresets || [];
+  ensureMainRow();
+  if (presets.length && state.rows.length <= 1) {
+    const built = buildRowsFromPresets(presets, { dailyGB: "" });
+    const main = state.rows.find((r) => isMainRow(r)) || built[0];
+    state.rows = [main, ...built.slice(1)];
+  }
+  enterManualSourceMode({ keepConfigureFlag: true });
+}
+
+/** Toggle per-source table: off = main only; on = catalog + custom sources. */
+export function applyConfigureSourcesMode(on) {
+  setConfigureSources(on);
+  if (on) {
+    expandSourcesCatalog();
+  } else {
+    collapseToMainOnly();
+  }
+  renderRows();
+  import("./volume-budget.js")
+    .then((m) => m.refreshVolumeBudgetUI?.())
+    .catch(() => {});
+}
+
+function rowsForDisplay() {
+  ensureMainRow();
+  if (!isConfigureSourcesEnabled()) {
+    const main = state.rows.find((r) => isMainRow(r));
+    return main ? [main] : [];
+  }
+  return state.rows;
+}
+
+export function enterManualSourceMode({ keepConfigureFlag = false } = {}) {
   ensureMainRow();
   const main = state.rows.find((r) => isMainRow(r));
   if (main) {
@@ -83,12 +125,13 @@ export function enterManualSourceMode() {
     main.daily_gb = "";
     main.eps = "";
   }
-  setConfigureSources(true);
+  if (!keepConfigureFlag) setConfigureSources(true);
 }
 
 export function maybeRestoreMainDefault() {
   ensureMainRow();
   if (hasManualSources()) return;
+  if (isConfigureSourcesEnabled()) return;
   syncMainFromTotal();
 }
 
@@ -323,24 +366,27 @@ function rowFindText(r) {
     .join(" ");
 }
 
-function volumeRowHTML(r, i, sizedMap) {
+function volumeRowHTML(r, i, sizedMap, { configureOn = true } = {}) {
   const title = r.notes ? ` data-soft-tip="${escapeAttr(r.notes)}" data-soft-tip-title="${escapeAttr(r.label || r.index_name || "Source")}"` : "";
-  const on = !!r.enabled;
+  const simpleMain = !configureOn && isMainRow(r);
+  const on = simpleMain ? true : !!r.enabled;
+  const lockMain = isMainRow(r) && (hasManualSources() || !configureOn);
   const p = `src-${i}`;
   const sized = on ? sizedMap.get(i) : null;
   const find = escapeAttr(rowFindText(r));
-  return `<tr data-i="${i}" data-find="${find}" class="${on ? "src-row-on" : "src-row-off"}"${title}>
-    <td><input type="checkbox" id="${p}-enabled" data-f="enabled" class="src-toggle" ${on ? "checked" : ""} aria-label="Use source"></td>
-    <td><input type="text" id="${p}-label" data-f="label" value="${escapeAttr(r.label)}" ${on ? "" : "disabled"} autocomplete="off"></td>
-    <td><input type="text" id="${p}-index_name" data-f="index_name" value="${escapeAttr(r.index_name)}" ${on ? "" : "disabled"} autocomplete="off"></td>
-    <td class="src-col-event-bytes"><input type="number" id="${p}-event_bytes" data-f="event_bytes" min="1" step="1" value="${r.event_bytes}" ${on ? "" : "disabled"} autocomplete="off"></td>
-    <td class="src-col-vol">${volumeCell(r, i, on)}</td>
-    <td><input type="number" id="${p}-retention_days" data-f="retention_days" min="0" step="1" value="${r.retention_days}" placeholder="glob" ${on ? "" : "disabled"} autocomplete="off"></td>
-    <td><input type="number" id="${p}-hot_warm_days" data-f="hot_warm_days" min="0" step="1" value="${r.hot_warm_days}" placeholder="glob" ${on ? "" : "disabled"} autocomplete="off"></td>
+  const volDisabled = !on || simpleMain;
+  return `<tr data-i="${i}" data-find="${find}" class="${on ? "src-row-on" : "src-row-off"}${simpleMain ? " src-row-main-only" : ""}"${title}>
+    <td><input type="checkbox" id="${p}-enabled" data-f="enabled" class="src-toggle" ${on ? "checked" : ""} ${lockMain ? "disabled" : ""} aria-label="Use source"></td>
+    <td><input type="text" id="${p}-label" data-f="label" value="${escapeAttr(r.label)}" ${on && configureOn ? "" : "disabled"} autocomplete="off"></td>
+    <td><input type="text" id="${p}-index_name" data-f="index_name" value="${escapeAttr(r.index_name)}" ${on && configureOn ? "" : "disabled"} ${simpleMain ? "readonly" : ""} autocomplete="off"></td>
+    <td class="src-col-event-bytes"><input type="number" id="${p}-event_bytes" data-f="event_bytes" min="1" step="1" value="${r.event_bytes}" ${on && configureOn && !simpleMain ? "" : "disabled"} autocomplete="off"></td>
+    <td class="src-col-vol">${volumeCell(r, i, !volDisabled)}</td>
+    <td><input type="number" id="${p}-retention_days" data-f="retention_days" min="0" step="1" value="${r.retention_days}" placeholder="glob" ${on && configureOn ? "" : "disabled"} autocomplete="off"></td>
+    <td><input type="number" id="${p}-hot_warm_days" data-f="hot_warm_days" min="0" step="1" value="${r.hot_warm_days}" placeholder="glob" ${on && configureOn ? "" : "disabled"} autocomplete="off"></td>
     ${indexSizeCellHTML(sized)}
     <td>${
-      isMainRow(r)
-        ? `<span class="src-main-lock" title="${escapeAttr(t("main_row_locked"))}">—</span>`
+      !configureOn || isMainRow(r)
+        ? `<span class="src-main-lock" title="${escapeAttr(isMainRow(r) ? t("main_row_locked") : "")}">—</span>`
         : `<button type="button" class="btn-x" data-rm="${i}" aria-label="Remove">×</button>`
     }</td>
   </tr>`;
@@ -370,6 +416,9 @@ export function renderRows() {
     else if (numOr0(r.eps) > 0) syncRowVolumePair(r, state.rows, "eps");
   });
 
+  const configureOn = isConfigureSourcesEnabled();
+  const displayRows = rowsForDisplay();
+
   import("./plan-form.js")
     .then(({ collectGlobals }) => {
       const g = collectGlobals();
@@ -379,14 +428,21 @@ export function renderRows() {
         const idx = state.rows.indexOf(s.row);
         if (idx >= 0) sizedMap.set(idx, { ...s, i: idx });
       });
-      srcBody.innerHTML = state.rows.map((r, i) => volumeRowHTML(r, i, sizedMap)).join("");
+      srcBody.innerHTML = displayRows
+        .map((r) => {
+          const i = state.rows.indexOf(r);
+          return volumeRowHTML(r, i, sizedMap, { configureOn });
+        })
+        .join("");
       bindTips(srcBody);
       applyTableFind("src-find", "src-body", "src-find-count");
       refreshTotalCounterpart();
       import("./volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
     })
     .catch(() => {
-      srcBody.innerHTML = state.rows.map((r, i) => volumeRowHTML(r, i, new Map())).join("");
+      srcBody.innerHTML = displayRows
+        .map((r) => volumeRowHTML(r, state.rows.indexOf(r), new Map(), { configureOn }))
+        .join("");
       bindTips(srcBody);
       applyTableFind("src-find", "src-body", "src-find-count");
       refreshTotalCounterpart();
@@ -410,7 +466,8 @@ function bindTableBody(srcBody) {
           return;
         }
         if (e.target.checked && !isMainRow(row)) {
-          enterManualSourceMode();
+          if (!isConfigureSourcesEnabled()) applyConfigureSourcesMode(true);
+          else enterManualSourceMode({ keepConfigureFlag: true });
           row.enabled = true;
         } else if (!e.target.checked && isMainRow(row)) {
           e.target.checked = true;
@@ -495,16 +552,9 @@ export function bindSourcesTable() {
   bindTotalVolumePair();
   syncConfigureSourcesUI();
 
-  const cfg = document.getElementById("configure_sources");
-  if (cfg && cfg.dataset.sourcesBound !== "1") {
-    cfg.dataset.sourcesBound = "1";
-    cfg.addEventListener("change", () => {
-      setConfigureSources(cfg.checked);
-    });
-  }
-
   document.getElementById("btn-add")?.addEventListener("click", () => {
-    enterManualSourceMode();
+    if (!isConfigureSourcesEnabled()) applyConfigureSourcesMode(true);
+    else enterManualSourceMode({ keepConfigureFlag: true });
     state.rows.push(blankCustom());
     renderRows();
   });

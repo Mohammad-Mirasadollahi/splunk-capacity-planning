@@ -1,8 +1,10 @@
 /** Shared mutable UI state */
 export const state = {
   rows: [],
-  /** When true, per-source table is shown (always on — main index is the default row). */
-  configureSources: true,
+  /** When false, only the main index row is used (synced from Budget). */
+  configureSources: false,
+  /** Preset catalog from engine — used when enabling per-source mode. */
+  sourcePresets: [],
   step: 0,
   volumeInputMode: "daily_gb", // "daily_gb" | "eps" — both are raw/pre-indexed ingest
   capacityPlanMode: "time", // last edit direction: days→GB ("time") or GB→days ("disk")
