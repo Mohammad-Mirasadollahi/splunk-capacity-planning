@@ -3,6 +3,10 @@
 All notable changes to this repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/)-style sections so GitHub Releases can show what actually changed between versions.
 
+## 0.4.9 — 2026-08-23
+
+- Preview charts show GB on DMA and aligned live values
+
 ## 0.4.8 — 2026-08-23
 
 - DMA amounts show GB unit (e.g. 96 GB DMA)
