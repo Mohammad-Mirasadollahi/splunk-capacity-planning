@@ -113,6 +113,20 @@ When DMA is enabled:
 - Adds `DMA_MB` to the `[volume:summaries]` budget
 - Emits `tstatsHomePath` on primary indexes
 - Without DMA/ES, `tstatsHomePath` is omitted
+- **Summary indexes** (`*_summary`, ITSI KPI indexes, etc.) are **not** sized — Review/Results show a separate “Summary indexes need” row as **not sized in this planner**
+
+### Review / Results — Storage Required table
+
+Shared between the wizard **Review** step and **Results → Overview**:
+
+| Row | Meaning |
+|---|---|
+| Hot, Warm / Cold / Archived | Searchable tiers from retention × daily on-disk × headroom |
+| **DMA (acceleration)** | `design.dma_need_gb` on `volume:summaries`; sub-label shows planning horizon (`dma_years`, or legacy `dma_pct` override) |
+| **Summary indexes** | Always **— (not sized)** — optional summary indexes are out of scope; only DMA/tstats is budgeted |
+| **Total** | Hot + cold + archive + DMA |
+
+Metrics cards mirror the same rows (total + per indexer).
 
 ## 6. Archive (frozen / coldToFrozenDir)
 

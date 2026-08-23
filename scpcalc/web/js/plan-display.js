@@ -6,6 +6,32 @@ import { t } from "./i18n.js";
 import { escapeAttr } from "./util.js";
 import { numOr0 } from "./volume-convert.js";
 
+/** ES official horizon label for DMA / acceleration sizing. */
+export function dmaHorizonLabel(g) {
+  const globals = g || {};
+  if (!(globals.enable_dma || globals.has_es)) return "";
+  const pct = numOr0(globals.dma_pct);
+  if (pct > 0) return t("review_dma_horizon_override");
+  const years = numOr0(globals.dma_years) || 1;
+  return t("review_dma_horizon_years").replace("{n}", String(years));
+}
+
+/** DMA need with GB + acceleration time horizon. */
+export function formatDmaNeedDisplay(gb, g) {
+  const amt = formatStorageAmt(gb);
+  const horizon = dmaHorizonLabel(g);
+  return horizon ? `${amt} · ${horizon}` : amt;
+}
+
+/** Summary index sizing is out of scope — DMA-only on volume:summaries. */
+export function formatSummaryIndexNeedDisplay() {
+  return t("review_summary_idx_not_sized");
+}
+
+export function dmaEnabled(g) {
+  return !!(g?.enable_dma || g?.has_es);
+}
+
 export function formatStorageAmt(gb) {
   const n = Number(gb);
   if (!Number.isFinite(n) || n <= 0) return "0.0";
@@ -92,9 +118,10 @@ export function buildMetricSections(data, g) {
   if (globals.archive_frozen) {
     storageTotal.rows.push([t("review_m_need_archive_total"), formatStorageAmt(archAll)]);
   }
-  if (dmaAll > 0) {
-    storageTotal.rows.push([t("review_m_need_dma_total"), formatStorageAmt(dmaAll)]);
+  if (dmaEnabled(globals) || dmaAll > 0) {
+    storageTotal.rows.push([t("review_m_need_dma_total"), formatDmaNeedDisplay(dmaAll, globals)]);
   }
+  storageTotal.rows.push([t("review_m_need_summary_idx_total"), formatSummaryIndexNeedDisplay()]);
   storageTotal.rows.push([t("review_m_total_storage"), formatStorageAmt(totalStore)]);
 
   const storagePer = {
@@ -106,6 +133,10 @@ export function buildMetricSections(data, g) {
       [t("review_m_archive_per_idx"), globals.archive_frozen ? formatStorageAmt(archAll / nIdx) : "—"],
     ],
   };
+  if (dmaEnabled(globals) || dmaAll > 0) {
+    storagePer.rows.push([t("review_m_dma_per_idx"), formatDmaNeedDisplay(dmaAll / nIdx, globals)]);
+  }
+  storagePer.rows.push([t("review_m_summary_idx_per_idx"), formatSummaryIndexNeedDisplay()]);
 
   const other = {
     id: "other",
@@ -164,12 +195,32 @@ export function renderRetentionStorageHTML(data, g) {
   const hotAll = numOr0(d.hot_need_gb);
   const coldAll = numOr0(d.cold_need_gb);
   const archAll = globals.archive_frozen ? numOr0(d.archive_need_gb) : 0;
-  const totalAll = hotAll + coldAll + archAll;
+  const dmaAll = dmaEnabled(globals) || numOr0(d.dma_need_gb) > 0 ? numOr0(d.dma_need_gb) : 0;
+  const totalAll = hotAll + coldAll + archAll + dmaAll;
   const hotPer = hotAll / nIdx;
   const coldPer = coldAll / nIdx;
   const archPer = archAll / nIdx;
+  const dmaPer = dmaAll / nIdx;
   const totalPer = totalAll / nIdx;
   const pct = (days) => (seg.total > 0 ? (100 * days) / seg.total : 0);
+  const dmaHorizon = escapeAttr(dmaHorizonLabel(globals));
+  const dmaRow =
+    dmaAll > 0 || dmaEnabled(globals)
+      ? `<tr>
+              <th scope="row">${t("review_tier_dma")}${
+                dmaHorizon ? `<span class="review-storage-sub">${dmaHorizon}</span>` : ""
+              }</th>
+              <td>${formatStorageAmt(dmaPer)}</td>
+              <td>${formatStorageAmt(dmaAll)}</td>
+            </tr>`
+      : "";
+  const summaryIdxRow = `<tr>
+              <th scope="row">${t("review_tier_summary_idx")}<span class="review-storage-sub">${escapeAttr(
+                t("review_summary_idx_hint")
+              )}</span></th>
+              <td>${formatSummaryIndexNeedDisplay()}</td>
+              <td>${formatSummaryIndexNeedDisplay()}</td>
+            </tr>`;
 
   return `
     <section class="review-retention" aria-label="${escapeAttr(t("review_retention_title"))}">
@@ -231,6 +282,8 @@ export function renderRetentionStorageHTML(data, g) {
               <td>${formatStorageAmt(archPer)}</td>
               <td>${formatStorageAmt(archAll)}</td>
             </tr>
+            ${dmaRow}
+            ${summaryIdxRow}
             <tr class="review-storage-total">
               <th scope="row">${t("review_total")}</th>
               <td>${formatStorageAmt(totalPer)}</td>

@@ -26,4 +26,6 @@ make pages-calc          # local preview → ../calc/
 4. **Import** — paste that link (or choose a `.json` plan file).  
 5. Language: English / فارسی.
 
+**Storage breakdown (Review / Results Overview):** Hot/cold/archive searchable tiers, plus **DMA need** on `volume:summaries` with its **`dma_years`** acceleration horizon. **Summary indexes** (`*_summary`, etc.) are listed separately as **not sized** — this tool budgets DMA/tstats only.
+
 Hover dotted labels for formulas and official Splunk documentation links.

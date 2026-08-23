@@ -76,7 +76,7 @@ flowchart TB
 | `compression` | `0` = RF/SF or 0.5; `>0` = measured C |
 | `indexer_cluster`, `rf`, `sf` | If cluster off → RF=SF=1. If on and unset → 3/2 |
 | `search_head_cluster`, `smartstore`, `has_es`, `has_itsi` | Topology / apps |
-| `enable_dma`, `dma_pct` | DMA/tstats; default on when ES if unset |
+| `enable_dma`, `dma_pct`, `dma_years` | DMA/tstats on `volume:summaries`; default on when ES if unset; `dma_years` = ES planning horizon (default 1) |
 | `archive_frozen`, `frozen_path` | Optional archive (`coldToFrozenDir`) |
 | `remote_path` | SmartStore object-store path |
 | `concurrent_users`, `n_idx`, `n_sh` | Overrides (0=auto); floors warn; RF/SHC hard-raise |
@@ -110,7 +110,7 @@ Resolution order: **CLI → process env → `.env` → defaults**.
 --compression
 --concurrent-users --indexer-cluster --search-head-cluster --rf --sf
 --n-idx --n-sh --smartstore --remote-path
---has-es --has-itsi --es-smartstore --enable-dma --no-dma --dma-pct
+--has-es --has-itsi --es-smartstore --enable-dma --no-dma --dma-pct --dma-years
 # legacy single-index convenience:
 --daily-gb --eps --event-bytes --index-name
 # output:

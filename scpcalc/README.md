@@ -270,6 +270,7 @@ Resolution: **CLI → process env → `.env` → defaults**.
 | `--es-smartstore` | Alias: ES + SmartStore |
 | `--enable-dma` / `--no-dma` | DMA/tstats (default on when ES if unset) |
 | `--dma-pct FLOAT` | Override only (`>0`); `0` = ES official `daily_raw × 3.4 × dma_years` |
+| `--dma-years FLOAT` | ES DMA planning horizon in years (default `1`) |
 
 Legacy convenience (if no `--plan` / `--sources`): `--daily-gb`, `--eps`, `--event-bytes`, `--index-name`.  
 Without `--plan`: if `--rf` or `--sf` &gt; 1 and `--indexer-cluster` was not passed, cluster is implied (same idea as `Input.ToPlan`).  
@@ -358,11 +359,12 @@ First-run Web UI seeds the same volume defaults (`total_daily_gb` 500, hot/cold 
 
 1. `./bin/scpcalc serve` → open `http://127.0.0.1:12345`  
    (or GitHub Pages: `https://mohammad-mirasadollahi.github.io/splunk-capacity-planning/calc/`)
-2. **Start wizard:** topology → retention (Policy: time↔disk · Volumes: daily GB/EPS + summaries disk) → sources → review → **Calculate**
-3. **Results tabs:** Overview · Charts (layer totals) · Design · Resources (labeled **Nodes** + role table) · Settings · Per index · indexes.conf (editor / rename)
-4. **Fullscreen / Copy** on Design, Resources, Settings, Nodes, and Per-index panels
-5. Language toggle **EN / FA**; soft tips (dark) for formulas + official links
-6. Download design text / `indexes.conf` from the results toolbar — conf header includes author, GitHub, and a plan snapshot from your settings
+2. **Start wizard:** topology → retention (Policy: time↔disk · Volumes: daily GB/EPS + auto DMA on summaries) → sources → review → **Calculate**
+3. **Review / Overview:** Retention timeline + **Storage Required** table — separate rows for **DMA need** (with `dma_years` horizon) and **Summary indexes need** (not sized here); totals include DMA
+4. **Results tabs:** Overview · Charts (layer totals) · Design · Resources (labeled **Nodes** + role table) · Settings · Per index · indexes.conf (editor / rename)
+5. **Fullscreen / Copy** on Design, Resources, Settings, Nodes, and Per-index panels
+6. Language toggle **EN / FA**; soft tips (dark) for formulas + official links
+7. Download design text / `indexes.conf` from the results toolbar — conf header includes author, GitHub, and a plan snapshot from your settings
 
 ### Save / Export / Import
 

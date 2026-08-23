@@ -26,6 +26,8 @@ import {
   renderRetentionStorageHTML,
   renderIndexRowsHTML,
   indexesTableHeaderHTML,
+  formatDmaNeedDisplay,
+  formatSummaryIndexNeedDisplay,
 } from "./plan-display.js";
 
 let previewSeq = 0;
@@ -185,7 +187,8 @@ export function fillReviewSummary() {
           ${kvGroup(t("review_budget_group"))}
           ${kv(t("lbl_avail_hot"), budgetCap(g.available_hot_gb))}
           ${kv(t("lbl_avail_cold"), budgetCap(g.available_cold_gb))}
-          ${g.enable_dma || g.has_es ? kv(t("lbl_dma_volume"), `${formatSizeGB(numOr0(g.available_summaries_gb))} · ${t("review_auto")}`) : ""}
+          ${g.enable_dma || g.has_es ? kv(t("lbl_dma_volume"), formatDmaNeedDisplay(numOr0(g.available_summaries_gb), g)) : ""}
+          ${kv(t("review_m_need_summary_idx_total"), formatSummaryIndexNeedDisplay())}
           <li class="review-kv-note"><span>${escapeAttr(t("review_budget_note"))}</span></li>
         </ul>
       </section>
