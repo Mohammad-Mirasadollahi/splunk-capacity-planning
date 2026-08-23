@@ -3,6 +3,10 @@
 All notable changes to this repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/)-style sections so GitHub Releases can show what actually changed between versions.
 
+## 0.4.11 — 2026-08-23
+
+- CPU by role chart alongside RAM in Preview/Results charts
+
 ## 0.4.10 — 2026-08-23
 
 - Modal open locks background scroll; modal content scrolls
