@@ -1,5 +1,6 @@
 import { t } from "./i18n.js";
-import { openModal, closeModal } from "./modal.js";
+import { openModal, closeModal, recoverPageScroll } from "./modal.js";
+import { collapseSourcesFullscreen } from "./sources-fullscreen.js";
 import { fillReview } from "./plan-form.js";
 import { bindWizardContinuity, refreshWizardContext } from "./wizard-continuity.js";
 import { resetWizardContextScroll, initWizardContextScroll } from "./wizard-context-scroll.js";
@@ -82,7 +83,9 @@ export function openWizard(atStep) {
 }
 
 export function closeWizard() {
+  collapseSourcesFullscreen();
   closeModal(wizardModal());
+  recoverPageScroll();
 }
 
 export function bindWizard() {

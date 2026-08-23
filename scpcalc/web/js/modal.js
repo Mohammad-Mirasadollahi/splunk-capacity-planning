@@ -4,6 +4,35 @@ let scrollLockDepth = 0;
 let savedScrollY = 0;
 let scrollGuardBound = false;
 
+function visibleModals() {
+  return [...document.querySelectorAll(".modal-root")].filter((m) => !m.hidden);
+}
+
+/** Strip scroll-lock side effects when no modal should hold the page. */
+function cleanupPageScrollLocks() {
+  document.documentElement.classList.remove("modal-open");
+  document.body.classList.remove("modal-open");
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.left = "";
+  document.body.style.right = "";
+  document.body.style.width = "";
+  if (!document.querySelector(".sources-panel.is-fullscreen")) {
+    document.body.classList.remove("sources-fullscreen");
+  }
+  if (!document.querySelector(".view-block.is-fullscreen")) {
+    document.body.classList.remove("view-fullscreen");
+  }
+}
+
+export function recoverPageScroll() {
+  if (visibleModals().length) return;
+  scrollLockDepth = 0;
+  cleanupPageScrollLocks();
+  const y = savedScrollY;
+  if (y > 0) window.scrollTo(0, y);
+}
+
 function isScrollable(el) {
   if (!el || el === document.body || el === document.documentElement) return false;
   const style = getComputedStyle(el);
@@ -70,6 +99,7 @@ function applyWheelScroll(e, scrollable) {
 
 /** Block wheel events from reaching the locked page behind the modal. */
 function onModalWheel(e) {
+  if (!visibleModals().length) return;
   if (!document.body.classList.contains("modal-open")) return;
 
   const fsPanel = e.target.closest(".sources-panel.is-fullscreen");
@@ -135,21 +165,16 @@ function unlockPageScroll() {
   scrollLockDepth = Math.max(0, scrollLockDepth - 1);
   if (scrollLockDepth > 0) return;
   const y = savedScrollY;
-  document.documentElement.classList.remove("modal-open");
-  document.body.classList.remove("modal-open");
-  document.body.style.position = "";
-  document.body.style.top = "";
-  document.body.style.left = "";
-  document.body.style.right = "";
-  document.body.style.width = "";
+  cleanupPageScrollLocks();
   window.scrollTo(0, y);
 }
 
 export function openModal(el) {
   if (!el) return;
   ensureScrollGuard();
+  const wasOpen = !el.hidden;
   el.hidden = false;
-  lockPageScroll();
+  if (!wasOpen) lockPageScroll();
   if (!reduceMotion) {
     el.querySelector(".modal")?.animate(
       [
@@ -165,6 +190,7 @@ export function closeModal(el) {
   if (!el || el.hidden) return;
   el.hidden = true;
   unlockPageScroll();
+  if (!visibleModals().length) recoverPageScroll();
 }
 
 export function bindModalChrome({ onEscapeWizard, onEscapeOther } = {}) {
