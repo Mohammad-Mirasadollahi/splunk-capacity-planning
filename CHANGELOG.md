@@ -3,6 +3,10 @@
 All notable changes to this repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/)-style sections so GitHub Releases can show what actually changed between versions.
 
+## 0.4.7 — 2026-08-23
+
+- Review sources Total column per-indexer label and tooltip
+
 ## 0.4.6 — 2026-08-23
 
 - Wizard context fade works on all wizard tabs and nested scroll areas
