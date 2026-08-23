@@ -194,6 +194,24 @@ h1 {
   max-width: 100%;
 }
 
+/* Checkbox chips: glass-chip pill height must not clip multi-line labels */
+label.field.check.glass-chip {
+  height: auto;
+  min-height: 2.35rem;
+  border-radius: 0.85rem;
+}
+
+.field.archive-option-field {
+  display: grid;
+  gap: 0.35rem;
+  align-content: start;
+}
+
+.field.archive-option-field > .field-hint {
+  margin: 0;
+  line-height: 1.4;
+}
+
 .field-readonly .readonly-value {
   display: block;
   width: 100%;

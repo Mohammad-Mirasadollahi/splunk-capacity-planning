@@ -415,11 +415,13 @@
                     <span class="field-copy"><span class="field-label tip-mark" data-tip="archive_days" data-i18n="lbl_archive_days">Days kept in archive</span><span class="field-hint" data-i18n="hint_archive_days">How long frozen buckets stay in the archive path after freeze (capacity planning)</span></span>
                     <input name="archive_days" id="archive_days" type="number" value="90" min="0" step="1">
                   </label>
-                  <label class="field check glass-chip" data-depends-on="archive_frozen" hidden>
-                    <input name="archive_single_copy" type="checkbox" id="archive_single_copy">
-                    <span class="tip-mark" data-tip="archive_single_copy" data-i18n="lbl_archive_single_copy">Archive single copy (custom script)</span>
+                  <div class="field archive-option-field" data-depends-on="archive_frozen" hidden>
+                    <label class="field check glass-chip index-volume-freeze">
+                      <input name="archive_single_copy" type="checkbox" id="archive_single_copy">
+                      <span class="tip-mark" data-tip="archive_single_copy" data-i18n="lbl_archive_single_copy">Archive single copy (custom script)</span>
+                    </label>
                     <span class="field-hint" data-i18n="hint_archive_single_copy">Off = cluster archive × RF (each peer archives its copy)</span>
-                  </label>
+                  </div>
                   <label class="field" data-depends-on="archive_frozen" hidden>
                     <span class="field-copy"><span class="field-label tip-mark" data-tip="frozen_path" data-i18n="lbl_frozen_path">Frozen / archive path</span><span class="field-hint" data-i18n="hint_frozen_path">[volume:frozen] path / coldToFrozenDir</span></span>
                     <input name="frozen_path" id="frozen_path" type="text" value="/frozen">
