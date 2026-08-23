@@ -229,7 +229,6 @@
                     <th class="sortable" data-sort-key="cold" data-i18n="ix_cold" data-soft-tip-key="ix_tip_cold">Cold volume</th>
                     <th class="sortable" data-sort-key="max_data" data-i18n="ix_max_data" data-soft-tip-key="ix_tip_max_data">Hot bucket size</th>
                     <th class="sortable" data-sort-key="frozen" data-i18n="ix_frozen_days" data-soft-tip-key="ix_tip_frozen">Retention days</th>
-                    <th class="sortable" data-sort-key="summary" data-i18n="ix_summary" data-soft-tip-key="ix_tip_summary">Summary index</th>
                   </tr>
                 </thead>
                 <tbody id="ix-body"></tbody>
@@ -456,16 +455,6 @@
                 <p class="hint" id="cap-disk-bridge" data-i18n="cap_bridge_hint">Bridge: disk ≈ daily on-disk × days × headroom. Set daily GB under Budget (or sources) so conversion stays accurate.</p>
               </div>
             </div>
-            <div class="grid" style="margin-top:0.85rem">
-              <label class="field">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="summary_pct" data-i18n="lbl_summary_pct">Summary index share</span><span class="field-hint" data-i18n="hint_summary_pct">Share of source volume written to summaries</span></span>
-                <input name="summary_pct" id="summary_pct" type="number" step="0.01" value="0.10" min="0.01" max="1">
-              </label>
-              <label class="field">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="summary_retention_days" data-i18n="lbl_summary_ret">Summary retention (days)</span><span class="field-hint" data-i18n="hint_summary_ret">How long summary indexes stay searchable</span></span>
-                <input name="summary_retention_days" id="summary_retention_days" type="number" value="37" min="1">
-              </label>
-            </div>
             <p class="hint" data-i18n="policy_headroom_note">Safety margin (headroom) is set once under Budget — it multiplies size caps (maxTotal / homePath / volumes).</p>
             <div class="field field-readonly" aria-live="polite" style="margin-top:0.65rem">
               <span class="field-copy"><span class="field-label tip-mark" data-tip="cold_path_max" data-i18n="lbl_cold_vol">Cold index remainder (auto)</span><span class="field-hint" data-i18n="hint_cold_vol">After Calculate: coldPath.maxDataSizeMB = maxTotal − homePath</span></span>
@@ -504,8 +493,6 @@
                       <th><span class="tip-mark" data-tip="retention_days" data-i18n="col_ret">Retention days</span></th>
                       <th><span class="tip-mark" data-tip="hot_warm_days" data-i18n="col_hw">Hot/warm days</span></th>
                       <th class="src-col-idx-size"><span class="tip-mark" data-tip="max_total" data-i18n="col_idx_size">maxTotal (MB) · EPS</span></th>
-                      <th><span class="tip-mark" data-tip="enable_summary" data-i18n="col_summary">Summary</span></th>
-                      <th><span class="tip-mark" data-tip="summary_daily_gb" data-i18n="col_sum_gb">Summary GB/day</span></th>
                       <th></th>
                     </tr>
                   </thead>
@@ -533,7 +520,7 @@
                 <input name="cold_path" id="cold_path" type="text" value="/cold">
               </label>
               <label class="field">
-                <span class="field-copy"><span class="field-label tip-mark" data-tip="summaries_path" data-i18n="lbl_sum_path">Summaries volume path</span><span class="field-hint" data-i18n="hint_sum_path">[volume:_splunk_summaries] path — SSD for tstats/DMA</span></span>
+                <span class="field-copy"><span class="field-label tip-mark" data-tip="summaries_path" data-i18n="lbl_sum_path">DMA volume path</span><span class="field-hint" data-i18n="hint_sum_path">[volume:_splunk_summaries] path — SSD for tstats/DMA</span></span>
                 <input name="summaries_path" id="summaries_path" type="text" value="/summaries">
               </label>
             </div>

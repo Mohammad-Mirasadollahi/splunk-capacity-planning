@@ -8,6 +8,8 @@ export const results_charts = {
   chart_lbl_hot: "hot/warm",
   chart_lbl_hot_days: "روز hot/warm",
   chart_lbl_summaries: "DMA",
+  chart_lbl_dma_need: "نیاز DMA",
+  chart_lbl_dma_avail: "DMA (خودکار)",
   chart_lbl_total_days: "جمع روزها",
   chart_resources: "RAM هر نقش (GB)",
   chart_retention: "زمان نگهداری (روز)",

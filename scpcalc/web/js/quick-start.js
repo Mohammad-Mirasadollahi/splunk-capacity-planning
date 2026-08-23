@@ -78,8 +78,6 @@ function applyVolumeDefaults(dailyGB) {
     dma_years: current.dma_years ?? 1,
     archive_frozen: defaults.archive_frozen,
     capacity_plan_mode: current.capacity_plan_mode || "time",
-    summary_pct: current.summary_pct || 0.1,
-    summary_retention_days: defaults.retention_days,
     compression: current.compression,
     remote_path: current.remote_path,
   });
@@ -114,7 +112,7 @@ function renderApplyPreview(data) {
   const cold = d.cold_need_gb != null ? Math.round(d.cold_need_gb) : "—";
   const total =
     d.hot_need_gb != null || d.cold_need_gb != null
-      ? Math.round((Number(d.hot_need_gb) || 0) + (Number(d.cold_need_gb) || 0) + (Number(d.summaries_need_gb) || 0))
+      ? Math.round((Number(d.hot_need_gb) || 0) + (Number(d.cold_need_gb) || 0) + (Number(d.dma_need_gb) || 0))
       : "—";
   out.hidden = false;
   out.innerHTML = `<p class="quick-estimate-title"><strong>${escapeAttr(t("quick_result_title"))}</strong></p>

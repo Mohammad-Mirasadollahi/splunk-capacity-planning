@@ -28,6 +28,6 @@ export const overview_quick = {
   tab_ret_overview: "نمای کلی",
   tab_vol_budget: "بودجه",
   tab_vol_sources: "منابع",
-  vol_drivers_hint: "این مقادیر بودجهٔ برنامه‌ریزی برای مراحل بعد هستند. حجم ایندکس‌ها در تب Sources باید داخل سقف روزانه بماند؛ نیاز دیسک searchable هم باید داخل بودجه volumeهای hot/cold/summaries در Policy بماند.",
+  vol_drivers_hint: "این مقادیر بودجهٔ برنامه‌ریزی برای مراحل بعد هستند. حجم ایندکس‌ها در تب Sources باید داخل سقف روزانه بماند؛ نیاز دیسک searchable هم باید داخل بودجه volumeهای hot/cold در Policy بماند.",
   vol_drivers_title: "حجم روزانه و محرک‌ها",
 };

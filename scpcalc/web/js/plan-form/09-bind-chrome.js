@@ -77,13 +77,6 @@ export function bindPlanFormChrome() {
     el.addEventListener("input", run);
     el.addEventListener("change", run);
   });
-  document
-    .querySelectorAll('input[name="summary_pct"], #summary_pct, input[name="summary_retention_days"], #summary_retention_days')
-    .forEach((el) => {
-      const run = () => import("../volume-budget.js").then((m) => m.refreshVolumeBudgetUI?.()).catch(() => {});
-      el.addEventListener("input", run);
-      el.addEventListener("change", run);
-    });
   document.querySelectorAll('#avg_event_bytes, input[name="avg_event_bytes"]').forEach((el) => {
     const run = () => {
       import("../sources.js")

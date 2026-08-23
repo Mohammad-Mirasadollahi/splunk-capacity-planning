@@ -546,7 +546,7 @@ func BuildDesign(p model.PlanInput, out model.PlanResult) model.Design {
 		DmaNeedGB:            float64(out.DmaVolumeMB) / 1024.0,
 		HotAvailableGB:       p.AvailableHotGB,
 		ColdAvailableGB:      p.AvailableColdGB,
-		SummariesAvailableGB: float64(out.DmaVolumeMB) / 1024.0,
+		SummariesAvailableGB: p.AvailableSummariesGB,
 		ConcurrentUsers:      p.ConcurrentUsers,
 		ConcurrentSearches:   p.ConcurrentSearches,
 		SavedSearches:        p.SavedSearches,

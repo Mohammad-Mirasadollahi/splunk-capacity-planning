@@ -125,7 +125,6 @@ export function fillReviewSummary() {
         <td>${escapeAttr(hw)}</td>
         <td>${escapeAttr(totalTime)}</td>
         <td>${escapeAttr(archiveTxt)}</td>
-        <td>${r.enable_summary ? yn(true) : "—"}</td>
         <td class="review-src-idx-total">${escapeAttr(idxTotal)}</td>
       </tr>`;
     })
@@ -134,7 +133,7 @@ export function fillReviewSummary() {
   const srcFooter =
     enabled.length > 0
       ? `<tr class="review-src-total">
-          <th scope="row" colspan="9">${escapeAttr(t("review_total"))}</th>
+          <th scope="row" colspan="8">${escapeAttr(t("review_total"))}</th>
           <td class="review-src-idx-total">${
             idxTotalGB > 0 ? `${formatSizeGB(idxTotalGB)} GB` : "—"
           }</td>
@@ -176,7 +175,6 @@ export function fillReviewSummary() {
           ${kv(t("lbl_cold_days"), t("review_days").replace("{n}", String(coldDays)))}
           ${kv(t("lbl_archive_days"), g.archive_frozen ? t("review_days").replace("{n}", String(g.archive_days || 0)) : yn(false))}
           ${kv(t("lbl_headroom"), String(g.headroom))}
-          ${kv(t("lbl_summary_ret"), t("review_days").replace("{n}", String(g.summary_retention_days)))}
           ${kv(t("lbl_archive"), archiveVal)}
           ${kvGroup(t("review_paths_group"))}
           ${kv(t("lbl_hot_path"), escapeAttr(g.hot_path))}
@@ -209,11 +207,10 @@ export function fillReviewSummary() {
               <th>${t("col_hw")}</th>
               <th>${t("col_total_time")}</th>
               <th>${t("col_archive")}</th>
-              <th>${t("col_summary")}</th>
               <th title="${escapeAttr(t("ix_tip_max_total"))}">${t("review_total")}</th>
             </tr>
           </thead>
-          <tbody>${srcRows || `<tr><td colspan="10">${t("review_no_sources")}</td></tr>`}</tbody>
+          <tbody>${srcRows || `<tr><td colspan="9">${t("review_no_sources")}</td></tr>`}</tbody>
           ${srcFooter ? `<tfoot>${srcFooter}</tfoot>` : ""}
         </table>
       </div>

@@ -114,7 +114,7 @@ func TestPlanOK(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	payload := `{"mode":"sources","retention_days":60,"hot_warm_days":30,"headroom":1,"summary_pct":0.1,"indexer_cluster":false,"sources":[{"key":"windows","label":"Windows","index_name":"windows","daily_gb":100,"event_bytes":1200,"enable_summary":true}]}`
+	payload := `{"mode":"sources","retention_days":60,"hot_warm_days":30,"headroom":1,"enable_dma":true,"dma_years":1,"indexer_cluster":false,"sources":[{"key":"windows","label":"Windows","index_name":"windows","daily_gb":100,"event_bytes":1200}]}`
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/plan", bytes.NewBufferString(payload))
 	req.Header.Set("Content-Type", "application/json")
 	rr := httptest.NewRecorder()
@@ -130,8 +130,8 @@ func TestPlanOK(t *testing.T) {
 		t.Fatalf("total_daily_raw_gb=%v", body["total_daily_raw_gb"])
 	}
 	conf, _ := body["indexes_conf"].(string)
-	if !strings.Contains(conf, "[windows]") || !strings.Contains(conf, "[windows_summary]") {
-		t.Fatalf("indexes_conf missing summary: %s", conf)
+	if !strings.Contains(conf, "[windows]") || !strings.Contains(conf, "tstatsHomePath") {
+		t.Fatalf("indexes_conf missing windows or DMA: %s", conf)
 	}
 	design, _ := body["design"].(map[string]any)
 	if design == nil || design["structure_text"] == nil || design["structure_text"] == "" {

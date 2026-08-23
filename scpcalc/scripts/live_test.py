@@ -210,7 +210,7 @@ def run_algo_via_cli() -> None:
     d = p.get("design") or {}
     ok("algo.itsi_ceil_d100", d.get("n_idx", 0) >= 3, str(d.get("n_idx")))
 
-    # Summary pct
+    # DMA (ES official)
     with tempfile.TemporaryDirectory() as td:
         plan = Path(td) / "p.json"
         plan.write_text(
@@ -219,14 +219,13 @@ def run_algo_via_cli() -> None:
                     "retention_days": 90,
                     "hot_warm_days": 30,
                     "headroom": 1.0,
-                    "summary_pct": 0.10,
-                    "summary_retention_days": 90,
+                    "enable_dma": True,
+                    "dma_years": 1,
                     "sources": [
                         {
                             "key": "w",
                             "index_name": "windows",
                             "daily_gb": 100,
-                            "enable_summary": True,
                         }
                     ],
                 }
@@ -235,8 +234,10 @@ def run_algo_via_cli() -> None:
         )
         code, out, err = run_cli(["calc", "--plan", str(plan), "--json"])
         p = json.loads(out) if code == 0 else {}
-        ok("algo.summary_pct_10", code == 0 and almost(p.get("total_summary_raw_gb"), 10), str(p.get("total_summary_raw_gb")))
-        ok("algo.summary_stanza", "windows_summary" in (p.get("indexes_conf") or ""))
+        want_dma_mb = 100 * 3.4 * 1024
+        ok("algo.dma_gb", code == 0 and almost(p.get("dma_volume_mb"), want_dma_mb), str(p.get("dma_volume_mb")))
+        ok("algo.dma_tstats", "tstatsHomePath" in (p.get("indexes_conf") or ""))
+        ok("algo.no_summary_stanza", "_summary]" not in (p.get("indexes_conf") or ""))
 
     # Per-peer: cluster N_IDX=3 → MB fields ÷ 3
     with tempfile.TemporaryDirectory() as td:
@@ -569,7 +570,6 @@ def main() -> int:
                     "retention_days": 60,
                     "hot_warm_days": 30,
                     "headroom": 1.2,
-                    "summary_pct": 0.1,
                     "hot_path": "/data/hot",
                     "cold_path": "/data/cold",
                     "frozen_path": "/data/frozen",
@@ -581,7 +581,6 @@ def main() -> int:
                             "index_name": "windows",
                             "daily_gb": 50,
                             "event_bytes": 1200,
-                            "enable_summary": True,
                         },
                         {
                             "key": "sysmon",
@@ -624,7 +623,7 @@ def main() -> int:
         conf_txt = conf_out.read_text(encoding="utf-8") if conf_out.exists() else ""
         des_txt = design_out.read_text(encoding="utf-8") if design_out.exists() else ""
         ok("cli.plan_file", code == 0 and multi.get("total_daily_raw_gb", 0) > 50)
-        ok("cli.plan_file.summary_stanza", "windows_summary" in (multi.get("indexes_conf") or ""))
+        ok("cli.plan_file.no_summary_stanza", "_summary]" not in (multi.get("indexes_conf") or ""))
         ok("cli.conf_out", "[windows]" in conf_txt and "[sysmon]" in conf_txt)
         ok("cli.design_out", "NODE COUNTS" in des_txt)
         # per-peer: N_IDX should be >= 3 with cluster; volume MB should be present
@@ -723,8 +722,6 @@ def main() -> int:
             "retention_days": 90,
             "hot_warm_days": 30,
             "headroom": 1.2,
-            "summary_pct": 0.1,
-            "summary_retention_days": 90,
             "hot_path": "/hot",
             "cold_path": "/cold",
             "frozen_path": "/frozen",
@@ -736,7 +733,6 @@ def main() -> int:
                     "index_name": "windows",
                     "daily_gb": 80,
                     "event_bytes": 1200,
-                    "enable_summary": True,
                 },
                 {
                     "key": "fw",
@@ -769,7 +765,7 @@ def main() -> int:
         ok("api.plan.remote_store", (design.get("remote_store_gb") or 0) > 0)
         ok("api.plan.archive", "coldToFrozenDir" in conf)
         ok("api.plan.dma_tstats", "tstatsHomePath" in conf)
-        ok("api.plan.summary_index", "windows_summary" in conf)
+        ok("api.plan.no_summary_stanza", "_summary]" not in conf)
         ok("api.plan.multi_index", "[windows]" in conf and "[firewall]" in conf)
         ok("api.plan.per_peer", (plan.get("indexer_peers") or 0) >= 3 and (plan.get("hot_volume_budget_mb") or 0) > 0)
         # ES+ITSI separate tiers
@@ -991,7 +987,7 @@ def main() -> int:
         ok("ui.archive_days", 'id="archive_days"' in html and 'data-i18n="lbl_archive_days"' in html)
         ok("ui.policy_index_size_note", 'data-i18n="policy_index_size_note"' in html or "maxTotalDataSizeMB" in html)
         ok("ui.paths_hint", 'data-i18n="paths_hint"' in html)
-        ok("ui.summaries_on_policy", 'data-panel="vol-policy"' in html and html.find('id="available_summaries_gb"') > html.find('data-panel="vol-policy"'))
+        ok("ui.dma_on_policy", 'data-panel="vol-policy"' in html and html.find('id="available_summaries_gb"') > html.find('data-panel="vol-policy"'))
         ok("ui.sources_under_volume", 'data-pane="1"' in html and 'id="src-table"' in html and "src-table--merged" in html)
         ok("ui.sources_merged_cols", 'data-i18n="col_ret"' in html and 'id="src-ret-table"' not in html)
         ok("ui.sources_idx_size_col", 'data-i18n="col_idx_size"' in html and 'data-tip="max_total"' in html)

@@ -80,8 +80,6 @@ export function planSourceDiskNeeds(rows, g) {
     sf: g.sf,
   });
   const headroom = Number(g.headroom) >= 1 ? Number(g.headroom) : 1;
-  const summaryPct = numOr0(g.summary_pct) > 0 ? numOr0(g.summary_pct) : 0.1;
-  const summaryRet = Math.max(1, Math.floor(numOr0(g.summary_retention_days) || g.retention_days || 1));
   const dmaOn = !!g.enable_dma || !!g.has_es;
   const dmaPct = numOr0(g.dma_pct);
   let totalRaw = 0;
@@ -115,15 +113,6 @@ export function planSourceDiskNeeds(rows, g) {
     const coldGB = Math.max(0, maxGB - homeGB);
     needHot += homeGB;
     needCold += coldGB;
-
-    if (r.enable_summary) {
-      let sumRaw = numOr0(r.summary_daily_gb);
-      if (!(sumRaw > 0)) sumRaw = daily * summaryPct;
-      const sumOnDisk = dailyOnDiskFromRaw(sumRaw, comp);
-      let sumHW = hw;
-      if (sumHW > summaryRet) sumHW = summaryRet;
-      needSum += sizeGBFromOnDiskDays(sumOnDisk, summaryRet, headroom);
-    }
 
     outRows.push({
       row: r,

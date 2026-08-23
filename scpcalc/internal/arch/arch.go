@@ -355,12 +355,12 @@ func RecommendResources(p model.PlanInput, d model.Design, dailyGB float64) []mo
 	}
 	if p.WantDMA() {
 		out = append(out, model.LayerSpec{
-			Role: "DMA / summaries volume", Count: nidx, Tier: "storage layer",
+			Role: "DMA volume", Count: nidx, Tier: "storage layer",
 			CPUCores: 0, VCPU: 0, RAMGB: 0,
 			StorageType: "SSD/NVMe (not cold HDD)", DiskGBHint: sumPer,
 			Network: "local to indexer", IOPSHint: "High random IOPS — co-locate with hot/warm SSD class", IOPSMin: 4000,
 			RAIDHint: raidHot,
-			Notes:    fmt.Sprintf("tstatsHomePath / DMA on volume:summaries; total summaries need ~%.1f GB across tier (estimate)", d.SummariesNeedGB),
+			Notes:    fmt.Sprintf("tstatsHomePath / DMA on volume:summaries; total DMA need ~%.1f GB across tier (estimate)", d.DmaNeedGB),
 		})
 	}
 	if d.SmartStore {
@@ -550,7 +550,7 @@ func renderStructure(p model.PlanInput, d model.Design, out model.PlanResult) st
 	fmt.Fprintf(&b, "\nStorage volumes (cluster-wide need):\n")
 	fmt.Fprintf(&b, "  - hot/warm SSD: need ~%.1f GB  path=%s\n", d.HotNeedGB, p.HotPath)
 	fmt.Fprintf(&b, "  - cold:         need ~%.1f GB  path=%s\n", d.ColdNeedGB, p.ColdPath)
-	fmt.Fprintf(&b, "  - summaries:    need ~%.1f GB  path=%s (DMA/tstats + summary indexes)\n", d.SummariesNeedGB, p.SummariesPath)
+	fmt.Fprintf(&b, "  - DMA/tstats:   need ~%.1f GB  path=%s\n", d.DmaNeedGB, p.SummariesPath)
 	if p.ArchiveFrozen {
 		fmt.Fprintf(&b, "  - frozen archive: path=%s", p.FrozenPath)
 		if p.ArchiveDays > 0 {
@@ -575,16 +575,13 @@ func renderStructure(p model.PlanInput, d model.Design, out model.PlanResult) st
 		fmt.Fprintf(&b, "\nSee also: recommended CPU/RAM/disk per layer (resources_text).\n")
 	}
 
-	if p.AvailableHotGB > 0 || p.AvailableColdGB > 0 || p.AvailableSummariesGB > 0 {
+	if p.AvailableHotGB > 0 || p.AvailableColdGB > 0 {
 		fmt.Fprintf(&b, "\nYour disk budget vs need:\n")
 		if p.AvailableHotGB > 0 {
 			fmt.Fprintf(&b, "  - hot: %.1f available / %.1f need → %s\n", p.AvailableHotGB, d.HotNeedGB, fitLabel(d.HotFits))
 		}
 		if p.AvailableColdGB > 0 {
 			fmt.Fprintf(&b, "  - cold: %.1f available / %.1f need → %s\n", p.AvailableColdGB, d.ColdNeedGB, fitLabel(d.ColdFits))
-		}
-		if p.AvailableSummariesGB > 0 {
-			fmt.Fprintf(&b, "  - summaries: %.1f available / %.1f need → %s\n", p.AvailableSummariesGB, d.SummariesNeedGB, fitLabel(d.SummariesFit))
 		}
 		if d.MaxDailyGBFromDisk > 0 {
 			fmt.Fprintf(&b, "  - Max daily ingest that fits retention=%d: ~%.1f GB/day\n", p.RetentionDays, d.MaxDailyGBFromDisk)
@@ -632,9 +629,6 @@ func renderSettings(p model.PlanInput, d model.Design, out model.PlanResult) str
 		}
 		if p.WantDMA() {
 			fmt.Fprintf(&b, "    tstatsHomePath=volume:summaries/%s/datamodel_summary\n", ix.IndexName)
-		}
-		if ix.SummaryIndexName != "" {
-			fmt.Fprintf(&b, "    + summary index [%s] maxTotal=%d MB\n", ix.SummaryIndexName, ix.SummaryMaxTotalMB)
 		}
 	}
 

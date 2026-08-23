@@ -15,9 +15,6 @@ type SourceRow struct {
 	DailyGB          float64 `json:"daily_gb"`
 	RetentionDays    int     `json:"retention_days"`
 	HotWarmDays      int     `json:"hot_warm_days"`
-	EnableSummary    bool    `json:"enable_summary"`
-	SummaryDailyGB   float64 `json:"summary_daily_gb"`
-	SummaryIndexName string  `json:"summary_index_name"`
 }
 
 // Planning input styles (legacy mode labels still appear on PlanResult for API/CLI compat).
@@ -42,8 +39,6 @@ type PlanInput struct {
 	ColdPath             string  `json:"cold_path"`
 	FrozenPath           string  `json:"frozen_path"`
 	SummariesPath        string  `json:"summaries_path"`
-	SummaryPct           float64 `json:"summary_pct"`
-	SummaryRetentionDays int     `json:"summary_retention_days"`
 
 	// Compression: 0 = derive from RF/SF (or 0.5 standalone). >0 = measured C (docs/en/02 §2).
 	Compression float64 `json:"compression"`
@@ -101,13 +96,6 @@ type IndexResult struct {
 	ColdPathMaxDataSizeMB  int64   `json:"cold_path_max_data_size_mb"` // auto: maxTotal − homePath (indexes.conf coldPath.maxDataSizeMB)
 	FrozenTimePeriodInSecs int64   `json:"frozen_time_period_in_secs"`
 	MaxDataSize            string  `json:"max_data_size"`
-	SummaryIndexName       string  `json:"summary_index_name,omitempty"`
-	SummaryDailyRawGB      float64 `json:"summary_daily_raw_gb,omitempty"`
-	SummaryOnDiskGB        float64 `json:"summary_on_disk_gb,omitempty"`
-	SummaryMaxTotalMB      int64   `json:"summary_max_total_data_size_mb,omitempty"`
-	SummaryHomeMaxMB       int64   `json:"summary_home_path_max_data_size_mb,omitempty"`
-	SummaryColdMaxMB       int64   `json:"summary_cold_path_max_data_size_mb,omitempty"`
-	SummaryFrozenSecs      int64   `json:"summary_frozen_time_period_in_secs,omitempty"`
 }
 
 // LayerSpec is recommended hardware for one architecture layer (doc 01 §3).
@@ -182,7 +170,6 @@ type Design struct {
 	SummariesAvailableGB float64     `json:"summaries_available_gb,omitempty"`
 	HotFits              *bool       `json:"hot_fits,omitempty"`
 	ColdFits             *bool       `json:"cold_fits,omitempty"`
-	SummariesFit         *bool       `json:"summaries_fit,omitempty"`
 	MaxDailyGBFromDisk   float64     `json:"max_daily_gb_from_disk,omitempty"`
 	MaxRetentionDays     int         `json:"max_retention_days_from_disk,omitempty"`
 	PerPeerMB            bool        `json:"per_peer_mb,omitempty"` // conf/index MB divided by N_IDX
@@ -201,8 +188,6 @@ type PlanResult struct {
 	TotalDailyRawGB      float64       `json:"total_daily_raw_gb"`
 	TotalDailyOnDiskGB   float64       `json:"total_daily_on_disk_gb"`
 	TotalSearchableTB    float64       `json:"total_searchable_tb"`
-	TotalSummaryRawGB    float64       `json:"total_summary_raw_gb"`
-	TotalSummaryOnDiskGB float64       `json:"total_summary_on_disk_gb"`
 	HotVolumeMB          int64         `json:"hot_volume_budget_mb"`          // per peer when design.per_peer_mb
 	ColdVolumeMB         int64         `json:"cold_volume_budget_mb"`         // per peer when design.per_peer_mb
 	SummariesVolumeMB    int64         `json:"summaries_volume_budget_mb"`    // per peer when design.per_peer_mb
@@ -344,12 +329,6 @@ func (p *PlanInput) ApplyDefaults() {
 	}
 	if p.HotWarmDays <= 0 {
 		p.HotWarmDays = 30
-	}
-	if p.SummaryPct <= 0 {
-		p.SummaryPct = 0.10
-	}
-	if p.SummaryRetentionDays <= 0 {
-		p.SummaryRetentionDays = p.RetentionDays
 	}
 	if p.ConcurrentUsers <= 0 {
 		p.ConcurrentUsers = 8

@@ -70,13 +70,20 @@ function buildChartDatasets(data) {
       values: indexes.map((ix) => ix.searchable_tb || 0),
     },
     budget: {
-      labels: ["hot need", "hot avail", "cold need", "cold avail", "sum need", "sum avail"],
+      labels: [
+        t("chart_lbl_hot") + " need",
+        t("chart_lbl_hot") + " avail",
+        t("chart_lbl_cold") + " need",
+        t("chart_lbl_cold") + " avail",
+        t("chart_lbl_dma_need"),
+        t("chart_lbl_dma_avail"),
+      ],
       values: [
         d.hot_need_gb || 0,
         d.hot_available_gb || 0,
         d.cold_need_gb || 0,
         d.cold_available_gb || 0,
-        d.dma_need_gb || d.summaries_need_gb || 0,
+        d.dma_need_gb || 0,
         d.summaries_available_gb || d.dma_need_gb || 0,
       ],
     },

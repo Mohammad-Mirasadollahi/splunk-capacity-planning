@@ -28,15 +28,13 @@ Volume inputs (combinable — no exclusive mode):
   --total-daily-gb FLOAT          optional total ingest; synthesizes/scales indexes
   --available-hot-gb FLOAT        optional disk budget (fit + max daily)
   --available-cold-gb FLOAT
-  --available-summaries-gb FLOAT
+  --available-summaries-gb FLOAT   legacy; UI auto-writes calculated DMA GB (not a manual cap)  legacy; UI auto-writes calculated DMA GB (not a manual cap)
   --mode sources|total|capacity   deprecated; ignored (behavior inferred from fields)
 
 Retention & paths:
   --retention-days INT     (default 90)
   --hot-warm-days INT      (default 30)
   --headroom FLOAT         optional spare on size caps (default 1.0; Splunk base formulas omit this)
-  --summary-pct FLOAT      (default 0.10)
-  --summary-retention-days INT
   --hot-path --cold-path --frozen-path --summaries-path STRING
   --archive-frozen         coldToFrozenDir instead of delete
   --archive-days INT       days to keep data in archive after freeze (with --archive-frozen)

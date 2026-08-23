@@ -23,7 +23,7 @@ Same engine for CLI, `serve`, and in-browser WASM: multi-index storage sizing, *
 ## Features
 
 - **Inputs:** per-source volumes, optional `total_daily_gb`, optional disk budgets — combinable (no exclusive planning mode)
-- **Multi-index:** `daily_gb` and/or EPS × event size; optional summary indexes
+- **Multi-index:** `daily_gb` and/or EPS × event size; auto-calculated DMA on `volume:summaries`
 - **Node counts:** `concurrent_users` × daily volume → platform table; then raise `N_SH` so total SH cores cover `concurrent_searches` (1 active search ≤ 1 CPU core); then SHC / indexer-cluster / ES / ITSI floors. `saved_searches` is a Dimensions input (warnings / SH notes).
 - **Topology:** indexer cluster (RF/SF), SHC (+ deployer), SmartStore (local cache + remote size), ES, ITSI
 - **Storage:** compression from RF/SF or measured `C`; DMA/tstats; optional frozen archive (`coldToFrozenDir`)
@@ -239,7 +239,7 @@ Resolution: **CLI → process env → `.env` → defaults**.
 | `--total-daily-gb FLOAT` | Optional aggregate daily ingest |
 | `--available-hot-gb FLOAT` | Optional hot/warm disk budget |
 | `--available-cold-gb FLOAT` | Optional cold disk budget |
-| `--available-summaries-gb FLOAT` | Optional summaries / DMA disk |
+| `--available-summaries-gb FLOAT` | Legacy JSON field; UI auto-writes calculated DMA GB (not a manual cap) |
 | `--mode …` | Deprecated; ignored (inferred from fields) |
 
 #### Retention & paths
@@ -249,8 +249,6 @@ Resolution: **CLI → process env → `.env` → defaults**.
 | `--retention-days INT` | `90` |
 | `--hot-warm-days INT` | `30` |
 | `--headroom FLOAT` | `1.2` |
-| `--summary-pct FLOAT` | `0.10` |
-| `--summary-retention-days INT` | defaults to retention |
 | `--hot-path` `--cold-path` `--frozen-path` `--summaries-path` | volume paths |
 | `--archive-frozen` | emit `coldToFrozenDir` instead of delete |
 | `--compression FLOAT` | measured C; `0` = derive from RF/SF (or 0.5 standalone) |
@@ -271,7 +269,7 @@ Resolution: **CLI → process env → `.env` → defaults**.
 | `--has-es` `--has-itsi` | Premium apps (floors / separate SH tiers) |
 | `--es-smartstore` | Alias: ES + SmartStore |
 | `--enable-dma` / `--no-dma` | DMA/tstats (default on when ES if unset) |
-| `--dma-pct FLOAT` | Fraction for DMA estimate (default `0.10`) |
+| `--dma-pct FLOAT` | Override only (`>0`); `0` = ES official `daily_raw × 3.4 × dma_years` |
 
 Legacy convenience (if no `--plan` / `--sources`): `--daily-gb`, `--eps`, `--event-bytes`, `--index-name`.  
 Without `--plan`: if `--rf` or `--sf` &gt; 1 and `--indexer-cluster` was not passed, cluster is implied (same idea as `Input.ToPlan`).  
@@ -329,7 +327,6 @@ See also [`examples/plan.sample.json`](examples/plan.sample.json).
   "total_daily_gb": 500,
   "available_hot_gb": 10000,
   "available_cold_gb": 20000,
-  "available_summaries_gb": 2000,
   "sources": [
     {
       "key": "windows",
@@ -349,7 +346,7 @@ See also [`examples/plan.sample.json`](examples/plan.sample.json).
 }
 ```
 
-First-run Web UI seeds the same volume defaults (`total_daily_gb` 500, hot/cold/summaries disk budgets, Windows 400 + Linux 100 GB/day raw) so Calculate works before you edit anything.
+First-run Web UI seeds the same volume defaults (`total_daily_gb` 500, hot/cold disk budgets, Windows 400 + Linux 100 GB/day raw) so Calculate works before you edit anything. DMA volume on Policy is auto-calculated from ingest.
 
 **Volume pair:** each source (and Total daily volume) uses linked **GB/day = EPS** inputs — edit either side; planning math uses raw Daily GB.
 

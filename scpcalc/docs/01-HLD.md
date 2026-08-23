@@ -18,7 +18,7 @@
 - Multi-user auth or internet-facing SaaS deployment.
 - Replacing the Markdown knowledge pack (calculator complements it).
 
-What **is** automated from the pack: storage MB fields (incl. per-peer), measured `C`, summary + DMA estimate, SmartStore cache/remote sizing + conf stubs, platform SH/IDX table, ES indexer floors, ITSI `ceil(D/100)`, SHC/CM roles, hardware tier hints.
+What **is** automated from the pack: storage MB fields (incl. per-peer), measured `C`, DMA/tstats estimate on `volume:summaries`, SmartStore cache/remote sizing + conf stubs, platform SH/IDX table, ES indexer floors, ITSI `ceil(D/100)`, SHC/CM roles, hardware tier hints.
 
 ## 3. Context
 

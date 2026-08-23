@@ -22,12 +22,6 @@ func mergePlan(base, flags model.PlanInput, clusterSet, shcSet, dmaSet, dmaVal, 
 	if flags.Headroom > 0 {
 		out.Headroom = flags.Headroom
 	}
-	if flags.SummaryPct > 0 {
-		out.SummaryPct = flags.SummaryPct
-	}
-	if flags.SummaryRetentionDays > 0 {
-		out.SummaryRetentionDays = flags.SummaryRetentionDays
-	}
 	if flags.HotPath != "" {
 		out.HotPath = flags.HotPath
 	}

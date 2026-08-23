@@ -14,7 +14,7 @@ curl -s -X POST http://127.0.0.1:12345/api/v1/plan -H 'Content-Type: application
   "mode":"total","total_daily_gb":800,"retention_days":90,"hot_warm_days":30,"headroom":1.2,
   "indexer_cluster":true,"rf":3,"sf":2,"search_head_cluster":true,"smartstore":true,
   "has_es":true,"has_itsi":false,"concurrent_users":12,
-  "available_hot_gb":20000,"available_cold_gb":40000,"available_summaries_gb":2000,
+  "available_hot_gb":20000,"available_cold_gb":40000,
   "sources":[]
 }' > /tmp/plan2.json
 python3 - <<'PY'

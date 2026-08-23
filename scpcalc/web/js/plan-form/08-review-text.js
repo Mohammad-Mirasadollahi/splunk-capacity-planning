@@ -21,14 +21,14 @@ export function fillReview() {
   const coldDays = Math.max(0, g.retention_days - g.hot_warm_days);
   const lines = [
     `— From volume & retention —`,
-    `plan by: ${g.capacity_plan_mode} | hot: ${g.hot_warm_days}d + cold: ${coldDays}d = total ${g.retention_days}d | headroom: ${g.headroom} | summary_ret: ${g.summary_retention_days}d`,
+    `plan by: ${g.capacity_plan_mode} | hot: ${g.hot_warm_days}d + cold: ${coldDays}d = total ${g.retention_days}d | headroom: ${g.headroom}`,
     `archive_frozen: ${g.archive_frozen}${g.archive_frozen ? ` → ${g.frozen_path} · archive_days=${g.archive_days || 0}` : ""}`,
     `paths: ${g.hot_path} | ${g.cold_path} | ${g.frozen_path} | ${g.summaries_path}`,
   ];
   if (g.total_daily_gb) lines.push(`total_daily_gb: ${g.total_daily_gb} (budget ceiling; under-fill sources scale up)`);
   if (g.available_hot_gb || g.available_cold_gb || g.available_summaries_gb) {
     lines.push(
-      `disk GB: hot=${g.available_hot_gb || 0} cold=${g.available_cold_gb || 0} summaries=${g.available_summaries_gb || 0}`
+      `disk GB: hot=${g.available_hot_gb || 0} cold=${g.available_cold_gb || 0} dma=${g.available_summaries_gb || 0}`
     );
   }
   lines.push(`— From topology / cluster —`);
@@ -46,7 +46,7 @@ export function fillReview() {
     const hw = Number(r.hot_warm_days) > 0 ? `${r.hot_warm_days}d` : `global ${g.hot_warm_days}d`;
     const vol = `${r.daily_gb || 0} GB/d = ${r.eps || 0} EPS`;
     lines.push(
-      `  - ${r.label} → index=${r.index_name} | ${vol} | event_bytes=${r.event_bytes} | ret=${ret} | hw=${hw}${r.enable_summary ? " | +summary" : ""}`
+      `  - ${r.label} → index=${r.index_name} | ${vol} | event_bytes=${r.event_bytes} | ret=${ret} | hw=${hw}`
     );
   });
   lines.push(`— Calculate uses all of the above together —`);

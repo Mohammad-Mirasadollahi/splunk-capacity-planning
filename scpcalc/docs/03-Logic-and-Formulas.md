@@ -27,7 +27,7 @@ sequenceDiagram
   U->>W: PlanInput sources+volumes+topology
   W->>E: Validate + normalize sources
   E->>E: Per-index Daily_Raw / OnDisk / MB caps (cluster-wide)
-  E->>E: Summary indexes + optional DMA estimate
+  E->>E: Optional DMA estimate
   E->>A: BuildDesign counts+resources+text
   E->>E: Divide MB by N_IDX (per peer)
   E->>G: RenderPlan indexes.conf
@@ -90,18 +90,7 @@ Per-source `retention_days` / `hot_warm_days` override globals when set.
 
 After `N_IDX` is chosen, **indexes.conf MB fields and volume caps are divided by `N_IDX`**. Cluster-wide totals remain in `*_cluster_mb` / design need GB.
 
-## 5. Summary indexes
-
-If `enable_summary`:
-
-```text
-SummaryDailyRaw = summary_daily_gb  OR  Daily_Raw × summary_pct   (default pct=0.10)
-```
-
-Then apply the same Comp / retention formulas with `summary_retention_days`.  
-Conf places summary indexes on `volume:summaries`.
-
-## 6. DMA / tstats
+## 5. DMA / tstats
 
 When `enable_dma=true` or (unset and `has_es=true`):
 
@@ -119,7 +108,13 @@ Source: ES *Data model acceleration storage and retention* — cluster-wide tota
 DMA_MB ≈ TotalDailyOnDisk_GB × 1024 × RetentionDays × Headroom × dma_pct
 ```
 
-## 6b. Archive (frozen / coldToFrozenDir)
+When DMA is enabled:
+
+- Adds `DMA_MB` to the `[volume:summaries]` budget
+- Emits `tstatsHomePath` on primary indexes
+- Without DMA/ES, `tstatsHomePath` is omitted
+
+## 6. Archive (frozen / coldToFrozenDir)
 
 When `archive_frozen=true` and `archive_days` > 0:
 
@@ -131,19 +126,15 @@ Frozen buckets keep **rawdata only** (~15% of pre-indexed ingest). SF does not a
 
 **Headroom:** Splunk base capacity formulas do **not** include a spare multiplier. `headroom` (default **1.0**) is an optional extra on searchable size caps only. Splunk recommends keeping **≥20% disk free** operationally (separate from sizing math).
 
-- Adds DMA_MB to summaries volume budget  
-- Emits `tstatsHomePath` on primary indexes  
-- Without DMA/ES, `tstatsHomePath` is omitted  
-
 ## 7. Volume budgets
 
 ```text
 HotBudgetMB   = Σ homePath.maxDataSizeMB
 ColdBudgetMB  = Σ (maxTotal − homePath)
-SumBudgetMB   = Σ summary maxTotal + DMA
+SumBudgetMB   = DMA only (when enable_dma / ES)
 ```
 
-If `available_hot_gb` / `available_cold_gb` is set and calculated need exceeds that budget, calculation **errors** (do not silently shrink). `available_summaries_gb` in the UI is **auto-calculated DMA only** (not a manual cap); the engine sizes `[volume:_splunk_summaries]` from DMA + optional summary indexes without a user summaries budget check.
+If `available_hot_gb` / `available_cold_gb` is set and calculated need exceeds that budget, calculation **errors** (do not silently shrink). `available_summaries_gb` in the UI is **auto-calculated DMA only** (not a manual cap); the engine sizes `[volume:_splunk_summaries]` from DMA without a user summaries budget check.
 
 ## 8. Capacity reverse
 
@@ -216,5 +207,4 @@ Emits:
 - Per index: `homePath` / `coldPath` / `thawedPath` / size+age
 - `coldToFrozenDir` **only if** `archive_frozen=true` (default delete)
 - `tstatsHomePath` **only if** DMA/ES enabled
-- Optional `*_summary` stanzas on summaries volume
 - SmartStore: `[volume:remote]` + `remotePath` when `smartstore=true`

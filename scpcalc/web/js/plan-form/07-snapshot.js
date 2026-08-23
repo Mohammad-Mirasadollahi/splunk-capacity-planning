@@ -99,15 +99,11 @@ export function buildPlanBody(overrides = {}) {
         event_bytes: bytes > 0 ? bytes : 500,
         daily_gb: daily,
         eps: eps,
-        enable_summary: !!r.enable_summary,
       };
       const ret = Number(r.retention_days);
       if (ret > 0) row.retention_days = ret;
       const hw = Number(r.hot_warm_days);
       if (hw > 0) row.hot_warm_days = hw;
-      const sg = Number(r.summary_daily_gb);
-      if (r.enable_summary && sg > 0) row.summary_daily_gb = sg;
-      if (r.summary_index_name) row.summary_index_name = String(r.summary_index_name).trim();
       return row;
     });
   const { capacity_plan_mode: _mode, ...payload } = g;

@@ -22,14 +22,14 @@ function retentionSegments(g) {
   return { hot, cold, archived, total: total || ret };
 }
 
-/** Hot + cold + archive (+ summaries) → Total Storage. */
+/** Hot + cold + archive (+ DMA) → Total Storage. */
 export function totalStorageGB(data, g) {
   const d = data?.design || {};
   const hot = numOr0(d.hot_need_gb);
   const cold = numOr0(d.cold_need_gb);
   const arch = g?.archive_frozen ? numOr0(d.archive_need_gb) : 0;
-  const sum = numOr0(d.summaries_need_gb);
-  return hot + cold + arch + sum;
+  const dma = numOr0(d.dma_need_gb);
+  return hot + cold + arch + dma;
 }
 
 /**
@@ -43,8 +43,7 @@ export function buildMetricSections(data, g) {
   const coldAll = numOr0(d.cold_need_gb);
   const archAll = globals.archive_frozen ? numOr0(d.archive_need_gb) : 0;
   const dmaAll = numOr0(d.dma_need_gb);
-  const sumAll = numOr0(d.summaries_need_gb);
-  const totalStore = hotAll + coldAll + archAll + sumAll;
+  const totalStore = hotAll + coldAll + archAll + dmaAll;
 
   const volume = {
     id: "volume",
@@ -95,12 +94,6 @@ export function buildMetricSections(data, g) {
   }
   if (dmaAll > 0) {
     storageTotal.rows.push([t("review_m_need_dma_total"), formatStorageAmt(dmaAll)]);
-  }
-  const sumIdxAll = Math.max(0, sumAll - dmaAll);
-  if (sumIdxAll > 0.1) {
-    storageTotal.rows.push([t("review_m_need_summary_idx_total"), formatStorageAmt(sumIdxAll)]);
-  } else if (dmaAll <= 0 && sumAll > 0) {
-    storageTotal.rows.push([t("review_m_need_sum_total"), formatStorageAmt(sumAll)]);
   }
   storageTotal.rows.push([t("review_m_total_storage"), formatStorageAmt(totalStore)]);
 
@@ -254,12 +247,6 @@ export function indexColdMB(ix) {
   return Math.max(0, Number(ix.max_total_data_size_mb || 0) - Number(ix.home_path_max_data_size_mb || 0));
 }
 
-export function indexSummaryText(ix) {
-  return ix.summary_index_name
-    ? `${ix.summary_index_name} · ${ix.summary_daily_raw_gb} GB/d · ${ix.summary_max_total_data_size_mb} MB`
-    : "—";
-}
-
 /** Same row HTML for Review preview Per-index and Results Per index. */
 export function renderIndexRowsHTML(indexes) {
   return (indexes || [])
@@ -268,7 +255,6 @@ export function renderIndexRowsHTML(indexes) {
         ix.frozen_time_period_in_secs != null
           ? Math.round(Number(ix.frozen_time_period_in_secs) / 86400)
           : "—";
-      const sum = indexSummaryText(ix);
       const label = ix.label || ix.key || "—";
       const coldMB = indexColdMB(ix);
       const find = [
@@ -283,7 +269,6 @@ export function renderIndexRowsHTML(indexes) {
         coldMB,
         ix.max_data_size,
         frozenDays,
-        sum,
       ]
         .filter((x) => x != null && x !== "")
         .join(" ");
@@ -301,7 +286,6 @@ export function renderIndexRowsHTML(indexes) {
           <td data-sort="${frozenDays === "—" ? -1 : Number(frozenDays) || 0}">${frozenDays}${
             frozenDays === "—" ? "" : ` <span class="unit">d</span>`
           }</td>
-          <td data-sort="${escapeAttr(sum)}">${escapeAttr(sum)}</td>
         </tr>`;
     })
     .join("");
@@ -320,6 +304,5 @@ export function indexesTableHeaderHTML() {
     <th data-i18n="ix_cold">${t("ix_cold")}</th>
     <th data-i18n="ix_max_data">${t("ix_max_data")}</th>
     <th data-i18n="ix_frozen_days">${t("ix_frozen_days")}</th>
-    <th data-i18n="ix_summary">${t("ix_summary")}</th>
   </tr>`;
 }

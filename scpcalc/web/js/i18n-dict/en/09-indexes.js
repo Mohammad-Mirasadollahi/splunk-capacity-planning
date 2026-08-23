@@ -11,7 +11,6 @@ export const indexes = {
   ix_max_total: "Total Index volume",
   ix_on_disk: "Daily on-disk",
   ix_searchable: "Searchable size",
-  ix_summary: "Summary index",
   ix_table_title: "Per-index sizing",
   ix_tip_cold: "coldPath.maxDataSizeMB — auto: Total Index volume − hot/warm homePath.",
   ix_tip_daily_raw: "Daily raw / license ingest for this index in GB/day (before compression).",
@@ -24,5 +23,4 @@ export const indexes = {
   ix_tip_max_total: "maxTotalDataSizeMB — total Index volume (hot+warm+cold). Freeze triggers on age or this size.",
   ix_tip_on_disk: "Estimated daily on-disk growth after compression / RF·SF (GB/day).",
   ix_tip_searchable: "Approximate searchable storage for this index over full retention (TB).",
-  ix_tip_summary: "Optional summary index sizing linked to this source.",
 };

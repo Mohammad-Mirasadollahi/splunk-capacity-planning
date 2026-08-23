@@ -28,6 +28,6 @@ export const overview_quick = {
   tab_ret_overview: "Overview",
   tab_vol_budget: "Budget",
   tab_vol_sources: "Sources",
-  vol_drivers_hint: "These values are the planning budget for later steps. Per-index volumes on the Sources tab must stay within the daily total; searchable disk need must stay within the hot/cold/summaries volume budgets on Policy.",
+  vol_drivers_hint: "These values are the planning budget for later steps. Per-index volumes on the Sources tab must stay within the daily total; searchable disk need must stay within the hot/cold volume budgets on Policy.",
   vol_drivers_title: "Daily volume & drivers",
 };

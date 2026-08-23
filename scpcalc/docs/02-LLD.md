@@ -33,7 +33,7 @@ scpcalc/
 | `internal/model` | Structs, defaults, validation |
 | `internal/calc` | Multi-index sizing, warnings, calls arch + confgen |
 | `internal/arch` | Platform table, ES/ITSI floors, layer hardware, design/settings text |
-| `internal/confgen` | Volumes + index/summary stanzas |
+| `internal/confgen` | Volumes + index stanzas (+ `tstatsHomePath` when DMA) |
 | `internal/presets` | Built-in log-source event size defaults |
 | `internal/config` | Load `.env`; resolve Host/Port/Addr |
 | `internal/server` | Health, presets, calculate, plan, static files |
@@ -70,9 +70,9 @@ flowchart TB
 | Field | Notes |
 |---|---|
 | `mode` | Optional/legacy; ignored — behavior inferred from fields |
-| `sources[]` | `index_name`, `daily_gb` and/or `eps`+`event_bytes`, per-row retention/hot_warm, `enable_summary`, `summary_daily_gb`, … |
+| `sources[]` | `index_name`, `daily_gb` and/or `eps`+`event_bytes`, per-row retention/hot_warm, … |
 | `total_daily_gb` | Used by `total` / `capacity` |
-| `available_hot_gb` / `available_cold_gb` | Required (either) for capacity reverse; summaries optional |
+| `available_hot_gb` / `available_cold_gb` | Required (either) for capacity reverse |
 | `compression` | `0` = RF/SF or 0.5; `>0` = measured C |
 | `indexer_cluster`, `rf`, `sf` | If cluster off → RF=SF=1. If on and unset → 3/2 |
 | `search_head_cluster`, `smartstore`, `has_es`, `has_itsi` | Topology / apps |
@@ -80,11 +80,11 @@ flowchart TB
 | `archive_frozen`, `frozen_path` | Optional archive (`coldToFrozenDir`) |
 | `remote_path` | SmartStore object-store path |
 | `concurrent_users`, `n_idx`, `n_sh` | Overrides (0=auto); floors warn; RF/SHC hard-raise |
-| paths / retention / headroom / summary_* | Same meanings as knowledge pack |
+| paths / retention / headroom / `dma_*` | Same meanings as knowledge pack |
 
 ### `PlanResult`
 
-Cluster-wide totals (raw/on-disk/searchable/summary), per-peer volume budgets MB (+ `*_cluster_mb`), `indexer_peers`, `indexes[]` (MB per peer when N_IDX&gt;1), `indexes_conf`, `design` (incl. `remote_store_gb`, ES/ITSI SH counts, resources), `warnings[]`.
+Cluster-wide totals (raw/on-disk/searchable/DMA), per-peer volume budgets MB (+ `*_cluster_mb`), `indexer_peers`, `indexes[]` (MB per peer when N_IDX&gt;1), `indexes_conf`, `design` (incl. `remote_store_gb`, ES/ITSI SH counts, resources), `warnings[]`.
 
 ## 4. CLI
 
@@ -105,7 +105,7 @@ Resolution order: **CLI → process env → `.env` → defaults**.
 --sources FILE | -           JSON array of source rows
 --total-daily-gb --available-hot-gb --available-cold-gb --available-summaries-gb
 --mode …                     deprecated (ignored)
---retention-days --hot-warm-days --headroom --summary-pct --summary-retention-days
+--retention-days --hot-warm-days --headroom
 --hot-path --cold-path --frozen-path --summaries-path --archive-frozen
 --compression
 --concurrent-users --indexer-cluster --search-head-cluster --rf --sf

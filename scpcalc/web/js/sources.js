@@ -27,9 +27,6 @@ export function mainIndexRow(dailyGB = "") {
     eps: "",
     retention_days: "",
     hot_warm_days: "",
-    enable_summary: false,
-    summary_daily_gb: "",
-    summary_index_name: "",
     enabled: true,
     notes: "",
   };
@@ -209,9 +206,6 @@ export function blankCustom() {
     eps: "",
     retention_days: "",
     hot_warm_days: "",
-    enable_summary: false,
-    summary_daily_gb: "",
-    summary_index_name: "",
     enabled: true,
     notes: "",
   };
@@ -227,9 +221,6 @@ export function rowFromPreset(p) {
     eps: "",
     retention_days: "",
     hot_warm_days: "",
-    enable_summary: false,
-    summary_daily_gb: "",
-    summary_index_name: "",
     enabled: false,
     notes: p.notes || "",
   };
@@ -317,7 +308,6 @@ function rowFindText(r) {
 function volumeRowHTML(r, i, sizedMap) {
   const title = r.notes ? ` data-soft-tip="${escapeAttr(r.notes)}" data-soft-tip-title="${escapeAttr(r.label || r.index_name || "Source")}"` : "";
   const on = !!r.enabled;
-  const sumOn = !!r.enable_summary;
   const p = `src-${i}`;
   const sized = on ? sizedMap.get(i) : null;
   const find = escapeAttr(rowFindText(r));
@@ -330,12 +320,6 @@ function volumeRowHTML(r, i, sizedMap) {
     <td><input type="number" id="${p}-retention_days" data-f="retention_days" min="0" step="1" value="${r.retention_days}" placeholder="glob" ${on ? "" : "disabled"} autocomplete="off"></td>
     <td><input type="number" id="${p}-hot_warm_days" data-f="hot_warm_days" min="0" step="1" value="${r.hot_warm_days}" placeholder="glob" ${on ? "" : "disabled"} autocomplete="off"></td>
     ${indexSizeCellHTML(sized)}
-    <td><input type="checkbox" id="${p}-enable_summary" data-f="enable_summary" class="src-toggle" ${sumOn ? "checked" : ""} ${on ? "" : "disabled"}></td>
-    <td class="src-col-sum-gb">${
-      sumOn && on
-        ? `<input type="number" id="${p}-summary_daily_gb" data-f="summary_daily_gb" min="0" step="any" value="${r.summary_daily_gb}" placeholder="auto%" autocomplete="off">`
-        : `<span class="src-dep-placeholder">—</span>`
-    }</td>
     <td>${
       isMainRow(r)
         ? `<span class="src-main-lock" title="${escapeAttr(t("main_row_locked"))}">—</span>`
@@ -420,7 +404,7 @@ function bindTableBody(srcBody) {
       } else {
         row[f] = e.target.checked;
       }
-      if (f === "enabled" || f === "enable_summary") renderRows();
+      if (f === "enabled") renderRows();
       else bumpBudgetsAndSizes();
     } else {
       state.rows[i][f] = e.target.value;
@@ -429,7 +413,7 @@ function bindTableBody(srcBody) {
         updatePairInputs(tr, state.rows[i]);
         refreshTotalCounterpart();
         bumpBudgetsAndSizes();
-      } else if (f === "retention_days" || f === "hot_warm_days" || f === "summary_daily_gb") {
+      } else if (f === "retention_days" || f === "hot_warm_days") {
         bumpBudgetsAndSizes();
         refreshIndexSizePreviews();
       } else if (f === "label" || f === "index_name") {
@@ -449,7 +433,7 @@ function bindTableBody(srcBody) {
       updatePairInputs(tr, state.rows[i]);
       refreshTotalCounterpart();
       bumpBudgetsAndSizes();
-    } else if (f === "retention_days" || f === "hot_warm_days" || f === "summary_daily_gb") {
+    } else if (f === "retention_days" || f === "hot_warm_days") {
       bumpBudgetsAndSizes();
       refreshIndexSizePreviews();
     }
@@ -518,9 +502,6 @@ export function normalizeSnapshotRows(rows) {
     eps: r.eps ?? "",
     retention_days: r.retention_days ?? "",
     hot_warm_days: r.hot_warm_days ?? "",
-    enable_summary: !!r.enable_summary,
-    summary_daily_gb: r.summary_daily_gb ?? "",
-    summary_index_name: r.summary_index_name ?? "",
     enabled: r.enabled !== false,
     notes: r.notes || "",
   }));

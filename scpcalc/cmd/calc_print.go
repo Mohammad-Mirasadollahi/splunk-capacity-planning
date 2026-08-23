@@ -34,8 +34,8 @@ func printPlanHuman(res model.PlanResult) {
 	fmt.Printf("Compression factor:   %.3f\n", res.CompressionFactor)
 	fmt.Printf("Total on-disk:        %.3f GB/day\n", res.TotalDailyOnDiskGB)
 	fmt.Printf("Total searchable:     %.3f TB\n", res.TotalSearchableTB)
-	if res.TotalSummaryRawGB > 0 {
-		fmt.Printf("Summary raw:          %.3f GB/day (on-disk %.3f)\n", res.TotalSummaryRawGB, res.TotalSummaryOnDiskGB)
+	if res.DmaVolumeMB > 0 {
+		fmt.Printf("DMA volume:           %.1f GB (cluster-wide)\n", float64(res.DmaVolumeMB)/1024.0)
 	}
 
 	if d := res.Design; d != nil {
@@ -75,8 +75,8 @@ func printPlanHuman(res model.PlanResult) {
 			fmt.Print(d.NodePlanText)
 		}
 
-		fmt.Printf("\nStorage need:        hot %.1f GB | cold %.1f GB | summaries %.1f GB\n",
-			d.HotNeedGB, d.ColdNeedGB, d.SummariesNeedGB)
+		fmt.Printf("\nStorage need:        hot %.1f GB | cold %.1f GB | DMA %.1f GB\n",
+			d.HotNeedGB, d.ColdNeedGB, d.DmaNeedGB)
 		if d.MaxDailyGBFromDisk > 0 {
 			fmt.Printf("Max daily from disk: %.1f GB/day\n", d.MaxDailyGBFromDisk)
 		}
@@ -140,16 +140,12 @@ func printPlanHuman(res model.PlanResult) {
 			fmt.Printf("  [%s] daily_raw=%.3f GB  on_disk=%.3f GB  searchable=%.3f TB  maxTotal=%d MB  homeMax=%d MB  coldMax=%d MB\n",
 				ix.IndexName, ix.DailyRawGB, ix.DailyOnDiskGB, ix.SearchableTB,
 				ix.MaxTotalDataSizeMB, ix.HomePathMaxDataSizeMB, ix.ColdPathMaxDataSizeMB)
-			if ix.SummaryIndexName != "" {
-				fmt.Printf("      summary %s: %.3f GB/day → maxTotal=%d MB\n",
-					ix.SummaryIndexName, ix.SummaryDailyRawGB, ix.SummaryMaxTotalMB)
-			}
 		}
 	}
 
 	if res.IndexerPeers > 0 {
-		fmt.Printf("\nVolume budgets (per peer, N_IDX=%d): hot=%d MB  cold=%d MB  summaries=%d MB\n",
-			res.IndexerPeers, res.HotVolumeMB, res.ColdVolumeMB, res.SummariesVolumeMB)
+		fmt.Printf("\nVolume budgets (per peer, N_IDX=%d): hot=%d MB  cold=%d MB  DMA=%d MB\n",
+			res.IndexerPeers, res.HotVolumeMB, res.ColdVolumeMB, res.DmaVolumeMB)
 	}
 
 	if len(res.Warnings) > 0 {

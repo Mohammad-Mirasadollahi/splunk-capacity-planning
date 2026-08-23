@@ -130,14 +130,6 @@ func parseCalcArgs(args []string) (calcOptions, int) {
 			if c := needFloat(a, &p.Headroom); c >= 0 {
 				return opts, c
 			}
-		case "--summary-pct":
-			if c := needFloat(a, &p.SummaryPct); c >= 0 {
-				return opts, c
-			}
-		case "--summary-retention-days":
-			if c := needInt(a, &p.SummaryRetentionDays); c >= 0 {
-				return opts, c
-			}
 		case "--hot-path":
 			s, c := needStr(a)
 			if c >= 0 {

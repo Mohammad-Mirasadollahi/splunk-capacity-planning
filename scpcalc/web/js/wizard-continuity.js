@@ -13,13 +13,6 @@ import { renderRows, refreshTotalCounterpart } from "./sources.js";
 import { setSoftTip } from "./tips-ui.js";
 import { syncQuickFromGlobals } from "./quick-start.js";
 
-/** When true, summary_retention_days tracks retention_days. */
-let summaryRetentionLinked = true;
-
-export function markSummaryRetentionEdited() {
-  summaryRetentionLinked = false;
-}
-
 export function estimateEnabledDailyGB(rows, _mode) {
   let sum = 0;
   for (const r of rows || []) {
@@ -124,13 +117,6 @@ function buildContextHTML(step) {
     .join("")}</ul>`;
 }
 
-export function syncLinkedSummaryRetention() {
-  if (!summaryRetentionLinked) return;
-  const ret = document.querySelector('input[name="retention_days"]');
-  const sum = document.querySelector('input[name="summary_retention_days"]');
-  if (ret && sum) sum.value = ret.value || sum.value;
-}
-
 export function applyInheritedSourcePlaceholders() {
   const g = collectGlobals();
   document.querySelectorAll('#src-body input[data-f="retention_days"]').forEach((el) => {
@@ -146,7 +132,6 @@ export function applyInheritedSourcePlaceholders() {
 export function refreshWizardContext(step = state.step, { remountSources = false } = {}) {
   const el = document.getElementById("wizard-context");
   if (!el) return;
-  syncLinkedSummaryRetention();
   const html = buildContextHTML(step);
   el.innerHTML = html;
   el.hidden = !html;
@@ -169,9 +154,7 @@ export function bindWizardContinuity() {
 
   form.addEventListener("change", (e) => {
     const name = e.target?.name || e.target?.dataset?.f;
-    if (name === "summary_retention_days") markSummaryRetentionEdited();
     if (name === "retention_days" || name === "hot_warm_days" || name === "cold_days") {
-      syncLinkedSummaryRetention();
       applyInheritedSourcePlaceholders();
     }
     if (name === "total_daily_gb") {
@@ -184,9 +167,7 @@ export function bindWizardContinuity() {
   });
   form.addEventListener("input", (e) => {
     const name = e.target?.name || e.target?.dataset?.f;
-    if (name === "summary_retention_days") markSummaryRetentionEdited();
     if (name === "retention_days" || name === "hot_warm_days" || name === "cold_days") {
-      syncLinkedSummaryRetention();
       applyInheritedSourcePlaceholders();
     }
     if (name === "total_daily_gb") {

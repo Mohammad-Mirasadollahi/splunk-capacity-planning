@@ -39,7 +39,7 @@ func Calculate(in model.Input) (model.Result, error) {
 	}, nil
 }
 
-// CalculatePlan sizes multiple indexes + optional summary indexes + design.
+// CalculatePlan sizes multiple indexes + design.
 func CalculatePlan(p model.PlanInput) (model.PlanResult, error) {
 	if err := p.Validate(); err != nil {
 		return model.PlanResult{}, err
@@ -164,37 +164,6 @@ func CalculatePlan(p model.PlanInput) (model.PlanResult, error) {
 		hotBudget += homeMax
 		coldBudget += coldPart
 
-		if s.EnableSummary {
-			sumRaw := s.SummaryDailyGB
-			if sumRaw <= 0 {
-				sumRaw = dailyRaw * p.SummaryPct
-			}
-			sumRet := p.SummaryRetentionDays
-			sumOnDisk := sumRaw * comp
-			sumName := s.SummaryIndexName
-			if stringsTrim(sumName) == "" {
-				sumName = s.IndexName + "_summary"
-			}
-			sumHW := hw
-			if sumHW > sumRet {
-				sumHW = sumRet
-			}
-			ix.SummaryIndexName = sumName
-			ix.SummaryDailyRawGB = round3(sumRaw)
-			ix.SummaryOnDiskGB = round3(sumOnDisk)
-			ix.SummaryMaxTotalMB = int64(math.Round(sumOnDisk * 1024 * float64(sumRet) * p.Headroom))
-			ix.SummaryHomeMaxMB = int64(math.Round(sumOnDisk * 1024 * float64(sumHW) * p.Headroom))
-			sumCold := ix.SummaryMaxTotalMB - ix.SummaryHomeMaxMB
-			if sumCold < 0 {
-				sumCold = 0
-			}
-			ix.SummaryColdMaxMB = sumCold
-			ix.SummaryFrozenSecs = int64(sumRet) * 86400
-			out.TotalSummaryRawGB += sumRaw
-			out.TotalSummaryOnDiskGB += sumOnDisk
-			sumBudget += ix.SummaryMaxTotalMB
-		}
-
 		out.TotalDailyRawGB += dailyRaw
 		out.TotalDailyOnDiskGB += dailyOnDisk
 		out.TotalSearchableTB += ix.SearchableTB
@@ -204,10 +173,8 @@ func CalculatePlan(p model.PlanInput) (model.PlanResult, error) {
 	out.TotalDailyRawGB = round3(out.TotalDailyRawGB)
 	out.TotalDailyOnDiskGB = round3(out.TotalDailyOnDiskGB)
 	out.TotalSearchableTB = round3(out.TotalSearchableTB)
-	out.TotalSummaryRawGB = round3(out.TotalSummaryRawGB)
-	out.TotalSummaryOnDiskGB = round3(out.TotalSummaryOnDiskGB)
 
-	// DMA estimate on summaries volume (ES official ×3.4/year or dma_pct override).
+	// DMA on volume:summaries (ES official ×3.4/year or dma_pct override).
 	if p.WantDMA() {
 		dmaMB, dmaNote := splunkform.DMAEstimateMB(
 			out.TotalDailyRawGB, out.TotalDailyOnDiskGB, out.CompressionFactor,
@@ -225,7 +192,7 @@ func CalculatePlan(p model.PlanInput) (model.PlanResult, error) {
 	out.ColdVolumeMB = coldBudget
 	out.DmaVolumeMB = dmaBudget
 	out.SummariesVolumeMB = max64(sumBudget, 0)
-	if out.SummariesVolumeMB == 0 && (p.WantDMA() || hasAnySummary(out)) {
+	if out.SummariesVolumeMB == 0 && p.WantDMA() {
 		out.SummariesVolumeMB = 1
 	}
 
@@ -313,16 +280,6 @@ func applyPerPeer(out *model.PlanResult, d *model.Design) {
 			ix.HomePathMaxDataSizeMB = ix.MaxTotalDataSizeMB
 			ix.ColdPathMaxDataSizeMB = 0
 		}
-		if ix.SummaryMaxTotalMB > 0 {
-			ix.SummaryMaxTotalMB = ceilDiv(ix.SummaryMaxTotalMB, nidx)
-			ix.SummaryHomeMaxMB = ceilDiv(ix.SummaryHomeMaxMB, nidx)
-			if rem := ix.SummaryMaxTotalMB - ix.SummaryHomeMaxMB; rem >= 0 {
-				ix.SummaryColdMaxMB = rem
-			} else {
-				ix.SummaryHomeMaxMB = ix.SummaryMaxTotalMB
-				ix.SummaryColdMaxMB = 0
-			}
-		}
 	}
 	out.HotVolumeMB = ceilDiv(out.HotVolumeMB, nidx)
 	out.ColdVolumeMB = ceilDiv(out.ColdVolumeMB, nidx)
@@ -346,28 +303,8 @@ func validateUniqueIndexes(sources []model.SourceRow) error {
 			return fmt.Errorf("duplicate index stanza after sanitize: %q and %q both become [%s]", prev, s.IndexName, san)
 		}
 		seen[san] = s.IndexName
-		if s.EnableSummary {
-			sum := s.SummaryIndexName
-			if stringsTrim(sum) == "" {
-				sum = s.IndexName + "_summary"
-			}
-			sanSum := confgen.SanitizeIndex(sum)
-			if prev, ok := seen[sanSum]; ok {
-				return fmt.Errorf("duplicate index stanza after sanitize: %q and %q both become [%s]", prev, sum, sanSum)
-			}
-			seen[sanSum] = sum
-		}
 	}
 	return nil
-}
-
-func hasAnySummary(out model.PlanResult) bool {
-	for _, ix := range out.Indexes {
-		if ix.SummaryIndexName != "" {
-			return true
-		}
-	}
-	return false
 }
 
 // normalizeSources expands total_daily_gb into a synthetic index when needed,

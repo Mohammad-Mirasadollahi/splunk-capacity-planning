@@ -26,7 +26,7 @@ func Render(in model.Input, res model.Result) string {
 	return RenderPlan(plan, pr)
 }
 
-// RenderPlan builds volumes + all index / summary stanzas.
+// RenderPlan builds volumes + all index stanzas.
 func RenderPlan(p model.PlanInput, res model.PlanResult) string {
 	var b strings.Builder
 	writeHeader(&b, p, res)
@@ -35,11 +35,11 @@ func RenderPlan(p model.PlanInput, res model.PlanResult) string {
 	fmt.Fprintf(&b, "[volume:cold]\npath = %s\nmaxVolumeDataSizeMB = %d\n# Cold searchable retention\n\n", p.ColdPath, max64(res.ColdVolumeMB, 1))
 
 	sumMB := res.SummariesVolumeMB
-	if sumMB <= 0 && (p.WantDMA() || hasSummary(res)) {
+	if sumMB <= 0 && p.WantDMA() {
 		sumMB = 1
 	}
 	if sumMB > 0 {
-		fmt.Fprintf(&b, "[volume:summaries]\npath = %s\nmaxVolumeDataSizeMB = %d\n# Prefer SSD/NVMe; keep separate from cold (DMA/tstats + summary indexes)\n\n", p.SummariesPath, max64(sumMB, 1))
+		fmt.Fprintf(&b, "[volume:summaries]\npath = %s\nmaxVolumeDataSizeMB = %d\n# Prefer SSD/NVMe; DMA/tstats (tstatsHomePath)\n\n", p.SummariesPath, max64(sumMB, 1))
 	}
 
 	if p.SmartStore {
@@ -55,10 +55,7 @@ func RenderPlan(p model.PlanInput, res model.PlanResult) string {
 
 	emitTstats := p.WantDMA()
 	for _, ix := range res.Indexes {
-		writeIndex(&b, p, ix.IndexName, ix.HomePathMaxDataSizeMB, ix.ColdPathMaxDataSizeMB, ix.MaxTotalDataSizeMB, ix.FrozenTimePeriodInSecs, ix.MaxDataSize, "primary", emitTstats)
-		if ix.SummaryIndexName != "" && ix.SummaryMaxTotalMB > 0 {
-			writeIndex(&b, p, ix.SummaryIndexName, ix.SummaryHomeMaxMB, ix.SummaryColdMaxMB, ix.SummaryMaxTotalMB, ix.SummaryFrozenSecs, "auto", "summary", false)
-		}
+		writeIndex(&b, p, ix.IndexName, ix.HomePathMaxDataSizeMB, ix.ColdPathMaxDataSizeMB, ix.MaxTotalDataSizeMB, ix.FrozenTimePeriodInSecs, ix.MaxDataSize, emitTstats)
 	}
 	return b.String()
 }
@@ -227,23 +224,10 @@ func maxInt(a, b int) int {
 	return b
 }
 
-func hasSummary(res model.PlanResult) bool {
-	for _, ix := range res.Indexes {
-		if ix.SummaryIndexName != "" {
-			return true
-		}
-	}
-	return false
-}
-
-func writeIndex(b *strings.Builder, p model.PlanInput, name string, homeMB, coldMB, totalMB, frozenSecs int64, maxData, kind string, emitTstats bool) {
+func writeIndex(b *strings.Builder, p model.PlanInput, name string, homeMB, coldMB, totalMB, frozenSecs int64, maxData string, emitTstats bool) {
 	idx := SanitizeIndex(name)
 	fmt.Fprintf(b, "[%s]\n", idx)
-	if kind == "summary" {
-		fmt.Fprintf(b, "homePath = volume:summaries/%s/db\n", idx)
-		fmt.Fprintf(b, "coldPath = volume:summaries/%s/colddb\n", idx)
-		fmt.Fprintf(b, "thawedPath = %s/%s/thaweddb\n", strings.TrimRight(p.SummariesPath, "/"), idx)
-	} else if p.SmartStore {
+	if p.SmartStore {
 		fmt.Fprintf(b, "homePath = volume:hotwarm/%s/db\n", idx)
 		fmt.Fprintf(b, "coldPath = volume:hotwarm/%s/colddb\n", idx) // SmartStore: warm typically local cache path family
 		fmt.Fprintf(b, "thawedPath = %s/%s/thaweddb\n", strings.TrimRight(p.ColdPath, "/"), idx)
@@ -270,7 +254,7 @@ func writeIndex(b *strings.Builder, p model.PlanInput, name string, homeMB, cold
 	} else {
 		b.WriteString("# coldToFrozenDir omitted — default freeze deletes (set archive_frozen=true to archive)\n")
 	}
-	if kind == "primary" && emitTstats {
+	if emitTstats {
 		fmt.Fprintf(b, "tstatsHomePath = volume:summaries/%s/datamodel_summary\n", idx)
 	}
 	b.WriteString("\n")

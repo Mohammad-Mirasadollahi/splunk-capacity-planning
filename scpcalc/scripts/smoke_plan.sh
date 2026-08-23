@@ -15,13 +15,13 @@ echo
 echo "=== PLAN ==="
 curl -s -X POST http://127.0.0.1:12345/api/v1/plan \
   -H 'Content-Type: application/json' \
-  -d '{"retention_days":60,"hot_warm_days":30,"headroom":1,"summary_pct":0.1,"hot_path":"/data/hot","cold_path":"/data/cold","frozen_path":"/data/frozen","summaries_path":"/data/summaries","sources":[{"key":"windows","label":"Windows","index_name":"windows","daily_gb":50,"event_bytes":1200,"enable_summary":true},{"key":"sysmon","label":"Sysmon","index_name":"sysmon","eps":500,"event_bytes":2000}]}' \
+  -d '{"retention_days":60,"hot_warm_days":30,"headroom":1,"enable_dma":true,"dma_years":1,"hot_path":"/data/hot","cold_path":"/data/cold","frozen_path":"/data/frozen","summaries_path":"/data/summaries","sources":[{"key":"windows","label":"Windows","index_name":"windows","daily_gb":50,"event_bytes":1200},{"key":"sysmon","label":"Sysmon","index_name":"sysmon","eps":500,"event_bytes":2000}]}' \
   > /tmp/plan.json
 python3 - <<'PY'
 import json
 d=json.load(open("/tmp/plan.json"))
-print("raw", d["total_daily_raw_gb"], "sum", d["total_summary_raw_gb"])
-print("windows_summary", "windows_summary" in d["indexes_conf"])
+print("raw", d["total_daily_raw_gb"], "dma_mb", d.get("dma_volume_mb"))
+print("tstats", "tstatsHomePath" in d["indexes_conf"])
 print(d["indexes_conf"][:600])
 PY
 echo "=== UI ==="

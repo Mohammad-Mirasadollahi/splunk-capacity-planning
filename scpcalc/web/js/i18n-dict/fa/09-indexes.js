@@ -11,7 +11,6 @@ export const indexes = {
   ix_max_total: "حجم کلی Index",
   ix_on_disk: "حجم روزانه روی دیسک",
   ix_searchable: "حجم قابل‌جستجو",
-  ix_summary: "ایندکس Summary",
   ix_table_title: "سایزینگ هر ایندکس",
   ix_tip_cold: "coldPath.maxDataSizeMB — خودکار: حجم کلی Index منهای homePath.",
   ix_tip_daily_raw: "حجم خام/لایسنس روزانه این ایندکس به GB/روز (قبل از فشرده‌سازی).",
@@ -24,5 +23,4 @@ export const indexes = {
   ix_tip_max_total: "maxTotalDataSizeMB — حجم کلی Index (hot+warm+cold). Freeze با عمر یا این حجم فعال می‌شود.",
   ix_tip_on_disk: "رشد تقریبی روزانه روی دیسک بعد از فشرده‌سازی / RF·SF (GB/روز).",
   ix_tip_searchable: "فضای تقریبی searchable این ایندکس در کل retention (TB).",
-  ix_tip_summary: "سایز اختیاری ایندکس summary مرتبط با این منبع.",
 };
