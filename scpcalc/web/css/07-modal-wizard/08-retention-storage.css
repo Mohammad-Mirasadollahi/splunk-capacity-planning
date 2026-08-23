@@ -171,3 +171,15 @@
   line-height: 1.35;
   color: var(--muted, #64748b);
 }
+
+.review-ix-table .ix-col-dma-off,
+#ix-table .ix-col-dma-off {
+  display: none;
+}
+
+.src-idx-dma {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.82rem;
+  color: var(--muted, #64748b);
+}

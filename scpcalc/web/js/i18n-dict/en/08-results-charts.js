@@ -8,6 +8,7 @@ export const results_charts = {
   chart_lbl_hot: "hot/warm",
   chart_lbl_hot_days: "hot/warm days",
   chart_lbl_summaries: "DMA",
+  chart_lbl_archive: "Archive",
   chart_lbl_dma_need: "DMA need",
   chart_lbl_dma_avail: "DMA (auto)",
   chart_lbl_total_days: "total days",

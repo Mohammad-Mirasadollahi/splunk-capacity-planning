@@ -138,6 +138,10 @@ function indexSizeCellHTML(sized) {
   const bytes = resolveEventBytes(sized.row, state.rows);
   const eps = sized.dailyRaw > 0 && bytes > 0 ? epsFromDailyGB(sized.dailyRaw, bytes) : numOr0(sized.row.eps);
   const epsTxt = formatEPS(eps);
+  const dmaLine =
+    sized.dmaGB > 0
+      ? `<span class="src-idx-dma tip-mark" data-tip="dma_volume_gb" data-idx-dma="${sized.i}">${t("col_idx_dma_short").replace("{n}", formatSizeGB(sized.dmaGB))}</span>`
+      : "";
   const scaleNote =
     sized.scale > 1.001
       ? `<span class="src-idx-scale" title="${escapeAttr(t("col_idx_scale_tip"))}">×${sized.scale.toFixed(2)}</span>`
@@ -146,6 +150,7 @@ function indexSizeCellHTML(sized) {
     <output class="src-idx-size readonly-value" data-idx-size="${sized.i}" aria-live="polite" title="maxTotalDataSizeMB (cluster-wide, pre peer-split)">${maxMB}</output>
     <span class="src-idx-gb" data-idx-gb="${sized.i}">≈ ${maxGB} GB · ${epsTxt} EPS</span>
     <span class="src-idx-home tip-mark" data-tip="hot_warm_days" data-idx-home="${sized.i}" title="homePath.maxDataSizeMB">${t("col_idx_home_short").replace("{n}", homeMB)}</span>
+    ${dmaLine}
     ${scaleNote}
   </td>`;
 }
@@ -179,6 +184,19 @@ export function refreshIndexSizePreviews() {
         out.textContent = formatSizeMB(sized.maxTotalMB);
         if (gbEl) gbEl.textContent = `≈ ${formatSizeGB(sized.maxTotalGB)} GB · ${formatEPS(eps)} EPS`;
         if (homeEl) homeEl.textContent = t("col_idx_home_short").replace("{n}", formatSizeMB(sized.homeMB));
+        let dmaEl = tr?.querySelector(`[data-idx-dma="${i}"]`);
+        if (sized.dmaGB > 0) {
+          if (!dmaEl && tr) {
+            dmaEl = document.createElement("span");
+            dmaEl.className = "src-idx-dma tip-mark";
+            dmaEl.dataset.tip = "dma_volume_gb";
+            dmaEl.dataset.idxDma = String(i);
+            tr.querySelector(".src-col-idx-size")?.appendChild(dmaEl);
+          }
+          if (dmaEl) dmaEl.textContent = t("col_idx_dma_short").replace("{n}", formatSizeGB(sized.dmaGB));
+        } else {
+          dmaEl?.remove();
+        }
         let scaleEl = tr?.querySelector(".src-idx-scale");
         if (sized.scale > 1.001) {
           if (!scaleEl && tr) {

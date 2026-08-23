@@ -98,7 +98,7 @@ export const context_review = {
   review_raw_summary: "Full text summary",
   review_retention_title: "Retention Time",
   review_retention_total: "Total = {n} days",
-  review_storage_hint: "Breakdown of overall storage. DMA row shows acceleration volume on volume:summaries and its planning horizon (dma_years). Summary indexes are not sized in this tool.",
+  review_storage_hint: "Breakdown of overall storage. Total row includes DMA on volume:summaries when enabled (with dma_years horizon). Summary indexes are not sized in this tool.",
   review_storage_title: "Storage Required",
   review_tier_archived: "Archived",
   review_tier_cold: "Cold",

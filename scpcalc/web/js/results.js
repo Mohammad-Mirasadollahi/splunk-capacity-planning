@@ -18,6 +18,7 @@ import {
   renderMetricSectionsHTML,
   renderRetentionStorageHTML,
   renderIndexRowsHTML,
+  indexesTableHeaderHTML,
 } from "./plan-display.js";
 import { collectGlobals } from "./plan-form.js";
 import { formatDailyGB, formatEPS, epsFromDailyGB, numOr0 } from "./volume-convert.js";
@@ -212,10 +213,10 @@ function renderPlanResult(data) {
   const viz = document.getElementById("results-viz");
   if (viz) {
     viz.hidden = false;
-    viz.innerHTML = renderRetentionStorageHTML(data, g);
+    viz.innerHTML = renderRetentionStorageHTML(data, g, state.rows);
   }
   if (metrics) {
-    metrics.innerHTML = renderMetricSectionsHTML(buildMetricSections(data, g), {
+    metrics.innerHTML = renderMetricSectionsHTML(buildMetricSections(data, g, state.rows), {
       tipLookup: tipCatalog(),
       animate: true,
     });
@@ -238,7 +239,9 @@ function renderPlanResult(data) {
 
 
   if (ixBody) {
-    ixBody.innerHTML = renderIndexRowsHTML(data.indexes || []);
+    const ixThead = document.querySelector("#ix-table thead");
+    if (ixThead) ixThead.innerHTML = indexesTableHeaderHTML({ g });
+    ixBody.innerHTML = renderIndexRowsHTML(data.indexes || [], { data, g });
     bindTips(document.querySelector("#ix-table thead"));
     bindTableSort("ix-table");
     applyTableFind("ix-find", "ix-body", "ix-find-count");

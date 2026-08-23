@@ -5,6 +5,7 @@
 import { t } from "./i18n.js";
 import { escapeAttr } from "./util.js";
 import { numOr0 } from "./volume-convert.js";
+import { planSourceDiskNeeds } from "./source-sizing.js";
 
 /** ES official horizon label for DMA / acceleration sizing. */
 export function dmaHorizonLabel(g) {
@@ -32,6 +33,47 @@ export function dmaEnabled(g) {
   return !!(g?.enable_dma || g?.has_es);
 }
 
+/** Cluster-wide DMA GB — engine design, synced policy field, or live source preview. */
+export function resolveDmaNeedGB(data, g, rows = null) {
+  if (!dmaEnabled(g)) return 0;
+  const d = data?.design || {};
+  const fromDesign = numOr0(d.dma_need_gb);
+  if (fromDesign > 0) return fromDesign;
+  const fromSummaries = numOr0(d.summaries_need_gb);
+  if (fromSummaries > 0) return fromSummaries;
+  if (numOr0(data?.dma_volume_mb) > 0) return numOr0(data.dma_volume_mb) / 1024;
+  const fromGlobals = numOr0(g?.available_summaries_gb);
+  if (fromGlobals > 0) return fromGlobals;
+  if (rows?.length) {
+    const plan = planSourceDiskNeeds(rows, g);
+    if (plan.needSum > 0) return plan.needSum;
+  }
+  return 0;
+}
+
+/** Proportional DMA share per index by daily raw ingest. */
+export function allocateIndexDmaGB(indexes, totalDma) {
+  const list = indexes || [];
+  const total = list.reduce((s, ix) => s + numOr0(ix.daily_raw_gb), 0);
+  const out = new Map();
+  if (!(totalDma > 0) || !(total > 0)) return out;
+  for (const ix of list) {
+    const name = String(ix.index_name || "");
+    if (!name) continue;
+    out.set(name, (totalDma * numOr0(ix.daily_raw_gb)) / total);
+  }
+  return out;
+}
+
+export function deploymentDiskNeedGB(data, g, rows = null) {
+  const d = data?.design || {};
+  const hot = numOr0(d.hot_need_gb);
+  const cold = numOr0(d.cold_need_gb);
+  const arch = g?.archive_frozen ? numOr0(d.archive_need_gb) : 0;
+  const dma = resolveDmaNeedGB(data, g, rows);
+  return hot + cold + arch + dma;
+}
+
 export function formatStorageAmt(gb) {
   const n = Number(gb);
   if (!Number.isFinite(n) || n <= 0) return "0.0";
@@ -48,27 +90,22 @@ function retentionSegments(g) {
   return { hot, cold, archived, total: total || ret };
 }
 
-/** Hot + cold + archive (+ DMA) → Total Storage. */
-export function totalStorageGB(data, g) {
-  const d = data?.design || {};
-  const hot = numOr0(d.hot_need_gb);
-  const cold = numOr0(d.cold_need_gb);
-  const arch = g?.archive_frozen ? numOr0(d.archive_need_gb) : 0;
-  const dma = numOr0(d.dma_need_gb);
-  return hot + cold + arch + dma;
+/** Hot + cold + archive (+ DMA when enabled) → Total Storage. */
+export function totalStorageGB(data, g, rows = null) {
+  return deploymentDiskNeedGB(data, g, rows);
 }
 
 /**
  * @returns {{ id: string, title: string, rows: [string, unknown][] }[]}
  */
-export function buildMetricSections(data, g) {
+export function buildMetricSections(data, g, rows = null) {
   const globals = g || {};
   const d = data?.design || {};
   const nIdx = Math.max(1, Math.floor(numOr0(d.n_idx) || numOr0(data?.indexer_peers) || 1));
   const hotAll = numOr0(d.hot_need_gb);
   const coldAll = numOr0(d.cold_need_gb);
   const archAll = globals.archive_frozen ? numOr0(d.archive_need_gb) : 0;
-  const dmaAll = numOr0(d.dma_need_gb);
+  const dmaAll = resolveDmaNeedGB(data, globals, rows);
   const totalStore = hotAll + coldAll + archAll + dmaAll;
 
   const volume = {
@@ -118,7 +155,7 @@ export function buildMetricSections(data, g) {
   if (globals.archive_frozen) {
     storageTotal.rows.push([t("review_m_need_archive_total"), formatStorageAmt(archAll)]);
   }
-  if (dmaEnabled(globals) || dmaAll > 0) {
+  if (dmaEnabled(globals)) {
     storageTotal.rows.push([t("review_m_need_dma_total"), formatDmaNeedDisplay(dmaAll, globals)]);
   }
   storageTotal.rows.push([t("review_m_need_summary_idx_total"), formatSummaryIndexNeedDisplay()]);
@@ -133,7 +170,7 @@ export function buildMetricSections(data, g) {
       [t("review_m_archive_per_idx"), globals.archive_frozen ? formatStorageAmt(archAll / nIdx) : "—"],
     ],
   };
-  if (dmaEnabled(globals) || dmaAll > 0) {
+  if (dmaEnabled(globals)) {
     storagePer.rows.push([t("review_m_dma_per_idx"), formatDmaNeedDisplay(dmaAll / nIdx, globals)]);
   }
   storagePer.rows.push([t("review_m_summary_idx_per_idx"), formatSummaryIndexNeedDisplay()]);
@@ -187,7 +224,7 @@ export function renderMetricSectionsHTML(sections, { tipLookup = null, animate =
     .join("");
 }
 
-export function renderRetentionStorageHTML(data, g) {
+export function renderRetentionStorageHTML(data, g, rows = null) {
   const globals = g || {};
   const seg = retentionSegments(globals);
   const d = data?.design || {};
@@ -195,7 +232,7 @@ export function renderRetentionStorageHTML(data, g) {
   const hotAll = numOr0(d.hot_need_gb);
   const coldAll = numOr0(d.cold_need_gb);
   const archAll = globals.archive_frozen ? numOr0(d.archive_need_gb) : 0;
-  const dmaAll = dmaEnabled(globals) || numOr0(d.dma_need_gb) > 0 ? numOr0(d.dma_need_gb) : 0;
+  const dmaAll = resolveDmaNeedGB(data, globals, rows);
   const totalAll = hotAll + coldAll + archAll + dmaAll;
   const hotPer = hotAll / nIdx;
   const coldPer = coldAll / nIdx;
@@ -204,8 +241,7 @@ export function renderRetentionStorageHTML(data, g) {
   const totalPer = totalAll / nIdx;
   const pct = (days) => (seg.total > 0 ? (100 * days) / seg.total : 0);
   const dmaHorizon = escapeAttr(dmaHorizonLabel(globals));
-  const dmaRow =
-    dmaAll > 0 || dmaEnabled(globals)
+  const dmaRow = dmaEnabled(globals)
       ? `<tr>
               <th scope="row">${t("review_tier_dma")}${
                 dmaHorizon ? `<span class="review-storage-sub">${dmaHorizon}</span>` : ""
@@ -301,7 +337,11 @@ export function indexColdMB(ix) {
 }
 
 /** Same row HTML for Review preview Per-index and Results Per index. */
-export function renderIndexRowsHTML(indexes) {
+export function renderIndexRowsHTML(indexes, { data = null, g = null } = {}) {
+  const globals = g || {};
+  const totalDma = resolveDmaNeedGB(data, globals);
+  const dmaByIndex = allocateIndexDmaGB(indexes, totalDma);
+  const showDma = dmaEnabled(globals);
   return (indexes || [])
     .map((ix) => {
       const frozenDays =
@@ -310,6 +350,7 @@ export function renderIndexRowsHTML(indexes) {
           : "—";
       const label = ix.label || ix.key || "—";
       const coldMB = indexColdMB(ix);
+      const dmaGB = showDma ? dmaByIndex.get(String(ix.index_name || "")) || 0 : 0;
       const find = [
         ix.index_name,
         label,
@@ -320,6 +361,7 @@ export function renderIndexRowsHTML(indexes) {
         ix.max_total_data_size_mb,
         ix.home_path_max_data_size_mb,
         coldMB,
+        dmaGB,
         ix.max_data_size,
         frozenDays,
       ]
@@ -335,6 +377,9 @@ export function renderIndexRowsHTML(indexes) {
           <td data-sort="${Number(ix.max_total_data_size_mb) || 0}">${ix.max_total_data_size_mb} <span class="unit">MB</span></td>
           <td data-sort="${Number(ix.home_path_max_data_size_mb) || 0}">${ix.home_path_max_data_size_mb} <span class="unit">MB</span></td>
           <td data-sort="${Number(coldMB) || 0}">${coldMB} <span class="unit">MB</span></td>
+          <td data-sort="${Number(dmaGB) || 0}" class="${showDma ? "" : "ix-col-dma-off"}">${
+            showDma ? `${formatStorageAmt(dmaGB)}` : "—"
+          }</td>
           <td data-sort="${escapeAttr(String(ix.max_data_size || ""))}">${escapeAttr(ix.max_data_size || "—")}</td>
           <td data-sort="${frozenDays === "—" ? -1 : Number(frozenDays) || 0}">${frozenDays}${
             frozenDays === "—" ? "" : ` <span class="unit">d</span>`
@@ -344,7 +389,8 @@ export function renderIndexRowsHTML(indexes) {
     .join("");
 }
 
-export function indexesTableHeaderHTML() {
+export function indexesTableHeaderHTML({ g = null } = {}) {
+  const showDma = dmaEnabled(g || {});
   return `<tr>
     <th data-i18n="ix_index">${t("ix_index")}</th>
     <th data-i18n="ix_label">${t("ix_label")}</th>
@@ -355,6 +401,7 @@ export function indexesTableHeaderHTML() {
     <th data-i18n="ix_max_total">${t("ix_max_total")}</th>
     <th data-i18n="ix_home">${t("ix_home")}</th>
     <th data-i18n="ix_cold">${t("ix_cold")}</th>
+    <th data-i18n="ix_dma" class="${showDma ? "" : "ix-col-dma-off"}">${t("ix_dma")}</th>
     <th data-i18n="ix_max_data">${t("ix_max_data")}</th>
     <th data-i18n="ix_frozen_days">${t("ix_frozen_days")}</th>
   </tr>`;

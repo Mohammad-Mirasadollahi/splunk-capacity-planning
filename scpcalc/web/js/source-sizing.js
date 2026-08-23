@@ -138,6 +138,12 @@ export function planSourceDiskNeeds(rows, g) {
     });
   }
 
+  if (needSum > 0 && totalRaw > 0) {
+    for (const row of outRows) {
+      row.dmaGB = (needSum * row.dailyRaw) / totalRaw;
+    }
+  }
+
   return {
     scale,
     rows: outRows,

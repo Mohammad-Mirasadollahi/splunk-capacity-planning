@@ -98,7 +98,7 @@ export const context_review = {
   review_raw_summary: "خلاصهٔ متنی کامل",
   review_retention_title: "زمان Retention",
   review_retention_total: "جمع = {n} روز",
-  review_storage_hint: "تفکیک نیاز کلی ذخیره‌سازی. ردیف DMA حجم acceleration روی volume:summaries و افق برنامه‌ریزی (dma_years) را نشان می‌دهد. Summary indexes در این ابزار سایز نمی‌شوند.",
+  review_storage_hint: "تفکیک نیاز کلی ذخیره‌سازی. ردیف جمع وقتی DMA روشن است شامل حجم acceleration روی volume:summaries (با افق dma_years) می‌شود. Summary indexes در این ابزار سایز نمی‌شوند.",
   review_storage_title: "Storage Required",
   review_tier_archived: "Archived",
   review_tier_cold: "Cold",

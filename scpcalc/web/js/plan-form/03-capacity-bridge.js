@@ -112,13 +112,25 @@ function syncRetentionTotal(hot, cold) {
 
 export function syncDiskTotal(hotGB, coldGB) {
   const out = document.getElementById("disk_total_out");
-  const sum = numOr0(hotGB) + numOr0(coldGB);
-  if (out) {
-    out.textContent = sum > 0 ? t("disk_total_fmt").replace("{n}", formatDiskGB(sum)) : "—";
-  }
   const dmaGb = syncDmaVolumeGB();
-  updateDiskScenario(numOr0(hotGB), numOr0(coldGB), sum, dmaGb);
-  return sum;
+  const searchable = numOr0(hotGB) + numOr0(coldGB);
+  const dmaOn = !!document.getElementById("enable_dma")?.checked || !!document.getElementById("has_es")?.checked;
+  const grand = searchable + (dmaOn ? numOr0(dmaGb) : 0);
+  if (out) {
+    if (grand > 0) {
+      out.textContent =
+        dmaOn && dmaGb > 0
+          ? t("disk_total_with_dma_fmt")
+              .replace("{n}", formatDiskGB(grand))
+              .replace("{searchable}", formatDiskGB(searchable))
+              .replace("{dma}", formatDiskGB(dmaGb))
+          : t("disk_total_fmt").replace("{n}", formatDiskGB(searchable));
+    } else {
+      out.textContent = "—";
+    }
+  }
+  updateDiskScenario(numOr0(hotGB), numOr0(coldGB), searchable, dmaGb);
+  return grand;
 }
 
 function updateTimeScenario(hot, cold, total) {

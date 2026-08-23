@@ -1,6 +1,7 @@
 /** @type {Record<string, string>} */
 export const indexes = {
   ix_cold: "Cold volume",
+  ix_dma: "DMA volume",
   ix_daily_raw: "Daily raw volume",
   ix_event_bytes: "Avg event size",
   ix_frozen_days: "Retention days",
@@ -13,6 +14,7 @@ export const indexes = {
   ix_searchable: "Searchable size",
   ix_table_title: "Per-index sizing",
   ix_tip_cold: "coldPath.maxDataSizeMB — auto: Total Index volume − hot/warm homePath.",
+  ix_tip_dma: "Estimated DMA/tstats share on volume:summaries for this index (proportional to daily raw ingest).",
   ix_tip_daily_raw: "Daily raw / license ingest for this index in GB/day (before compression).",
   ix_tip_event_bytes: "Average raw event size in bytes. Used with EPS to estimate daily raw GB.",
   ix_tip_frozen: "Searchable retention in days (frozenTimePeriodInSecs ÷ 86400).",

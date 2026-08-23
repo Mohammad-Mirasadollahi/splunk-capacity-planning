@@ -19,6 +19,7 @@ export const errors_budget = {
   cold_vol_auto: "{days} cold days · coldPath.maxDataSizeMB = maxTotal − homePath",
   cold_vol_auto_zero: "0 cold days (hot/warm covers full Index volume)",
   disk_total_fmt: "{n} GB",
+  disk_total_with_dma_fmt: "{n} GB ({searchable} searchable + {dma} DMA)",
   err_disk_exceeds_budget: "Searchable disk need is about {need} GB, but your hot+cold budget is {cap} GB — raise Policy disk or lower retention / daily volume.",
   err_disk_exceeds_cold: "Cold disk need is about {need} GB, but your available_cold_gb budget is {cap} GB — raise Policy disk or lower retention / daily volume.",
   err_disk_exceeds_hot: "Hot/warm disk need is about {need} GB, but your available_hot_gb budget is {cap} GB — raise Policy disk or lower retention / daily volume.",

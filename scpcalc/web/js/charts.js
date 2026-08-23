@@ -1,6 +1,7 @@
 import { state } from "./state.js";
 import { t, setLang, lang } from "./i18n.js";
 import { collectGlobals } from "./plan-form.js";
+import { resolveDmaNeedGB } from "./plan-display.js";
 
 const chartInstances = {};
 const chartTypes = {};
@@ -47,12 +48,24 @@ function buildChartDatasets(data) {
 
   const hotGB = d.hot_need_gb || 0;
   const coldGB = d.cold_need_gb || 0;
-  const sumGB = d.dma_need_gb || 0;
+  const sumGB = resolveDmaNeedGB(data, g);
+  const archGB = g.archive_frozen ? d.archive_need_gb || 0 : 0;
+  const storageLabels = [t("chart_lbl_hot"), t("chart_lbl_cold")];
+  const storageValues = [hotGB, coldGB];
+  if (sumGB > 0 || g.enable_dma || g.has_es) {
+    storageLabels.push(t("chart_lbl_summaries"));
+    storageValues.push(sumGB);
+  }
+  if (archGB > 0) {
+    storageLabels.push(t("chart_lbl_archive"));
+    storageValues.push(archGB);
+  }
+  const storageTotal = storageValues.reduce((a, b) => a + b, 0);
   return {
     storage: {
-      labels: [t("chart_lbl_hot"), t("chart_lbl_cold"), t("chart_lbl_summaries")],
-      values: [hotGB, coldGB, sumGB],
-      total: hotGB + coldGB + sumGB,
+      labels: storageLabels,
+      values: storageValues,
+      total: storageTotal,
       totalKey: "chart_storage_total",
     },
     retention: {
@@ -83,8 +96,8 @@ function buildChartDatasets(data) {
         d.hot_available_gb || 0,
         d.cold_need_gb || 0,
         d.cold_available_gb || 0,
-        d.dma_need_gb || 0,
-        d.summaries_available_gb || d.dma_need_gb || 0,
+        resolveDmaNeedGB(data, g),
+        d.summaries_available_gb || resolveDmaNeedGB(data, g) || 0,
       ],
     },
     resources: {

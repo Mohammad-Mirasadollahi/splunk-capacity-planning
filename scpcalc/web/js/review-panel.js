@@ -28,6 +28,7 @@ import {
   indexesTableHeaderHTML,
   formatDmaNeedDisplay,
   formatSummaryIndexNeedDisplay,
+  resolveDmaNeedGB,
 } from "./plan-display.js";
 
 let previewSeq = 0;
@@ -67,7 +68,8 @@ function renderReviewViz(data) {
   const host = document.getElementById("review-viz");
   if (!host) return;
   host.hidden = false;
-  host.innerHTML = renderRetentionStorageHTML(data, collectGlobals());
+  const g = collectGlobals();
+  host.innerHTML = renderRetentionStorageHTML(data, g, state.rows);
 }
 
 function clearReviewViz() {
@@ -84,9 +86,19 @@ export function fillReviewSummary() {
   const enabled = state.rows.filter((r) => r.enabled);
   const planIndexes = state.reviewPreview?.indexes || [];
   const byIndex = new Map(planIndexes.map((ix) => [String(ix.index_name || ""), ix]));
-  let srcSum = 0;
+  const previewData = state.reviewPreview;
+  const totalDma = resolveDmaNeedGB(previewData, g, state.rows);
   let idxTotalGB = 0;
+  let dmaTotalGB = 0;
   const archiveDays = g.archive_frozen ? Math.max(0, Math.floor(numOr0(g.archive_days))) : 0;
+  let ingestSum = 0;
+  for (const r of enabled) {
+    const bytes = resolveEventBytes(r, state.rows);
+    let gb = numOr0(r.daily_gb);
+    const eps = numOr0(r.eps);
+    if (!(gb > 0) && eps > 0) gb = dailyGBFromEPS(eps, bytes);
+    ingestSum += gb;
+  }
   const srcRows = enabled
     .map((r) => {
       const bytes = resolveEventBytes(r, state.rows);
@@ -94,7 +106,6 @@ export function fillReviewSummary() {
       let eps = numOr0(r.eps);
       if (!(gb > 0) && eps > 0) gb = dailyGBFromEPS(eps, bytes);
       if (!(eps > 0) && gb > 0) eps = epsFromDailyGB(gb, bytes);
-      srcSum += gb;
       const vol = `${formatDailyGB(gb)} GB/d = ${formatEPS(eps)} EPS`;
       const retDays =
         Number(r.retention_days) > 0
@@ -115,9 +126,15 @@ export function fillReviewSummary() {
         : yn(false);
       const ix = byIndex.get(String(r.index_name || ""));
       const idxGB = ix?.max_total_data_size_mb > 0 ? Number(ix.max_total_data_size_mb) / 1024 : 0;
+      const dmaGB = ingestSum > 0 && totalDma > 0 ? (totalDma * gb) / ingestSum : 0;
       if (idxGB > 0) idxTotalGB += idxGB;
+      if (dmaGB > 0) dmaTotalGB += dmaGB;
       const idxTotal =
-        idxGB > 0 ? `${formatSizeGB(idxGB)} GB` : "—";
+        idxGB > 0 || dmaGB > 0
+          ? `${idxGB > 0 ? `${formatSizeGB(idxGB)} GB` : "—"}${
+              dmaGB > 0 ? ` + ${formatSizeGB(dmaGB)} DMA` : ""
+            }`
+          : "—";
       return `<tr>
         <td>${escapeAttr(r.label)}</td>
         <td>${escapeAttr(r.index_name)}</td>
@@ -137,7 +154,11 @@ export function fillReviewSummary() {
       ? `<tr class="review-src-total">
           <th scope="row" colspan="8">${escapeAttr(t("review_total"))}</th>
           <td class="review-src-idx-total">${
-            idxTotalGB > 0 ? `${formatSizeGB(idxTotalGB)} GB` : "—"
+            idxTotalGB > 0 || dmaTotalGB > 0
+              ? `${idxTotalGB > 0 ? `${formatSizeGB(idxTotalGB)} GB` : "—"}${
+                  dmaTotalGB > 0 ? ` + ${formatSizeGB(dmaTotalGB)} DMA` : ""
+                }`
+              : "—"
           }</td>
         </tr>`
       : "";
@@ -195,7 +216,7 @@ export function fillReviewSummary() {
     </div>
     <section class="review-block">
       <h4 data-i18n="ctx_from_sources">${t("ctx_from_sources")}</h4>
-      <p class="hint">${t("ctx_vol_mode")} · ${t("ctx_sources_on").replace("{n}", String(enabled.length))} · Σ ≈ ${formatDailyGB(srcSum)} GB/day${
+      <p class="hint">${t("ctx_vol_mode")} · ${t("ctx_sources_on").replace("{n}", String(enabled.length))} · Σ ≈ ${formatDailyGB(ingestSum)} GB/day${
         g.total_daily_gb > 0 ? ` · ${t("ctx_scale_note").replace("{t}", formatDailyGB(g.total_daily_gb))}` : ""
       }</p>
       <div class="table-wrap">
@@ -223,7 +244,8 @@ export function fillReviewSummary() {
 function renderPreviewMetrics(data) {
   const host = document.getElementById("review-metrics");
   if (!host) return;
-  host.innerHTML = renderMetricSectionsHTML(buildMetricSections(data, collectGlobals()));
+  const g = collectGlobals();
+  host.innerHTML = renderMetricSectionsHTML(buildMetricSections(data, g, state.rows));
 }
 
 function renderPreviewIndexes(data) {
@@ -235,14 +257,15 @@ function renderPreviewIndexes(data) {
     host.innerHTML = "";
     return;
   }
+  const g = collectGlobals();
   host.hidden = false;
   host.innerHTML = `
     <h4 class="review-subhead">${t("ix_table_title")}</h4>
     <p class="hint">${t("review_indexes_hint")}</p>
     <div class="table-wrap">
       <table class="src-table review-src-table review-ix-table">
-        <thead>${indexesTableHeaderHTML()}</thead>
-        <tbody>${renderIndexRowsHTML(indexes)}</tbody>
+        <thead>${indexesTableHeaderHTML({ g })}</thead>
+        <tbody>${renderIndexRowsHTML(indexes, { data, g })}</tbody>
       </table>
     </div>`;
 }

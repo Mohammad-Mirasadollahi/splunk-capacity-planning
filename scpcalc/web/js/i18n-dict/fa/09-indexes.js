@@ -1,6 +1,7 @@
 /** @type {Record<string, string>} */
 export const indexes = {
   ix_cold: "حجم Cold",
+  ix_dma: "حجم DMA",
   ix_daily_raw: "حجم خام روزانه",
   ix_event_bytes: "میانگین اندازه رویداد",
   ix_frozen_days: "روز نگهداری",
@@ -13,6 +14,7 @@ export const indexes = {
   ix_searchable: "حجم قابل‌جستجو",
   ix_table_title: "سایزینگ هر ایندکس",
   ix_tip_cold: "coldPath.maxDataSizeMB — خودکار: حجم کلی Index منهای homePath.",
+  ix_tip_dma: "سهم تخمینی DMA/tstats این ایندکس روی volume:summaries (متناسب با ingest خام روزانه).",
   ix_tip_daily_raw: "حجم خام/لایسنس روزانه این ایندکس به GB/روز (قبل از فشرده‌سازی).",
   ix_tip_event_bytes: "میانگین اندازه رویداد خام (بایت). با EPS برای تخمین GB روزانه خام استفاده می‌شود.",
   ix_tip_frozen: "مدت retention قابل‌جستجو به روز (frozenTimePeriodInSecs ÷ ۸۶۴۰۰).",
