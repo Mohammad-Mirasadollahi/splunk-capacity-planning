@@ -44,11 +44,11 @@
 }
 
 .src-table tr.src-row-main-only td {
-  opacity: 0.92;
+  opacity: 1;
 }
 
-.src-table tr.src-row-main-only .src-col-vol input {
-  color: var(--muted);
+.wizard-body .tab-panel[data-panel="vol-sources"] .sources-gate-toggle {
+  margin-top: 0.35rem;
 }
 
 body.sources-fullscreen {
@@ -67,7 +67,8 @@ body.sources-fullscreen {
   padding: 1rem clamp(0.85rem, 2vw, 1.5rem) 1.1rem !important;
   display: flex !important;
   flex-direction: column;
-  overflow: hidden;
+  overflow: auto;
+  overscroll-behavior: contain;
   border-radius: 0 !important;
   background:
     radial-gradient(ellipse 80% 50% at 50% -10%, rgba(63, 224, 197, 0.12), transparent 55%),
@@ -83,12 +84,18 @@ body.sources-fullscreen {
 
 .sources-panel.is-fullscreen .table-wrap {
   flex: 1 1 auto;
-  min-height: 0;
+  min-height: 12rem;
   max-height: none !important;
+  overflow: auto;
 }
 
-.sources-panel.is-fullscreen .row-actions {
+.sources-panel.is-fullscreen .sources-footer {
   flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(180deg, transparent, rgba(7, 20, 28, 0.92) 28%);
+  padding-top: 0.75rem;
+  margin-top: 0;
 }
 
 .wizard-body .tab-panel[data-panel="vol-sources"] .sources-config-note:not(.sources-panel-bar .sources-config-note) {

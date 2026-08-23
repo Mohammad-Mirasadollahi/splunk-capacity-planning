@@ -14,6 +14,8 @@ export const volume_fields = {
   hint_sources_main_default: "Default: all daily ingest goes to the main index. Add or enable a log source to split volumes and choose index names yourself — main steps aside automatically.",
   hint_sources_simple: "All daily ingest goes to the main index (synced from Budget).",
   hint_sources_custom: "Turn sources on, set GB/EPS per index, or add custom rows. Main steps aside when you enable others.",
+  hint_sources_enable_cta: "Turn on custom log sources to pick built-in indexes (Windows, Linux, …) or add your own.",
+  btn_enable_sources: "Enable custom sources",
   hint_configure_sources_off: "Optional — plan from total daily volume on Budget only, or break volume down per source here later.",
   hint_disk_total: "Deployment-wide disk need (hot + cold searchable + DMA when enabled)",
   hint_frozen_path: "[volume:frozen] path / coldToFrozenDir",

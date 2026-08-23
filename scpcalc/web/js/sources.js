@@ -86,11 +86,24 @@ export function collapseToMainOnly() {
 export function expandSourcesCatalog() {
   const presets = state.sourcePresets || [];
   ensureMainRow();
-  if (presets.length && state.rows.length <= 1) {
-    const built = buildRowsFromPresets(presets, { dailyGB: "" });
-    const main = state.rows.find((r) => isMainRow(r)) || built[0];
-    state.rows = [main, ...built.slice(1)];
+  const main = state.rows.find((r) => isMainRow(r));
+  if (!presets.length) return;
+  const built = buildRowsFromPresets(presets, { dailyGB: "" });
+  const builtMain = built.find((r) => isMainRow(r)) || built[0];
+  const byKey = new Map(state.rows.map((r) => [String(r.key || ""), r]));
+  const merged = [main || builtMain];
+  for (const row of built) {
+    if (isMainRow(row)) continue;
+    const existing = byKey.get(String(row.key || ""));
+    merged.push(existing || row);
   }
+  for (const row of state.rows) {
+    if (isMainRow(row)) continue;
+    if (row.key === "custom" || !built.some((b) => b.key === row.key)) {
+      merged.push(row);
+    }
+  }
+  state.rows = merged;
   enterManualSourceMode({ keepConfigureFlag: true });
 }
 
@@ -146,6 +159,11 @@ export function setConfigureSources(on) {
   state.configureSources = !!on;
   const el = document.getElementById("configure_sources");
   if (el) el.checked = state.configureSources;
+  const panel = document.getElementById("sources-panel");
+  if (panel) {
+    panel.classList.toggle("sources-mode-custom", state.configureSources);
+    panel.classList.toggle("sources-mode-simple", !state.configureSources);
+  }
   import("./plan-form.js")
     .then((m) => m.syncToggleUI?.())
     .catch(() => {});
@@ -557,6 +575,12 @@ export function bindSourcesTable() {
     else enterManualSourceMode({ keepConfigureFlag: true });
     state.rows.push(blankCustom());
     renderRows();
+  });
+
+  document.getElementById("btn-enable-sources")?.addEventListener("click", () => {
+    const cfg = document.getElementById("configure_sources");
+    if (cfg) cfg.checked = true;
+    applyConfigureSourcesMode(true);
   });
 }
 

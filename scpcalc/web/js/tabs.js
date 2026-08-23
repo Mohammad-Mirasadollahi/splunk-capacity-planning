@@ -69,6 +69,14 @@ export function initTabBars() {
             if (on) p.scrollTop = 0;
           });
           if (scope.closest("#wizard-modal")) resetWizardContextScroll();
+          if (id === "vol-sources") {
+            import("./sources.js")
+              .then((m) => {
+                m.syncConfigureSourcesUI?.();
+                m.renderRows?.();
+              })
+              .catch(() => {});
+          }
           if (id === "charts" && state.lastPlan) {
             setTimeout(() => onChartsTab?.(state.lastPlan), 40);
           }

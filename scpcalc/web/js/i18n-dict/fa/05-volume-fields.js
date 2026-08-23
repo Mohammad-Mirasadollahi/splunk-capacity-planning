@@ -15,6 +15,8 @@ export const volume_fields = {
   hint_sources_main_default: "پیش‌فرض: کل ingest روزانه به ایندکس main می‌رود. با افزودن یا روشن کردن یک log source حجم را خودتان تقسیم کنید — main خودکار کنار می‌رود.",
   hint_sources_simple: "کل ingest روزانه به ایندکس main می‌رود (همگام با Budget).",
   hint_sources_custom: "منابع را روشن کنید، GB/EPS هر ایندکس را بگذارید، یا سطر سفارشی اضافه کنید. با روشن کردن بقیه، main کنار می‌رود.",
+  hint_sources_enable_cta: "منابع لاگ سفارشی را روشن کنید تا ایندکس‌های آماده (Windows، Linux، …) را انتخاب کنید یا خودتان اضافه کنید.",
+  btn_enable_sources: "فعال‌سازی منابع سفارشی",
   hint_configure_sources_off: "اختیاری — فقط با حجم کل روزانه در Budget برنامه‌ریزی کنید، یا بعداً حجم را اینجا به‌ازای هر منبع بشکنید.",
   hint_disk_total: "نیاز دیسک کل استقرار (hot + cold searchable + DMA وقتی روشن است)",
   hint_frozen_path: "[volume:frozen] path / coldToFrozenDir",

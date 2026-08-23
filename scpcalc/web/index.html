@@ -512,11 +512,17 @@
                   <tbody id="src-body"></tbody>
                 </table>
               </div>
-              <div class="row-actions" data-depends-on="configure_sources" hidden>
-                <button type="button" class="btn-ghost" id="btn-add" data-i18n="add_row">+ Add custom source</button>
-                <button type="button" class="btn-ghost" id="btn-save" data-i18n="save">Save</button>
-                <button type="button" class="btn-ghost" id="btn-export" data-i18n="export">Export .json</button>
-                <button type="button" class="btn-ghost" id="btn-export-url" data-i18n="export_url">Export URL</button>
+              <div class="sources-footer">
+                <div class="sources-enable-cta" data-depends-on-off="configure_sources">
+                  <p class="hint" data-i18n="hint_sources_enable_cta">Turn on custom log sources to pick built-in indexes (Windows, Linux, …) or add your own.</p>
+                  <button type="button" class="btn-ghost" id="btn-enable-sources" data-i18n="btn_enable_sources">Enable custom sources</button>
+                </div>
+                <div class="row-actions sources-row-actions" data-depends-on="configure_sources" hidden>
+                  <button type="button" class="btn-ghost" id="btn-add" data-i18n="add_row">+ Add custom source</button>
+                  <button type="button" class="btn-ghost" id="btn-save" data-i18n="save">Save</button>
+                  <button type="button" class="btn-ghost" id="btn-export" data-i18n="export">Export .json</button>
+                  <button type="button" class="btn-ghost" id="btn-export-url" data-i18n="export_url">Export URL</button>
+                </div>
               </div>
             </div>
           </div>
