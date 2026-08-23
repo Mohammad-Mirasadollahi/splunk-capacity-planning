@@ -120,43 +120,49 @@
   max-height: var(--ctrl-h-sm);
 }
 
-.src-table input[type="text"],
-.src-table td > input[type="number"]:not(.num-stepper-input),
-.src-table .vol-pair input[type="number"] {
+.src-table input:not([type="checkbox"]) {
   height: var(--ctrl-h-sm);
   min-height: var(--ctrl-h-sm);
   max-height: var(--ctrl-h-sm);
   padding: 0 0.45rem;
   font-size: var(--ctrl-fs-sm);
   border-radius: var(--ctrl-radius-sm);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: var(--ctrl-bg);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: var(--ctrl-bg);
   color: var(--ink);
   color-scheme: dark;
   -webkit-text-fill-color: var(--ink);
+  caret-color: var(--accent);
 }
 
-.src-table input[type="text"]:focus,
-.src-table td > input[type="number"]:not(.num-stepper-input):focus,
-.src-table .vol-pair input[type="number"]:focus {
+.src-table .num-stepper {
+  color: var(--ink);
+}
+
+.src-table .num-stepper > input[type="number"],
+.src-table .num-stepper > input.num-stepper-input {
+  color: var(--ink);
+  -webkit-text-fill-color: var(--ink);
+}
+
+.src-table input:not([type="checkbox"]):focus {
   border-color: var(--ctrl-border-focus);
   background: var(--ctrl-bg-focus);
   box-shadow: var(--ctrl-focus-ring);
 }
 
-.src-table input[type="text"]:disabled,
-.src-table input[type="number"]:disabled,
-.src-table input[readonly] {
-  color: var(--ink);
-  -webkit-text-fill-color: var(--ink);
-  opacity: 0.9;
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.1);
+.src-table input:not([type="checkbox"]):disabled,
+.src-table input:not([type="checkbox"])[readonly] {
+  color: #dbe8ed;
+  -webkit-text-fill-color: #dbe8ed;
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.22);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
-.src-table tr.src-row-off input:not([type="checkbox"]):not(:disabled) {
-  color: rgba(158, 184, 196, 0.75);
-  -webkit-text-fill-color: rgba(158, 184, 196, 0.75);
+.src-table tr.src-row-off input:not([type="checkbox"]) {
+  color: #c5d8df;
+  -webkit-text-fill-color: #c5d8df;
 }
 
 .src-table input::placeholder,

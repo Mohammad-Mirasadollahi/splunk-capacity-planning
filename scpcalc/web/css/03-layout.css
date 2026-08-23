@@ -391,12 +391,12 @@ label.field.check.glass-chip {
 }
 
 .src-table tr.src-row-off {
-  opacity: 0.48;
+  opacity: 0.78;
   background: rgba(0, 0, 0, 0.12);
 }
 
 .src-table tr.src-row-off td {
-  filter: grayscale(0.25);
+  filter: none;
 }
 
 .src-table tr.src-row-on {

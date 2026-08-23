@@ -12,6 +12,22 @@ function isScrollable(el) {
   return el.scrollHeight > el.clientHeight + 1;
 }
 
+/** Ordered scroll regions inside the wizard modal (outer → inner). */
+function wizardScrollCandidates(from) {
+  const root = from?.closest?.(".modal-root:not([hidden])");
+  if (!root) return [];
+  const out = [];
+  const fs = from?.closest?.(".sources-panel.is-fullscreen");
+  if (fs) out.push(fs);
+  const panel = from?.closest?.(".wiz-pane > .tab-panel.is-active");
+  if (panel) out.push(panel);
+  const pane = root.querySelector(".wiz-pane.is-active:not(:has(> .tab-bar))");
+  if (pane && from?.closest?.(".wiz-pane") === pane) out.push(pane);
+  const body = root.querySelector(".wizard-body");
+  if (body) out.push(body);
+  return out.filter((el, i, arr) => el && arr.indexOf(el) === i);
+}
+
 /** Nearest scrollable region inside the open modal dialog. */
 function scrollableWithinModal(from) {
   const root = from?.closest?.(".modal-root:not([hidden])");
@@ -25,27 +41,75 @@ function scrollableWithinModal(from) {
   return null;
 }
 
-/** Block wheel events from reaching the locked page behind the modal. */
-function onModalWheel(e) {
-  if (!document.body.classList.contains("modal-open")) return;
-  const root = e.target.closest(".modal-root:not([hidden])");
-  if (!root) {
-    e.preventDefault();
-    return;
+function pickModalScrollTarget(from) {
+  const direct = scrollableWithinModal(from);
+  if (direct) return direct;
+  for (const el of wizardScrollCandidates(from)) {
+    if (isScrollable(el)) return el;
+    const max = el.scrollHeight - el.clientHeight;
+    if (max > 1) return el;
   }
-  const scrollable = scrollableWithinModal(e.target);
-  if (!scrollable) {
-    e.preventDefault();
-    return;
-  }
+  return null;
+}
+
+function applyWheelScroll(e, scrollable) {
   const max = scrollable.scrollHeight - scrollable.clientHeight;
   if (max <= 0) {
     e.preventDefault();
     return;
   }
   const top = scrollable.scrollTop;
-  if (e.deltaY < 0 && top <= 0) e.preventDefault();
-  else if (e.deltaY > 0 && top >= max - 1) e.preventDefault();
+  const next = Math.max(0, Math.min(max, top + e.deltaY));
+  if (next === top) {
+    e.preventDefault();
+    return;
+  }
+  e.preventDefault();
+  scrollable.scrollTop = next;
+}
+
+/** Block wheel events from reaching the locked page behind the modal. */
+function onModalWheel(e) {
+  if (!document.body.classList.contains("modal-open")) return;
+
+  const fsPanel = e.target.closest(".sources-panel.is-fullscreen");
+  if (fsPanel) {
+    applyWheelScroll(e, fsPanel);
+    return;
+  }
+
+  const root = e.target.closest(".modal-root:not([hidden])");
+  if (!root) {
+    e.preventDefault();
+    return;
+  }
+
+  const scrollable = pickModalScrollTarget(e.target);
+  if (!scrollable) {
+    e.preventDefault();
+    return;
+  }
+
+  const max = scrollable.scrollHeight - scrollable.clientHeight;
+  if (max <= 0) {
+    e.preventDefault();
+    return;
+  }
+
+  const top = scrollable.scrollTop;
+  if (e.deltaY < 0 && top <= 0) {
+    e.preventDefault();
+    return;
+  }
+  if (e.deltaY > 0 && top >= max - 1) {
+    e.preventDefault();
+    return;
+  }
+
+  // Inputs/tables are not scroll containers — drive the wizard pane ourselves.
+  if (scrollableWithinModal(e.target) !== scrollable) {
+    applyWheelScroll(e, scrollable);
+  }
 }
 
 function ensureScrollGuard() {

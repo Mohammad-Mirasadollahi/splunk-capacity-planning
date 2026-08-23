@@ -83,10 +83,10 @@ body.sources-fullscreen {
 }
 
 .sources-panel.is-fullscreen .table-wrap {
-  flex: 1 1 auto;
-  min-height: 12rem;
+  flex: 0 0 auto;
+  min-height: 0;
   max-height: none !important;
-  overflow: auto;
+  overflow: visible;
 }
 
 .sources-panel.is-fullscreen .sources-footer {

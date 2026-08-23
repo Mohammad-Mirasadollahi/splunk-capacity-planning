@@ -92,10 +92,8 @@
   background: rgba(63, 224, 197, 0.08);
 }
 
-.wizard-body .tab-panel[data-panel="vol-sources"] {
-  display: block;
-  overflow: auto;
-  overscroll-behavior: contain;
+/* Keep flex child so height is bounded and this pane is the single scroll region. */
+.wizard-body .tab-panel[data-panel="vol-sources"].is-active {
   padding-bottom: 1rem;
 }
 
@@ -119,11 +117,6 @@
   max-height: none;
   min-height: 0;
   margin-bottom: 0.65rem;
-}
-
-.sources-mode-custom .table-wrap {
-  overflow: auto;
-  max-height: min(52vh, 520px);
 }
 
 .sources-footer {
