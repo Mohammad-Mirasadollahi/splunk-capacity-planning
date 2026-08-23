@@ -27,7 +27,7 @@ export const errors_budget = {
   err_disk_exceeds_summaries: "نیاز دیسک summaries/DMA حدود {need} GB است، ولی available_summaries_gb برابر {cap} GB است — بودجه summaries در Policy را بالا ببرید یا retention summary / DMA را کم کنید.",
   err_hot_warm_gt_retention: "هشدار: {detail} — روزهای hot/warm به retention محدود شد (مثل Calculate).",
   err_sources_exceed_total: "بودجه حجم روزانه {cap} GB/روز بود، ولی مجموع منابع روشن الان {sum} GB/روز است ({over} GB/روز بیشتر) — حجم ایندکس‌ها را کم کنید یا سقف مرحله Volume را بالا ببرید.",
-  policy_headroom_note: "حاشیه اطمینان (headroom) یک‌بار در Budget تنظیم می‌شود — سقف‌های اندازه (maxTotal / homePath / volume) را ضرب می‌کند.",
+  policy_headroom_note: "حاشیه اختیاری روی سقف MB (پیش‌فرض ۱٫۰). فرمول پایه Splunk headroom ندارد؛ عملاً ≥۲۰٪ فضای آزاد دیسک نگه دارید.",
   policy_index_size_note: "maxTotalDataSizeMB هر Index اینجا تایپ نمی‌شود — Splunk آن را از حجم روزانه روی دیسک × روز searchable × headroom می‌سازد (عمر یا حجم، هرکدام زودتر). زمان retention و بودجه volume را پایین تنظیم کنید؛ Calculate فیلدهای MB را می‌نویسد.",
   sources_hint: "هر منبع را روشن کنید و GB/روز یا EPS بگذارید. Retention / Hot-warm اختیاری Policy را override می‌کند (خالی = Policy). اندازه Index (GB) پیش‌نمایش زندهٔ deployment-wide برای maxTotalDataSizeMB ≈ روی‌دیسک × retention × headroom است (under-fill تا total اسکیل می‌شود؛ conf ممکن است ÷ peer شود). نیاز در برابر بودجه دیسک Policy زنده چک می‌شود و با علت خطا می‌دهد.",
   total_title: "حجم کل روزانه",

@@ -34,11 +34,11 @@ function enrichTip(key, tip) {
   out.title = isFa ? "حجم کلی Index" : "Index volume (maxTotalDataSizeMB)";
   if (on) {
     out.body = isFa
-      ? "سقف حجم searchable یک Index در Splunk (hot+warm+cold) تا زمان freeze. فرمول: ingest روزانه روی دیسک × روز × headroom. Freeze روی عمر یا حجم — هرکدام زودتر. آرشیو هنگام Freeze روشن است → بعد از freeze داده به مسیر آرشیو می‌رود (coldToFrozenDir)."
-      : "Total searchable size budget for one Splunk Index (hot+warm+cold) until freeze. Sized as daily on-disk × retention_days × headroom. Freeze triggers on age OR size — whichever comes first. Archive on freeze is ON → after freeze, buckets move to the archive path (coldToFrozenDir).";
+      ? "سقف searchable (hot+warm+cold) تا freeze: on-disk روزانه × روز × headroom (اختیاری). بعد از freeze → آرشیو rawdata فقط (۱۵٪ ingest × روز × RF) در مسیر جدا — نه همان on-disk searchable."
+      : "Searchable cap (hot+warm+cold) until freeze: daily on-disk × days × headroom (optional). After freeze → archive holds rawdata only (15% ingest × days × RF) on a separate path — not the same as searchable on-disk.";
     out.example = isFa
-      ? "۹۰ روز → frozenTimePeriodInSecs = ۷٬۷۷۶٬۰۰۰. حجم Index ≈ روزانه روی دیسک × ۹۰ × headroom؛ سپس آرشیو."
-      : "90 days → frozenTimePeriodInSecs = 7,776,000. Index volume ≈ daily on-disk × 90 × headroom; then archive.";
+      ? "۹۰ روز searchable ≈ on-disk × ۹۰ × headroom؛ سپس آرشیو مثلاً ۱۰۰ GB/day × ۰٫۱۵ × ۹۰ × RF."
+      : "90d searchable ≈ on-disk × 90 × headroom; then archive e.g. 100 GB/day × 0.15 × 90 × RF.";
     out.impact = isFa
       ? "نگهداری طولانی‌تر → حجم Index بزرگ‌تر قبل از آرشیو. کوتاه‌تر → زودتر به آرشیو می‌رود. خاموش کردن آرشیو → به‌جای آرشیو، حذف."
       : "Longer retention → larger Index volume before archive. Shorter → freezes to archive sooner. Turn Archive off → delete instead of archive.";

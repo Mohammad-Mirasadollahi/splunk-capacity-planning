@@ -1,6 +1,6 @@
 /** @type {Record<string, string>} */
 export const volume_fields = {
-  hint_archive_days: "How long frozen buckets stay in the archive path after freeze (capacity planning)",
+  hint_archive_days: "Capacity planning only — Archive_GB ≈ daily_raw × 0.15 × days × RF (cluster). Frozen keeps rawdata only.",
   hint_archive_policy: "Freeze chooses what happens after Index volume/age: off = delete; on = archive path below.",
   hint_archive_policy_archive: "Freeze on: data moves to the frozen/archive path below.",
   hint_archive_policy_delete: "Freeze off: Splunk deletes buckets at freeze — no archive path.",
@@ -16,7 +16,7 @@ export const volume_fields = {
   hint_configure_sources_off: "Optional — plan from total daily volume on Budget only, or break volume down per source here later.",
   hint_disk_total: "Deployment-wide searchable disk budget (hot + cold volume stanzas; summaries separate)",
   hint_frozen_path: "[volume:frozen] path / coldToFrozenDir",
-  hint_headroom: "e.g. 1.2 = keep 20% spare capacity — multiplies size caps (maxTotal / homePath / volumes)",
+  hint_headroom: "Optional spare on size caps (default 1.0). Splunk base formulas omit this; keep ≥20% disk free operationally.",
   hint_hot_path: "[volume:hotwarm] path — local SSD only",
   hint_hot_warm: "Becomes homePath.maxDataSizeMB after Calculate",
   hint_need_cold: "Converted from cold days × daily on-disk × headroom",
@@ -31,6 +31,8 @@ export const volume_fields = {
   hint_total_eps: "Linked to GB/day via average event size below",
   lbl_archive: "Archive on freeze",
   lbl_archive_days: "Days kept in archive",
+  lbl_archive_single_copy: "Archive single copy (custom script)",
+  hint_archive_single_copy: "When off, cluster archive sizing multiplies by RF (each peer archives its copy per Splunk docs)",
   lbl_archive_policy: "After searchable retention",
   lbl_avail_cold: "Cold volume (GB)",
   lbl_avail_hot: "Hot/warm volume (GB)",

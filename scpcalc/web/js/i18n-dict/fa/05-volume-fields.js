@@ -1,7 +1,7 @@
 /** @type {Record<string, string>} */
 export const volume_fields = {
   mode_help: "",
-  hint_archive_days: "بعد از freeze، باکت‌های frozen چند روز در مسیر آرشیو می‌مانند (برای برآورد ظرفیت)",
+  hint_archive_days: "فقط برنامه‌ریزی — Archive_GB ≈ daily_raw × ۰٫۱۵ × روز × RF (کلاستر). frozen فقط rawdata نگه می‌دارد.",
   hint_archive_policy: "Freeze مشخص می‌کند بعد از حجم/عمر Index چه شود: خاموش = حذف؛ روشن = مسیر آرشیو زیر.",
   hint_archive_policy_archive: "Freeze روشن: داده به مسیر آرشیو زیر می‌رود.",
   hint_archive_policy_delete: "Freeze خاموش: هنگام freeze داده حذف می‌شود — بدون مسیر آرشیو.",
@@ -17,7 +17,7 @@ export const volume_fields = {
   hint_configure_sources_off: "اختیاری — فقط با حجم کل روزانه در Budget برنامه‌ریزی کنید، یا بعداً حجم را اینجا به‌ازای هر منبع بشکنید.",
   hint_disk_total: "بودجه دیسک searchable کل استقرار (volumeهای hot + cold؛ summaries جدا)",
   hint_frozen_path: "[volume:frozen] path / coldToFrozenDir",
-  hint_headroom: "مثلاً ۱٫۲ = ۲۰٪ ظرفیت رزرو — سقف‌های اندازه (maxTotal / homePath / volume) را ضرب می‌کند",
+  hint_headroom: "اختیاری روی سقف‌های MB (پیش‌فرض ۱٫۰). فرمول پایهٔ Splunk ندارد؛ عملاً ≥۲۰٪ فضای آزاد دیسک نگه دارید.",
   hint_hot_path: "[volume:hotwarm] path — فقط SSD محلی",
   hint_hot_warm: "بعد از Calculate تبدیل به homePath.maxDataSizeMB می‌شود",
   hint_need_cold: "از روزهای cold × حجم روزانه روی دیسک × headroom",
@@ -32,6 +32,8 @@ export const volume_fields = {
   hint_total_eps: "با GB/روز از روی میانگین اندازهٔ رویداد زیر لینک است",
   lbl_archive: "آرشیو هنگام Freeze",
   lbl_archive_days: "روز نگهداری در Archive",
+  lbl_archive_single_copy: "آرشیو تک‌نسخه (اسکریپت سفارشی)",
+  hint_archive_single_copy: "خاموش = اندازه آرشیو در کلاستر × RF (هر peer کپی خود را آرشیو می‌کند طبق مستند Splunk)",
   lbl_archive_policy: "بعد از نگهداری searchable",
   lbl_avail_cold: "volume cold (GB)",
   lbl_avail_hot: "volume hot/warm (GB)",

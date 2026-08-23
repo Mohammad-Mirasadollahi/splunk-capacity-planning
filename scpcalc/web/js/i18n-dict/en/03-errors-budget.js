@@ -27,7 +27,7 @@ export const errors_budget = {
   err_disk_exceeds_summaries: "Summaries/DMA disk need is about {need} GB, but available_summaries_gb is {cap} GB — raise Policy summaries budget or lower summary retention / DMA.",
   err_hot_warm_gt_retention: "Warning: {detail} — hot/warm days were clamped to retention (same as Calculate).",
   err_sources_exceed_total: "Daily volume budget was {cap} GB/day, but enabled sources now sum to {sum} GB/day ({over} GB/day over) — lower per-index volumes or raise the Volume-step total.",
-  policy_headroom_note: "Safety margin (headroom) is set once under Budget — it multiplies size caps (maxTotal / homePath / volumes).",
+  policy_headroom_note: "Optional spare on size caps (default 1.0). Splunk base formulas omit headroom; keep ≥20% disk free operationally.",
   policy_index_size_note: "Per-index maxTotalDataSizeMB is not typed here — Splunk sizes it from daily on-disk × searchable days × headroom (age OR size freezes first). Set retention time and disk volume budgets below; Calculate writes the MB fields.",
   sources_hint: "Turn on each source and set daily GB/EPS. Optional Retention / Hot-warm days override Policy globals (blank = use Policy). Index size (GB) is a live deployment-wide preview of maxTotalDataSizeMB ≈ on-disk × retention × headroom (under-fill scales to total_daily_gb; conf may ÷ peers). Need vs Policy disk budgets is checked live with a clear error.",
   total_title: "Total daily volume",
