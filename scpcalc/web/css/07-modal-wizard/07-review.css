@@ -157,6 +157,10 @@
   white-space: nowrap;
 }
 
+.review-src-table th.review-src-total-col .tip-mark {
+  white-space: nowrap;
+}
+
 .review-src-table tfoot .review-src-total th,
 .review-src-table tfoot .review-src-total td {
   font-weight: 700;

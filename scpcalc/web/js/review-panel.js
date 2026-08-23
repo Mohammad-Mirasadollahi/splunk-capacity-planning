@@ -79,6 +79,17 @@ function formatReviewIndexTotal({ idxGB, dmaGB, dailyGB, g }) {
   return g.enable_dma ? t("dma_volume_need_ingest") : t("review_idx_size_pending");
 }
 
+function reviewSrcTotalColumnLabel(g) {
+  const nIdx = Math.max(1, Math.floor(numOr0(g.n_idx) || 1));
+  if (g.indexer_cluster && nIdx > 1) return t("review_src_total_per_idx");
+  return t("review_src_total_cluster");
+}
+
+function reviewSrcTotalColumnHeader(g) {
+  const label = reviewSrcTotalColumnLabel(g);
+  return `<span class="tip-mark" data-tip="review_src_total">${escapeAttr(label)}</span>`;
+}
+
 function renderReviewViz(data) {
   const host = document.getElementById("review-viz");
   if (!host) return;
@@ -174,7 +185,7 @@ export function fillReviewSummary() {
   const srcFooter =
     enabled.length > 0
       ? `<tr class="review-src-total">
-          <th scope="row" colspan="8">${escapeAttr(t("review_total"))}</th>
+          <th scope="row" colspan="8">${reviewSrcTotalColumnHeader(g)}</th>
           <td class="review-src-idx-total">${formatReviewIndexTotal({
             idxGB: idxTotalGB,
             dmaGB: dmaTotalGB,
@@ -253,7 +264,7 @@ export function fillReviewSummary() {
               <th>${t("col_hw")}</th>
               <th>${t("col_total_time")}</th>
               <th>${t("col_archive")}</th>
-              <th title="${escapeAttr(t("ix_tip_max_total"))}">${t("review_total")}</th>
+              <th class="review-src-total-col">${reviewSrcTotalColumnHeader(g)}</th>
             </tr>
           </thead>
           <tbody>${srcRows || `<tr><td colspan="9">${t("review_no_sources")}</td></tr>`}</tbody>

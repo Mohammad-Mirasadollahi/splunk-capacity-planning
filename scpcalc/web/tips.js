@@ -645,6 +645,16 @@ window.SCP_TIPS = {
         { label: "Estimate storage", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Estimateyourstoragerequirements" },
       ],
     },
+    review_src_total: {
+      title: "Review sources — index size total",
+      formula: "maxTotal ≈ daily_on_disk × retention_days × headroom\nCluster + N_IDX>1 → per-peer = cluster ÷ N_IDX",
+      body: "Estimated maxTotalDataSizeMB for this source (searchable hot+warm+cold). With an indexer cluster and more than one peer, values are per indexer (deployment total ÷ N_IDX) — the same split written to indexes.conf after Calculate. The Storage Required table below stays deployment-wide. DMA on the same line is this index’s cluster-wide DMA share.",
+      example: "100 GB/day on-disk, 8d retention, headroom 1.2 → ~960 GB cluster maxTotal; ÷3 indexers → 320 GB per indexer in this column.",
+      links: [
+        { label: "indexes.conf sizing", url: "https://docs.splunk.com/Documentation/Splunk/latest/Admin/Indexesconf" },
+        { label: "Estimate storage", url: "https://docs.splunk.com/Documentation/Splunk/latest/Capacity/Estimateyourstoragerequirements" },
+      ],
+    },
   },
 };
 
@@ -718,6 +728,7 @@ const SCP_TIP_IMPACTS = {
     "Cold need (GB · total)": "Grows with cold days, daily on-disk, and optional headroom >1.",
     "SmartStore cache GB": "Grows with daily volume and cache days (30 → 90 when ES is on). That is local NVMe/SSD cache, not the full remote store.",
     "Max daily from disk": "More available disk or shorter retention/headroom → higher max daily. Less disk or longer retention → lower ingest ceiling.",
+    review_src_total: "Per-indexer maxTotal when clustered (÷ N_IDX). Storage Required below is deployment-wide — do not add this column to those totals.",
   },
   fa: {
     mode_sources: "فقط Daily یا EPS را به‌عنوان ورودی اصلی بگیرید. مقدار اصلی را بالا ببرید → حجم/دیسک/نود رشد می‌کند. عدد کوچک زیر کادر فقط تخمین واحد دیگر است (ورودی دوم نیست).",
@@ -786,6 +797,7 @@ const SCP_TIP_IMPACTS = {
     "نیاز Cold (GB · total)": "با روز cold، on-disk روزانه و headroom اختیاری >۱ زیاد می‌شود.",
     "SmartStore cache GB": "با حجم روزانه و روزهای کش رشد می‌کند (۳۰→۹۰ با ES). این کش محلی است، نه کل remote store.",
     "Max daily from disk": "دیسک موجود بیشتر یا retention/headroom کوتاه‌تر → سقف روزانه بالاتر. دیسک کمتر یا retention طولانی‌تر → سقف ingest پایین‌تر.",
+    review_src_total: "با کلاستر مقدار per indexer است (÷ N_IDX). جدول Storage Required پایین deployment-wide است — این ستون را با آن جمع نکنید.",
   },
 };
 
@@ -845,6 +857,10 @@ window.SCP_TIPS.fa = JSON.parse(JSON.stringify(window.SCP_TIPS.en));
     event_bytes: ["event_bytes", "میانگین بایت هر رویداد خام ورودی (قبل از فشرده‌سازی) — نه اندازه روی دیسک. با EPS → GB خام روزانه؛ روی دیسک ≈ همان × Comp (~۵۰٪)."],
     daily_gb: ["daily_gb", "GB/روز حجم خام/لایسنس (pre-indexed) — نه حجم فشرده روی دیسک. روی دیسک ≈ daily_gb × Comp."],
     eps: ["EPS", "رویداد بر ثانیهٔ داده خام ورودی. مستند Splunk از حجم pre-indexed شروع می‌کند بعد ~۵۰٪ برای دیسک. EPS یعنی «GB روی دیسک» نیست."],
+    review_src_total: [
+      "جمع حجم Index در Review",
+      "تخمین maxTotalDataSizeMB. با کلاستر و N_IDX>1 مقدار per indexer است (کل ÷ N_IDX) — مثل indexes.conf. جدول Storage Required پایین deployment-wide است. DMA همان خط سهم کلاستر این ایندکس است.",
+    ],
   };
   Object.keys(map).forEach((k) => {
     if (!fa[k]) return;

@@ -103,4 +103,6 @@ export const context_review = {
   review_tier_cold: "Cold",
   review_tier_hot: "Hot, Warm",
   review_total: "جمع",
+  review_src_total_per_idx: "جمع · per Indexer",
+  review_src_total_cluster: "جمع (کل استقرار)",
 };

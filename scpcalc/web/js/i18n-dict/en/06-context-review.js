@@ -101,4 +101,6 @@ export const context_review = {
   review_tier_cold: "Cold",
   review_tier_hot: "Hot, Warm",
   review_total: "Total",
+  review_src_total_per_idx: "Total · per Indexer",
+  review_src_total_cluster: "Total (cluster-wide)",
 };
