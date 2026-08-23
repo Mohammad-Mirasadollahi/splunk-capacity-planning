@@ -13,6 +13,7 @@ export const results_charts = {
   chart_lbl_dma_avail: "DMA موجود (GB)",
   chart_lbl_total_days: "جمع روزها",
   chart_resources: "RAM هر نقش (GB)",
+  chart_resources_cpu: "CPU هر نقش (core)",
   chart_retention: "زمان نگهداری (روز)",
   chart_retention_total: "جمع زمان searchable: {n} روز",
   chart_storage: "فضای ذخیره‌سازی هر لایه (GB)",

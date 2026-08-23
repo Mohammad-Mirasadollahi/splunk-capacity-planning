@@ -13,6 +13,7 @@ export const results_charts = {
   chart_lbl_dma_avail: "DMA avail (GB)",
   chart_lbl_total_days: "total days",
   chart_resources: "Hardware RAM by role (GB)",
+  chart_resources_cpu: "Hardware CPU by role (cores)",
   chart_retention: "Retention time (days)",
   chart_retention_total: "Total searchable time: {n} days",
   chart_storage: "Storage by layer (GB)",

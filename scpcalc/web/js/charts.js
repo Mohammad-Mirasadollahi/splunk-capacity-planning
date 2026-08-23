@@ -26,6 +26,7 @@ const CHART_DEFS = [
   { id: "index_search", titleKey: "chart_index_search", defaultType: "bar" },
   { id: "budget", titleKey: "chart_budget", defaultType: "bar" },
   { id: "resources", titleKey: "chart_resources", defaultType: "bar" },
+  { id: "resources_cpu", titleKey: "chart_resources_cpu", defaultType: "bar" },
 ];
 
 /** A chart is only useful when it compares at least two meaningful values. */
@@ -54,9 +55,17 @@ function chartDaysLabel(label, days) {
   return `${base} · ${Math.round(n)}d`;
 }
 
+function chartCpuLabel(label, cores) {
+  const base = String(label || "");
+  const n = Number(cores);
+  if (!Number.isFinite(n) || n <= 0) return base;
+  return `${base} · ${Math.round(n)} cores`;
+}
+
 function chartValueUnit(chartId) {
   if (chartId === "retention") return "days";
   if (chartId === "index_search") return "TB";
+  if (chartId === "resources_cpu") return "cores";
   if (chartId === "resources") return "GB";
   return "GB";
 }
@@ -67,7 +76,13 @@ function formatChartTooltipValue(chartId, raw) {
   const unit = chartValueUnit(chartId);
   if (unit === "days") return `${Math.round(n)} days`;
   if (unit === "TB") return `${n.toFixed(2)} TB`;
+  if (unit === "cores") return `${Math.round(n)} cores`;
   return formatStorageAmt(n);
+}
+
+function roleCpuTotal(r) {
+  const perNode = Number(r.cpu_physical_cores || r.cpu_cores) || 0;
+  return perNode * (Number(r.count) || 1);
 }
 
 function buildChartDatasets(data, rows = null) {
@@ -156,8 +171,20 @@ function buildChartDatasets(data, rows = null) {
       return { labels, values };
     })(),
     resources: {
-      labels: (d.resources || []).filter((r) => r.ram_gb > 0).map((r) => `${r.role}×${r.count}`),
-      values: (d.resources || []).filter((r) => r.ram_gb > 0).map((r) => r.ram_gb * (r.count || 1)),
+      labels: (d.resources || [])
+        .filter((r) => r.ram_gb > 0)
+        .map((r) => chartSliceLabel(`${r.role}×${r.count}`, r.ram_gb * (r.count || 1))),
+      values: (d.resources || [])
+        .filter((r) => r.ram_gb > 0)
+        .map((r) => r.ram_gb * (r.count || 1)),
+    },
+    resources_cpu: {
+      labels: (d.resources || [])
+        .filter((r) => roleCpuTotal(r) > 0)
+        .map((r) => chartCpuLabel(`${r.role}×${r.count}`, roleCpuTotal(r))),
+      values: (d.resources || [])
+        .filter((r) => roleCpuTotal(r) > 0)
+        .map((r) => roleCpuTotal(r)),
     },
   };
 }
