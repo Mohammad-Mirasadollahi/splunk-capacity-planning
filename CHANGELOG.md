@@ -3,6 +3,10 @@
 All notable changes to this repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/)-style sections so GitHub Releases can show what actually changed between versions.
 
+## 0.4.1 — 2026-08-23
+
+- Review/Storage show DMA need with dma_years horizon and Summary indexes row (not sized); docs updated
+
 ## 0.4.0 — 2026-08-01
 
 ### Added
