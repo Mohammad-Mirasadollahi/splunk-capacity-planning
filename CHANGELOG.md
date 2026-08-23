@@ -3,6 +3,10 @@
 All notable changes to this repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/)-style sections so GitHub Releases can show what actually changed between versions.
 
+## 0.4.16 — 2026-08-23
+
+- Remove duplicate Enable custom sources CTA; Main index selectable alongside catalog indexes
+
 ## 0.4.15 — 2026-08-23
 
 - Sources: single scroll, mouse wheel in wizard, readable table inputs
