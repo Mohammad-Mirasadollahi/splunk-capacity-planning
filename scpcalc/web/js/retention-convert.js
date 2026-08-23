@@ -20,7 +20,7 @@ export function dailyOnDiskFromRaw(dailyRawGB, compression) {
 }
 
 /** Searchable disk need for one layer (GB). */
-export function diskGBFromDays(days, dailyOnDiskGB, headroom = 1.2) {
+export function diskGBFromDays(days, dailyOnDiskGB, headroom = 1) {
   const d = Math.max(0, Math.floor(Number(days) || 0));
   const rate = numOr0(dailyOnDiskGB);
   const h = Number(headroom) > 0 ? Number(headroom) : 1;
@@ -29,7 +29,7 @@ export function diskGBFromDays(days, dailyOnDiskGB, headroom = 1.2) {
 }
 
 /** Whole days that fit in a disk budget for one layer. */
-export function daysFromDiskGB(diskGB, dailyOnDiskGB, headroom = 1.2) {
+export function daysFromDiskGB(diskGB, dailyOnDiskGB, headroom = 1) {
   const disk = numOr0(diskGB);
   const rate = numOr0(dailyOnDiskGB);
   const h = Number(headroom) > 0 ? Number(headroom) : 1;

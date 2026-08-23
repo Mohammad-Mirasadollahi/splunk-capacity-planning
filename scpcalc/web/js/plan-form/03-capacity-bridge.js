@@ -189,7 +189,7 @@ export function syncCapacityPair(edited = null) {
 
   const headroomEl = document.getElementById("headroom") || document.querySelector('input[name="headroom"]');
   const headroomN = Number(headroomEl?.value);
-  const headroom = headroomN >= 1 ? headroomN : 1.2;
+  const headroom = headroomN >= 1 ? headroomN : 1;
   const rate = planningDailyOnDiskGB();
   const bridge = document.getElementById("cap-disk-bridge");
   if (bridge) {

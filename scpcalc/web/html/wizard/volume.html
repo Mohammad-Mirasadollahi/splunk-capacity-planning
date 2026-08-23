@@ -32,7 +32,7 @@
                 </label>
                 <label class="field">
                   <span class="field-copy"><span class="field-label tip-mark" data-tip="headroom" data-i18n="lbl_headroom">Safety margin</span><span class="field-hint" data-i18n="hint_headroom">e.g. 1.2 = keep 20% spare capacity — multiplies searchable disk caps</span></span>
-                  <input name="headroom" id="headroom" type="number" step="0.05" value="1.2" min="1">
+                  <input name="headroom" id="headroom" type="number" step="0.05" value="1" min="1">
                 </label>
               </div>
               <p class="hint" data-i18n="total_hint">Leave GB/EPS blank only if you plan solely from per-source volumes on the Sources tab. Edit either side — the other updates from avg event size.</p>
@@ -66,6 +66,11 @@
                   <label class="field" data-depends-on="archive_frozen" hidden>
                     <span class="field-copy"><span class="field-label tip-mark" data-tip="archive_days" data-i18n="lbl_archive_days">Days kept in archive</span><span class="field-hint" data-i18n="hint_archive_days">How long frozen buckets stay in the archive path after freeze (capacity planning)</span></span>
                     <input name="archive_days" id="archive_days" type="number" value="90" min="0" step="1">
+                  </label>
+                  <label class="field check glass-chip" data-depends-on="archive_frozen" hidden>
+                    <input name="archive_single_copy" type="checkbox" id="archive_single_copy">
+                    <span class="tip-mark" data-tip="archive_single_copy" data-i18n="lbl_archive_single_copy">Archive single copy (custom script)</span>
+                    <span class="field-hint" data-i18n="hint_archive_single_copy">Off = cluster archive × RF (each peer archives its copy)</span>
                   </label>
                   <label class="field" data-depends-on="archive_frozen" hidden>
                     <span class="field-copy"><span class="field-label tip-mark" data-tip="frozen_path" data-i18n="lbl_frozen_path">Frozen / archive path</span><span class="field-hint" data-i18n="hint_frozen_path">[volume:frozen] path / coldToFrozenDir</span></span>
@@ -129,6 +134,13 @@
             <div class="sources-config-panel">
               <p class="hint tip-mark sources-config-note" data-tip="eps" data-i18n="sec_vol_mode_eps_note">EPS = raw events arriving from the source (before Splunk compression). With average event size it becomes Daily raw GB; on-disk ≈ that × Comp.</p>
               <p id="volume-budget-err" class="err volume-budget-err" hidden role="alert"></p>
+              <div class="sources-table-bar">
+                <label class="table-find">
+                  <span data-i18n="table_find">Find in table</span>
+                  <input type="search" id="src-find" name="src_find" data-i18n-placeholder="table_find_ph_src" placeholder="source, index, GB, EPS…" autocomplete="off">
+                </label>
+                <span class="table-find-count" id="src-find-count" hidden></span>
+              </div>
               <div class="table-wrap">
                 <table class="src-table src-table--volume src-table--merged" id="src-table">
                   <thead>

@@ -10,6 +10,7 @@ import {
   formatDiskGB,
   roundDiskGB,
 } from "./retention-convert.js";
+import { archiveNeedGB, dmaNeedGB } from "./splunk-formulas.js";
 
 /** Raw daily GB for one row (prefer daily_gb, else EPS×bytes). */
 export function rowDailyRawGB(row, rows = state.rows) {
@@ -54,7 +55,7 @@ export function resolveRowHotWarm(row, g, ret) {
 export function sizeMBFromOnDiskDays(onDiskGB, days, headroom) {
   const d = Math.max(0, Math.floor(Number(days) || 0));
   const rate = numOr0(onDiskGB);
-  const h = Number(headroom) > 0 ? Number(headroom) : 1.2;
+  const h = Number(headroom) > 0 ? Number(headroom) : 1;
   if (!(d > 0) || !(rate > 0)) return 0;
   return Math.round(rate * 1024 * d * h);
 }
@@ -78,11 +79,12 @@ export function planSourceDiskNeeds(rows, g) {
     rf: g.rf,
     sf: g.sf,
   });
-  const headroom = Number(g.headroom) >= 1 ? Number(g.headroom) : 1.2;
+  const headroom = Number(g.headroom) >= 1 ? Number(g.headroom) : 1;
   const summaryPct = numOr0(g.summary_pct) > 0 ? numOr0(g.summary_pct) : 0.1;
   const summaryRet = Math.max(1, Math.floor(numOr0(g.summary_retention_days) || g.retention_days || 1));
   const dmaOn = !!g.enable_dma || !!g.has_es;
-  const dmaPct = numOr0(g.dma_pct) > 0 ? numOr0(g.dma_pct) : 0.1;
+  const dmaPct = numOr0(g.dma_pct);
+  let totalRaw = 0;
 
   let needHot = 0;
   let needCold = 0;
@@ -96,6 +98,7 @@ export function planSourceDiskNeeds(rows, g) {
     const raw = rowDailyRawGB(r, list);
     if (!(raw > 0)) continue;
     const daily = raw * scale;
+    totalRaw += daily;
     const onDisk = dailyOnDiskFromRaw(daily, comp);
     totalOnDisk += onDisk;
     const ret = resolveRowRetention(r, g);
@@ -137,9 +140,13 @@ export function planSourceDiskNeeds(rows, g) {
     });
   }
 
-  if (dmaOn && totalOnDisk > 0) {
-    const dmaRet = Math.max(1, Math.floor(numOr0(g.retention_days) || 1));
-    needSum += sizeGBFromOnDiskDays(totalOnDisk, dmaRet, headroom) * dmaPct;
+  if (dmaOn && (totalRaw > 0 || totalOnDisk > 0)) {
+    needSum += dmaNeedGB(totalRaw, totalOnDisk, comp, {
+      dma_pct: dmaPct,
+      dma_years: g.dma_years,
+      headroom,
+      retention_days: g.retention_days,
+    });
   }
 
   return {
