@@ -1,0 +1,144 @@
+/**
+ * Form controls — single source of truth for text/number input sizing.
+ * Tokens: --ctrl-* in 01-base.css. Imported last so these rules win.
+ */
+
+.field > input::placeholder {
+  color: rgba(158, 184, 196, 0.65);
+  font-weight: 400;
+}
+
+/* —— Layout: never stretch field rows to fill leftover grid/flex space —— */
+.grid,
+.cap-pair-block .cap-side > .grid,
+.quick-drivers-grid {
+  align-content: start;
+  align-items: start;
+}
+
+.grid > .field,
+.cap-pair-block .cap-side > .grid > .field,
+.quick-drivers-grid > .field {
+  align-self: start;
+  width: 100%;
+}
+
+.field:not(.field.check):not(.field-readonly) {
+  align-content: start;
+}
+
+/* —— Shared chrome for native inputs + readonly outputs —— */
+.field > input[type="text"],
+.field > input[type="search"],
+.field > input[type="number"]:not(.num-stepper-input),
+.field-readonly .readonly-value,
+.table-find input[type="search"],
+.ed-field input[type="text"] {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  height: var(--ctrl-h);
+  min-height: var(--ctrl-h);
+  max-height: var(--ctrl-h);
+  margin: 0;
+  padding: 0 var(--ctrl-px);
+  border: 1px solid var(--line);
+  border-radius: var(--ctrl-radius);
+  background: var(--ctrl-bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--ctrl-fs);
+  font-weight: var(--ctrl-fw);
+  line-height: 1.35;
+  outline: none;
+  transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease), background 0.25s var(--ease);
+}
+
+.field-readonly .readonly-value {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  font-variant-numeric: tabular-nums;
+}
+
+.field > input[type="text"]:hover,
+.field > input[type="search"]:hover,
+.field > input[type="number"]:not(.num-stepper-input):hover,
+.table-find input[type="search"]:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: var(--ctrl-bg-hover);
+}
+
+.field > input[type="text"]:focus,
+.field > input[type="search"]:focus,
+.field > input[type="number"]:not(.num-stepper-input):focus,
+.table-find input[type="search"]:focus {
+  border-color: var(--ctrl-border-focus);
+  box-shadow: var(--ctrl-focus-ring);
+  background: var(--ctrl-bg-focus);
+}
+
+/* —— Number stepper shell (wizard / modal fields) —— */
+.field > .num-stepper,
+.vol-pair-block .num-stepper,
+.quick-drivers-grid .num-stepper,
+.cap-pair-block .num-stepper,
+.wizard-body .num-stepper:not(.src-table .num-stepper) {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  height: var(--ctrl-h);
+  min-height: var(--ctrl-h);
+  max-height: var(--ctrl-h);
+  flex: 0 0 auto;
+  align-self: start;
+}
+
+/* —— Policy time ↔ disk: columns size to content, not each other —— */
+.cap-pair-block {
+  align-items: start;
+}
+
+.cap-pair-block .cap-side {
+  height: auto;
+}
+
+.cap-pair-block .cap-side > .grid {
+  flex: 0 0 auto;
+  align-content: start;
+  align-items: start;
+}
+
+.cap-eq {
+  align-self: center;
+}
+
+/* —— Compact: tables —— */
+.src-table .num-stepper {
+  height: var(--ctrl-h-sm);
+  min-height: var(--ctrl-h-sm);
+  max-height: var(--ctrl-h-sm);
+}
+
+.src-table input[type="text"],
+.src-table td > input[type="number"]:not(.num-stepper-input) {
+  height: var(--ctrl-h-sm);
+  min-height: var(--ctrl-h-sm);
+  max-height: var(--ctrl-h-sm);
+  padding: 0 0.45rem;
+  font-size: var(--ctrl-fs-sm);
+  border-radius: var(--ctrl-radius-sm);
+  border-color: transparent;
+}
+
+.src-table input[type="text"]:focus,
+.src-table td > input[type="number"]:not(.num-stepper-input):focus {
+  border-color: var(--ctrl-border-focus);
+}
+
+/* —— Import modal textarea: separate multi-line control —— */
+.import-paste-field textarea {
+  min-height: 6.5rem;
+  height: auto;
+  max-height: none;
+}

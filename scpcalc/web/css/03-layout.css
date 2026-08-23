@@ -169,6 +169,8 @@ h1 {
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 1rem;
   margin-bottom: 1.15rem;
+  align-content: start;
+  align-items: start;
 }
 
 .field {
@@ -217,14 +219,10 @@ label.field.check.glass-chip {
   width: 100%;
   box-sizing: border-box;
   margin: 0;
-  padding: 0.65rem 0.85rem;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--ink);
   font: inherit;
   font-variant-numeric: tabular-nums;
   line-height: 1.35;
+  /* height/chrome: 16-form-controls.css */
 }
 
 .field-label {
@@ -256,32 +254,8 @@ label.field.check.glass-chip {
 .field > input[type="number"],
 .field > input[type="text"] {
   width: 100%;
-  border: 1px solid var(--line);
-  border-radius: 0.75rem;
-  background: rgba(0, 0, 0, 0.28);
-  color: var(--ink);
-  padding: 0.68rem 0.8rem;
-  font: inherit;
-  font-size: 0.95rem;
-  font-weight: 500;
+  /* height/chrome: 16-form-controls.css */
   outline: none;
-  transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease), background 0.25s var(--ease);
-}
-
-.field > input::placeholder {
-  color: rgba(158, 184, 196, 0.65);
-  font-weight: 400;
-}
-
-.field > input:hover {
-  border-color: rgba(255, 255, 255, 0.28);
-  background: rgba(0, 0, 0, 0.34);
-}
-
-.field > input:focus {
-  border-color: rgba(63, 224, 197, 0.65);
-  box-shadow: 0 0 0 3px rgba(63, 224, 197, 0.18), 0 0 24px rgba(63, 224, 197, 0.15);
-  background: rgba(8, 28, 34, 0.55);
 }
 
 /* Number steppers: see css/14-number-stepper.css (imported last) */

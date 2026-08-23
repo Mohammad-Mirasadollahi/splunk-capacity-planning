@@ -21,6 +21,20 @@
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --mx: 50%;
   --my: 30%;
+  /* Form control sizing — see css/16-form-controls.css */
+  --ctrl-h: 2.65rem;
+  --ctrl-h-sm: 1.85rem;
+  --ctrl-px: 0.8rem;
+  --ctrl-fs: 0.95rem;
+  --ctrl-fs-sm: 0.8rem;
+  --ctrl-fw: 500;
+  --ctrl-radius: 0.75rem;
+  --ctrl-radius-sm: 0.45rem;
+  --ctrl-bg: rgba(0, 0, 0, 0.28);
+  --ctrl-bg-hover: rgba(0, 0, 0, 0.34);
+  --ctrl-bg-focus: rgba(8, 28, 34, 0.55);
+  --ctrl-border-focus: rgba(63, 224, 197, 0.65);
+  --ctrl-focus-ring: 0 0 0 3px rgba(63, 224, 197, 0.18), 0 0 24px rgba(63, 224, 197, 0.15);
 }
 
 * { box-sizing: border-box; }

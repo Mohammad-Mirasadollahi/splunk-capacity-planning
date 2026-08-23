@@ -160,17 +160,11 @@
 }
 
 .src-table input[type="text"],
-.src-table td > input[type="number"] {
+.src-table td > input[type="number"]:not(.num-stepper-input) {
   width: 100%;
   min-width: 4.5rem;
-  border: 1px solid transparent;
-  border-radius: 0.45rem;
-  background: rgba(0, 0, 0, 0.28);
-  color: var(--ink);
-  padding: 0.35rem 0.45rem;
-  font: inherit;
   font-family: var(--mono);
-  font-size: 0.8rem;
+  /* height/chrome: 16-form-controls.css */
 }
 
 /* Nested stepper inputs: chrome is on .num-stepper (see 14-number-stepper.css) */
@@ -276,18 +270,6 @@ a.btn-ghost:hover {
 
 .table-find input[type="search"] {
   min-width: min(18rem, 70vw);
-  padding: 0.4rem 0.65rem;
-  border-radius: 0.55rem;
-  border: 1px solid var(--line);
-  background: rgba(8, 22, 30, 0.55);
-  color: var(--ink);
-  font: inherit;
-}
-
-.table-find input[type="search"]:focus {
-  outline: none;
-  border-color: rgba(63, 224, 197, 0.55);
-  box-shadow: 0 0 0 2px rgba(63, 224, 197, 0.15);
 }
 
 .table-find-count {

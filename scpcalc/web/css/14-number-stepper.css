@@ -31,13 +31,15 @@ input[type="number"]::-webkit-inner-spin-button {
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
-  min-height: 2.65rem;
+  height: var(--ctrl-h);
+  min-height: var(--ctrl-h);
+  max-height: var(--ctrl-h);
   margin: 0;
   padding: 0;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 0.75rem;
-  background: rgba(0, 0, 0, 0.28);
+  border-radius: var(--ctrl-radius);
+  background: var(--ctrl-bg, rgba(0, 0, 0, 0.28));
   color: var(--ink);
   transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease), background 0.25s var(--ease);
 }
@@ -63,10 +65,11 @@ input[type="number"]::-webkit-inner-spin-button {
   width: auto !important;
   min-width: 0 !important;
   max-width: none;
-  height: auto !important;
-  min-height: 0;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
   margin: 0 !important;
-  padding: 0.68rem 0.8rem !important;
+  padding: 0 var(--ctrl-px) !important;
   border: 0 !important;
   border-radius: 0 !important;
   outline: none !important;
@@ -74,8 +77,8 @@ input[type="number"]::-webkit-inner-spin-button {
   box-shadow: none !important;
   color: inherit;
   font: inherit;
-  font-size: 0.95rem;
-  font-weight: 500;
+  font-size: var(--ctrl-fs);
+  font-weight: var(--ctrl-fw);
   line-height: 1.35;
   -moz-appearance: textfield;
   appearance: textfield;
@@ -172,9 +175,11 @@ input[type="number"]::-webkit-inner-spin-button {
 /* —— Compact: Sources / any .src-table —— */
 .src-table .num-stepper {
   --num-stepper-btn-w: 1.3rem;
-  min-height: 1.85rem;
+  height: var(--ctrl-h-sm);
+  min-height: var(--ctrl-h-sm);
+  max-height: var(--ctrl-h-sm);
   min-width: 4.5rem;
-  border-radius: 0.45rem;
+  border-radius: var(--ctrl-radius-sm);
   width: 100%;
 }
 

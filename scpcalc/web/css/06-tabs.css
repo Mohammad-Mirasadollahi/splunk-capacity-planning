@@ -235,7 +235,7 @@
 .cap-pair-block {
   display: flex;
   flex-wrap: wrap;
-  align-items: stretch;
+  align-items: start;
   gap: 0.85rem 1.1rem;
   margin-inline: 0.2rem;
 }
@@ -256,7 +256,9 @@
 }
 
 .cap-pair-block .cap-side > .grid {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
+  align-content: start;
+  align-items: start;
 }
 
 .cap-pair-block .cap-side.is-counterpart {
