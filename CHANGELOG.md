@@ -3,6 +3,10 @@
 All notable changes to this repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/)-style sections so GitHub Releases can show what actually changed between versions.
 
+## 0.4.8 — 2026-08-23
+
+- DMA amounts show GB unit (e.g. 96 GB DMA)
+
 ## 0.4.7 — 2026-08-23
 
 - Review sources Total column per-indexer label and tooltip
